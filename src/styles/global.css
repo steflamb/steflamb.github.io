@@ -633,13 +633,16 @@
   }
 
   .fortuna-feature-copy {
-    position: relative;
-    z-index: 2;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    margin-left: clamp(-10rem, -12vw, -4rem);
     padding: clamp(1.25rem, 3vw, 2.5rem) var(--gutter) clamp(3rem, 6vw, 6rem);
+  }
+
+  .fortuna-feature-lead {
+    position: relative;
+    z-index: 2;
+    margin-left: clamp(-10rem, -12vw, -4rem);
   }
 
   .feature-kicker {
@@ -1813,6 +1816,9 @@
 
     .fortuna-feature-copy {
       min-height: 42rem;
+    }
+
+    .fortuna-feature-lead {
       margin-left: 0;
     }
 
@@ -1831,7 +1837,7 @@
     .site-header,
     .site-header[data-scrolled] {
       height: 4.5rem;
-      background: rgba(16, 19, 17, 0.96);
+      background: var(--ink);
       border-bottom-color: var(--line-dark);
     }
 
