@@ -374,6 +374,7 @@
   .hero-copy {
     position: relative;
     z-index: 2;
+    min-width: 0;
     padding-block: 3rem;
   }
 
