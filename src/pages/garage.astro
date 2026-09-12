@@ -17,10 +17,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         I also scanned Fortuna into a 3D model. You can take it for a spin around an empty lot,
         no research question required.
       </p>
-      <p class="garage-controls">
-        <span class="garage-desktop-only">Arrow keys or WASD to drive. Space to brake.</span>
-        <span class="garage-mobile-only">Use the on-screen controls to drive.</span>
-      </p>
+      <p class="garage-controls garage-desktop-only">Arrow keys or WASD to drive. Space to brake.</p>
+      <p class="garage-controls garage-mobile-only">Use the on-screen controls to drive.</p>
       <a class="text-link text-link-light" href="/fortuna/">← Back to Fortuna</a>
     </div>
 
@@ -170,7 +168,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     }
 
     .garage-mobile-only {
-      display: inline;
+      display: block;
     }
 
     .garage-touch {

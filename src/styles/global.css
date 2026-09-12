@@ -962,6 +962,10 @@
     font-weight: 600;
   }
 
+  .page-hero-copy p + p {
+    margin-top: 1.1em;
+  }
+
   .page-hero-meta {
     display: flex;
     flex-wrap: wrap;
