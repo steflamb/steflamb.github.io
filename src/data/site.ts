@@ -5,7 +5,7 @@ export const navItems = [
   { label: 'Publications', href: '/publications/' },
   { label: 'About', href: '/about/' },
   { label: 'CV', href: '/cv/' },
-  { label: 'Garage', href: '/garage/' },
+  { label: 'Just for fun', href: '/garage/' },
 ];
 
 export const profileLinks = {
