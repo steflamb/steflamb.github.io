@@ -91,4 +91,13 @@ export const publications: Publication[] = [
     paper: 'https://doi.org/10.1109/ICST60714.2024.00024',
     code: 'https://github.com/ast-fortiss-tum/I2I-quality-metrics-study',
   },
+  {
+    year: '2023',
+    venue: 'ICRA',
+    title: 'Ultra-Low Power Deep Learning-based Monocular Relative Localization Onboard Nano-Quadrotors',
+    authors: 'Stefano Bonato, Stefano Carlo Lambertenghi, Elia Cereda, Alessandro Giusti, Daniele Palossi',
+    summary:
+      'A deep-learning pipeline for nano-drones to localize a peer drone from a single camera, running onboard at 48 Hz using only 95 mW.',
+    paper: 'https://arxiv.org/abs/2303.01940',
+  },
 ];

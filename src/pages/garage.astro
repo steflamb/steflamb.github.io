@@ -1,0 +1,390 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout
+  title="Garage — Stefano Carlo Lambertenghi"
+  description="Just for fun: drive a 3D model of Fortuna around an empty lot."
+  noindex={true}
+>
+  <section class="garage">
+    <canvas id="garage-canvas"></canvas>
+
+    <div class="garage-hud" data-reveal>
+      <p class="eyebrow eyebrow-light">Just for fun</p>
+      <h1>Take Fortuna for a spin.</h1>
+      <p class="garage-instructions">
+        <span class="garage-desktop-only">Arrow keys or WASD to drive. Space to brake.</span>
+        <span class="garage-mobile-only">Use the on-screen controls to drive.</span>
+      </p>
+      <a class="text-link text-link-light" href="/fortuna/">← Back to Fortuna</a>
+    </div>
+
+    <p class="garage-loading" id="garage-loading">Loading Fortuna…</p>
+
+    <div class="garage-touch" id="garage-touch" aria-hidden="true">
+      <button type="button" class="garage-btn" data-control="left" aria-label="Steer left">◀</button>
+      <div class="garage-touch-col">
+        <button type="button" class="garage-btn" data-control="forward" aria-label="Accelerate">▲</button>
+        <button type="button" class="garage-btn" data-control="back" aria-label="Reverse">▼</button>
+      </div>
+      <button type="button" class="garage-btn" data-control="right" aria-label="Steer right">▶</button>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .garage {
+    position: relative;
+    min-height: calc(100svh - 5rem);
+    overflow: hidden;
+    background: #bfe3f2;
+  }
+
+  #garage-canvas {
+    position: absolute;
+    inset: 0;
+    display: block;
+    width: 100%;
+    height: 100%;
+    touch-action: none;
+  }
+
+  .garage-hud {
+    position: relative;
+    z-index: 1;
+    max-width: 26rem;
+    padding: clamp(2rem, 5vw, 3.5rem);
+    color: var(--paper-bright);
+  }
+
+  .garage-hud h1 {
+    margin-top: 1rem;
+    max-width: 10ch;
+    font-size: clamp(2.4rem, 6vw, 4rem);
+    font-weight: 540;
+    letter-spacing: -0.06em;
+    line-height: 0.95;
+  }
+
+  .garage-instructions {
+    margin-top: 1.2rem;
+    max-width: 22rem;
+    font-size: 0.95rem;
+    text-shadow: 0 1px 12px rgba(16, 19, 17, 0.5);
+  }
+
+  .garage-hud .text-link {
+    margin-top: 1.5rem;
+  }
+
+  .garage-mobile-only {
+    display: none;
+  }
+
+  .garage-loading {
+    position: absolute;
+    z-index: 1;
+    right: 1.5rem;
+    bottom: 1.5rem;
+    color: var(--paper-bright);
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    text-shadow: 0 1px 12px rgba(16, 19, 17, 0.6);
+  }
+
+  .garage-loading[hidden] {
+    display: none;
+  }
+
+  .garage-touch {
+    position: absolute;
+    z-index: 1;
+    right: 1.25rem;
+    bottom: 1.25rem;
+    left: 1.25rem;
+    display: none;
+    align-items: flex-end;
+    justify-content: space-between;
+  }
+
+  .garage-touch-col {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+
+  .garage-btn {
+    width: 3.4rem;
+    height: 3.4rem;
+    border: 1px solid rgba(250, 248, 241, 0.5);
+    border-radius: 50%;
+    background: rgba(16, 19, 17, 0.45);
+    color: var(--paper-bright);
+    font-size: 1.1rem;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .garage-btn:active {
+    background: rgba(255, 96, 52, 0.6);
+  }
+
+  @media (max-width: 54rem) {
+    .garage-desktop-only {
+      display: none;
+    }
+
+    .garage-mobile-only {
+      display: inline;
+    }
+
+    .garage-touch {
+      display: flex;
+    }
+  }
+</style>
+
+<script>
+  import * as THREE from 'three';
+  import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+  import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
+
+  const canvas = document.getElementById('garage-canvas') as HTMLCanvasElement;
+  const loadingEl = document.getElementById('garage-loading') as HTMLElement;
+  const section = canvas.closest('.garage') as HTMLElement;
+
+  const scene = new THREE.Scene();
+  const skyColor = new THREE.Color('#bfe3f2');
+  scene.background = skyColor;
+  scene.fog = new THREE.Fog(skyColor.getHex(), 70, 260);
+
+  const camera = new THREE.PerspectiveCamera(55, 1, 0.1, 1000);
+  camera.position.set(0, 6, -10);
+
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+  function resize() {
+    const w = section.clientWidth;
+    const h = section.clientHeight;
+    renderer.setSize(w, h, false);
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+  }
+  window.addEventListener('resize', resize);
+
+  // --- Lights ---
+  scene.add(new THREE.HemisphereLight('#ffffff', '#5b6a48', 1.0));
+  const sun = new THREE.DirectionalLight('#fff6e8', 2.4);
+  sun.position.set(40, 55, -25);
+  sun.castShadow = true;
+  sun.shadow.mapSize.set(2048, 2048);
+  const shadowSize = 70;
+  sun.shadow.camera.left = -shadowSize;
+  sun.shadow.camera.right = shadowSize;
+  sun.shadow.camera.top = shadowSize;
+  sun.shadow.camera.bottom = -shadowSize;
+  sun.shadow.camera.far = 220;
+  sun.shadow.bias = -0.0015;
+  scene.add(sun);
+
+  // --- Ground ---
+  function makeGroundTexture() {
+    const size = 512;
+    const cnv = document.createElement('canvas');
+    cnv.width = cnv.height = size;
+    const ctx = cnv.getContext('2d')!;
+    ctx.fillStyle = '#4a8a4a';
+    ctx.fillRect(0, 0, size, size);
+    ctx.strokeStyle = 'rgba(255,255,255,0.10)';
+    ctx.lineWidth = 2;
+    const step = size / 8;
+    for (let i = 0; i <= size; i += step) {
+      ctx.beginPath();
+      ctx.moveTo(i, 0);
+      ctx.lineTo(i, size);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(0, i);
+      ctx.lineTo(size, i);
+      ctx.stroke();
+    }
+    const tex = new THREE.CanvasTexture(cnv);
+    tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+    tex.repeat.set(80, 80);
+    tex.anisotropy = 4;
+    return tex;
+  }
+
+  const ground = new THREE.Mesh(
+    new THREE.PlaneGeometry(3000, 3000),
+    new THREE.MeshStandardMaterial({ map: makeGroundTexture(), roughness: 1 }),
+  );
+  ground.rotation.x = -Math.PI / 2;
+  ground.receiveShadow = true;
+  scene.add(ground);
+
+  // --- A loose ring of cones to give a sense of a test track ---
+  const coneGeo = new THREE.ConeGeometry(0.35, 0.8, 12);
+  const coneMat = new THREE.MeshStandardMaterial({ color: '#ff6034', roughness: 0.8 });
+  const coneRadius = 26;
+  const coneCount = 18;
+  for (let i = 0; i < coneCount; i++) {
+    const angle = (i / coneCount) * Math.PI * 2;
+    const cone = new THREE.Mesh(coneGeo, coneMat);
+    cone.position.set(Math.sin(angle) * coneRadius, 0.4, Math.cos(angle) * coneRadius);
+    cone.castShadow = true;
+    scene.add(cone);
+  }
+
+  // --- Car ---
+  let car: THREE.Object3D | null = null;
+  let carLength = 4.6;
+
+  const dracoLoader = new DRACOLoader();
+  dracoLoader.setDecoderPath('/draco/');
+  const loader = new GLTFLoader();
+  loader.setDRACOLoader(dracoLoader);
+
+  loader.load(
+    '/models/fortuna.glb',
+    (gltf) => {
+      car = gltf.scene;
+      car.traverse((o) => {
+        if ((o as THREE.Mesh).isMesh) {
+          o.castShadow = true;
+          o.receiveShadow = true;
+        }
+      });
+
+      const box = new THREE.Box3().setFromObject(car);
+      const size = new THREE.Vector3();
+      box.getSize(size);
+      carLength = Math.max(size.x, size.y, size.z);
+
+      // Sit the car on the ground.
+      const center = new THREE.Vector3();
+      box.getCenter(center);
+      car.position.y -= box.min.y;
+
+      scene.add(car);
+      loadingEl.hidden = true;
+    },
+    undefined,
+    (err) => {
+      console.error('Failed to load Fortuna model', err);
+      loadingEl.textContent = 'Could not load the model.';
+    },
+  );
+
+  // --- Controls ---
+  const input = { forward: false, back: false, left: false, right: false };
+
+  const keyMap: Record<string, keyof typeof input> = {
+    ArrowUp: 'forward',
+    KeyW: 'forward',
+    ArrowDown: 'back',
+    KeyS: 'back',
+    ArrowLeft: 'left',
+    KeyA: 'left',
+    ArrowRight: 'right',
+    KeyD: 'right',
+  };
+
+  window.addEventListener('keydown', (e) => {
+    const key = keyMap[e.code];
+    if (key) {
+      input[key] = true;
+      e.preventDefault();
+    }
+    if (e.code === 'Space') {
+      input.forward = false;
+      input.back = false;
+    }
+  });
+  window.addEventListener('keyup', (e) => {
+    const key = keyMap[e.code];
+    if (key) {
+      input[key] = false;
+      e.preventDefault();
+    }
+  });
+
+  document.querySelectorAll<HTMLButtonElement>('.garage-btn').forEach((btn) => {
+    const key = btn.dataset.control as keyof typeof input;
+    const press = (v: boolean) => (e: Event) => {
+      e.preventDefault();
+      input[key] = v;
+    };
+    btn.addEventListener('pointerdown', press(true));
+    btn.addEventListener('pointerup', press(false));
+    btn.addEventListener('pointerleave', press(false));
+    btn.addEventListener('pointercancel', press(false));
+  });
+
+  // --- Simulation state ---
+  const car_state = { x: 0, z: 0, heading: 0, speed: 0 };
+  const maxSpeed = 16;
+  const maxReverse = 7;
+  const accel = 9;
+  const friction = 5;
+  const maxTurnRate = 2.0;
+
+  const clock = new THREE.Clock();
+  const camPos = new THREE.Vector3(0, 6, -10);
+  const camTarget = new THREE.Vector3();
+
+  function tick() {
+    requestAnimationFrame(tick);
+    const dt = Math.min(clock.getDelta(), 0.05);
+
+    if (input.forward) car_state.speed += accel * dt;
+    else if (input.back) car_state.speed -= accel * dt;
+    else {
+      const decay = Math.sign(car_state.speed) * friction * dt;
+      car_state.speed = Math.abs(decay) > Math.abs(car_state.speed) ? 0 : car_state.speed - decay;
+    }
+    car_state.speed = Math.max(-maxReverse, Math.min(maxSpeed, car_state.speed));
+
+    const turnInput = (input.left ? 1 : 0) - (input.right ? 1 : 0);
+    const speedFactor = Math.min(1, Math.abs(car_state.speed) / 4) * 0.85 + 0.15;
+    const direction = car_state.speed >= 0 ? 1 : -1;
+    car_state.heading += turnInput * maxTurnRate * speedFactor * direction * dt;
+
+    car_state.x += Math.sin(car_state.heading) * car_state.speed * dt;
+    car_state.z += Math.cos(car_state.heading) * car_state.speed * dt;
+
+    if (car) {
+      car.position.x = car_state.x;
+      car.position.z = car_state.z;
+      car.rotation.y = car_state.heading;
+    }
+
+    const camDistance = carLength * 1.9 + 4;
+    const camHeight = carLength * 0.55 + 2.5;
+    const desiredCamPos = new THREE.Vector3(
+      car_state.x - Math.sin(car_state.heading) * camDistance,
+      camHeight,
+      car_state.z - Math.cos(car_state.heading) * camDistance,
+    );
+    camPos.lerp(desiredCamPos, 1 - Math.pow(0.001, dt));
+    camera.position.copy(camPos);
+
+    const desiredTarget = new THREE.Vector3(
+      car_state.x + Math.sin(car_state.heading) * 3,
+      1.2,
+      car_state.z + Math.cos(car_state.heading) * 3,
+    );
+    camTarget.lerp(desiredTarget, 1 - Math.pow(0.0005, dt));
+    camera.lookAt(camTarget);
+
+    renderer.render(scene, camera);
+  }
+
+  resize();
+  tick();
+</script>
