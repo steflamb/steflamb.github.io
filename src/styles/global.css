@@ -285,7 +285,7 @@
 
   .button::after,
   .button-secondary::after {
-    content: '↗';
+    content: '↗\FE0E';
     font-size: 1rem;
   }
 
@@ -466,7 +466,8 @@
   }
 
   .video-frame video,
-  .video-frame iframe {
+  .video-frame iframe,
+  .video-frame canvas {
     display: block;
     width: 100%;
     height: 100%;
@@ -640,9 +641,7 @@
   }
 
   .fortuna-feature-lead {
-    position: relative;
-    z-index: 2;
-    margin-left: clamp(-10rem, -12vw, -4rem);
+    text-align: right;
   }
 
   .feature-kicker {
@@ -1042,6 +1041,7 @@
     border-bottom: 1px solid var(--line);
   }
 
+  .demo-showcase-copy h2,
   .demo-showcase-copy h3 {
     margin-block: 1rem;
     font-size: clamp(1.6rem, 3vw, 2.4rem);
@@ -1818,10 +1818,6 @@
       min-height: 42rem;
     }
 
-    .fortuna-feature-lead {
-      margin-left: 0;
-    }
-
     .publication-row {
       grid-template-columns: 4rem 4.5rem minmax(0, 1fr);
     }
@@ -1839,6 +1835,8 @@
       height: 4.5rem;
       background: var(--ink);
       border-bottom-color: var(--line-dark);
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
     }
 
     .nav-toggle {

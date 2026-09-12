@@ -163,13 +163,8 @@ const nanodronePaper = publications.find((p) => p.title.startsWith('Ultra-Low Po
 
     <div class="cv-actions">
       <a class="button button-dark" href={profileLinks.cvPdf} target="_blank" rel="noreferrer">
-        Open CV (PDF) <span aria-hidden="true">↗</span>
+        Open CV (PDF) <span aria-hidden="true">↗︎</span>
       </a>
-      <button class="button button-dark" type="button" data-print>Print / save PDF</button>
     </div>
   </article>
-
-  <script>
-    document.querySelector('[data-print]')?.addEventListener('click', () => window.print());
-  </script>
 </BaseLayout>

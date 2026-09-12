@@ -51,6 +51,9 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     min-height: calc(100svh - 5rem);
     overflow: hidden;
     background: #bfe3f2;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
   }
 
   #garage-canvas {
@@ -127,6 +130,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     display: none;
     align-items: flex-end;
     justify-content: space-between;
+    touch-action: none;
   }
 
   .garage-touch-col {
@@ -145,6 +149,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     border-radius: 50%;
     background: rgba(16, 19, 17, 0.45);
     color: var(--paper-bright);
+    touch-action: none;
     -webkit-tap-highlight-color: transparent;
     -webkit-touch-callout: none;
     -webkit-user-select: none;

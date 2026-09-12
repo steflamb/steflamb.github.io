@@ -277,7 +277,7 @@ const perturbationBenchmarkPaper = publications.find((p) => p.title.startsWith('
               a model trained purely in simulation so it holds up when tested in the real world.
             </p>
             <a class="text-link" href="https://arxiv.org/abs/2607.04770" target="_blank" rel="noreferrer">
-              Read Davide’s paper <span aria-hidden="true">↗</span>
+              Read Davide’s paper <span aria-hidden="true">↗︎</span>
             </a>
           </div>
         </article>
@@ -301,7 +301,7 @@ const perturbationBenchmarkPaper = publications.find((p) => p.title.startsWith('
               physical vehicle.
             </p>
             <a class="text-link" href="https://arxiv.org/abs/2607.04953" target="_blank" rel="noreferrer">
-              Read the paper <span aria-hidden="true">↗</span>
+              Read the paper <span aria-hidden="true">↗︎</span>
             </a>
           </div>
         </article>
@@ -317,7 +317,7 @@ const perturbationBenchmarkPaper = publications.find((p) => p.title.startsWith('
             </p>
           </div>
           <a class="text-link" href={realityGapPaper.paper} target="_blank" rel="noreferrer">
-            Read the paper <span aria-hidden="true">↗</span>
+            Read the paper <span aria-hidden="true">↗︎</span>
           </a>
         </li>
         <li class="contributor-row" data-reveal>
@@ -329,7 +329,7 @@ const perturbationBenchmarkPaper = publications.find((p) => p.title.startsWith('
             </p>
           </div>
           <a class="text-link" href={perturbationBenchmarkPaper.paper} target="_blank" rel="noreferrer">
-            Read the paper <span aria-hidden="true">↗</span>
+            Read the paper <span aria-hidden="true">↗︎</span>
           </a>
         </li>
       </ul>
@@ -337,20 +337,81 @@ const perturbationBenchmarkPaper = publications.find((p) => p.title.startsWith('
   </section>
 
   <section class="section section-dark" aria-labelledby="garage-teaser-heading">
-    <div class="container-wide two-column-story">
-      <aside class="story-aside" data-reveal>
-        <p class="eyebrow eyebrow-light">Just for fun</p>
-      </aside>
-      <div class="story-copy" data-reveal>
-        <h2 id="garage-teaser-heading" class="sr-only">Drive a 3D model of Fortuna</h2>
+    <div class="container-wide demo-showcase">
+      <div class="video-frame" id="fortuna-3d-frame">
+        <canvas id="fortuna-3d-preview" aria-label="Rotating 3D model of Fortuna"></canvas>
+      </div>
+      <div class="demo-showcase-copy">
+        <p class="feature-kicker">Just for fun</p>
+        <h2 id="garage-teaser-heading">I also scanned Fortuna into a 3D model.</h2>
         <p>
-          I also scanned Fortuna into a 3D model. <strong>You can take it for a spin</strong>{' '}
-          around an empty lot, no research question required.
+          You can take it for a spin around an empty lot, no research question required.
         </p>
-        <a class="text-link text-link-light" href="/garage/">
-          Open the garage <span aria-hidden="true">↗</span>
+        <a class="text-link" href="/garage/">
+          Open it up <span aria-hidden="true">↗︎</span>
         </a>
       </div>
     </div>
   </section>
 </BaseLayout>
+
+<script>
+  import * as THREE from 'three';
+  import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+  import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
+
+  const canvas = document.getElementById('fortuna-3d-preview') as HTMLCanvasElement | null;
+  const frame = document.getElementById('fortuna-3d-frame') as HTMLElement | null;
+
+  if (canvas && frame) {
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(38, 1, 0.1, 100);
+    camera.position.set(3.4, 1.7, 4.6);
+    camera.lookAt(0, 0.3, 0);
+
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+
+    scene.add(new THREE.HemisphereLight('#ffffff', '#1b1f1c', 1.1));
+    const key = new THREE.DirectionalLight('#fff6e8', 2.2);
+    key.position.set(4, 6, 3);
+    scene.add(key);
+    const rim = new THREE.DirectionalLight('#ff6034', 0.6);
+    rim.position.set(-4, 2, -4);
+    scene.add(rim);
+
+    let model: THREE.Object3D | null = null;
+    const dracoLoader = new DRACOLoader();
+    dracoLoader.setDecoderPath('/draco/');
+    const loader = new GLTFLoader();
+    loader.setDRACOLoader(dracoLoader);
+    loader.load('/models/fortuna.glb', (gltf) => {
+      model = gltf.scene;
+      const box = new THREE.Box3().setFromObject(model);
+      const center = new THREE.Vector3();
+      box.getCenter(center);
+      model.position.sub(center);
+      scene.add(model);
+    });
+
+    function resize() {
+      const w = frame!.clientWidth;
+      const h = frame!.clientHeight;
+      if (!w || !h) return;
+      renderer.setSize(w, h, false);
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+    }
+
+    const resizeObserver = new ResizeObserver(resize);
+    resizeObserver.observe(frame);
+    resize();
+
+    function tick() {
+      requestAnimationFrame(tick);
+      if (model) model.rotation.y += 0.005;
+      renderer.render(scene, camera);
+    }
+    tick();
+  }
+</script>
