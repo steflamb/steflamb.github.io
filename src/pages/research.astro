@@ -1,0 +1,280 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ResearchLoop from '../components/ResearchLoop.astro';
+import { profileLinks, publications } from '../data/site';
+
+const cam2simPaper = publications.find((p) => p.title.startsWith('Cam2Sim'))!;
+const realityGapPaper = publications.find((p) => p.title.startsWith('A Multi-Modality Evaluation'))!;
+const perturbationBenchmarkPaper = publications.find((p) => p.title.startsWith('Benchmarking Image Perturbations'))!;
+
+const themes = [
+  {
+    number: '01',
+    title: 'Reality-gap measurement',
+    copy: 'Measure which actuation, perception, and behavioral differences matter when a test moves between virtual and physical environments.',
+    tags: ['SiL', 'ViL', 'Mixed reality', 'Physical testing'],
+  },
+  {
+    number: '02',
+    title: 'Robustness under perturbation',
+    copy: 'Stress camera and LiDAR pipelines, then follow the effect beyond model accuracy into timing, planning, control, and system behavior.',
+    tags: ['Camera', 'LiDAR', 'Closed loop', 'PerturbationDrive'],
+  },
+  {
+    number: '03',
+    title: 'Focused failure discovery',
+    copy: 'Use near misses and predicted future states to spend the testing budget where failures are more likely to surface.',
+    tags: ['Forecasting', 'Search', 'CARLA', 'System testing'],
+  },
+  {
+    number: '04',
+    title: 'Real-to-simulation reconstruction',
+    copy: 'Turn recorded road scenes into replayable simulations that preserve the geometry, trajectory, and visual character of the original drive.',
+    tags: ['Cam2Sim', 'Gaussian Splatting', 'OSM', 'CARLA'],
+  },
+  {
+    number: '05',
+    title: 'Execution environments',
+    copy: 'Build the interfaces and experimental infrastructure that let the same autonomous-driving question run at different levels of fidelity.',
+    tags: ['ROS', 'Hardware-in-loop', 'Tooling', 'Reproducibility'],
+  },
+  {
+    number: '06',
+    title: 'Research platforms',
+    copy: 'Treat the vehicle, simulators, datasets, and documentation as shared infrastructure that enables teams—not as one-off demos.',
+    tags: ['Fortuna', 'Open artifacts', 'Supervision', 'Field work'],
+  },
+];
+---
+
+<BaseLayout
+  title="Research — Stefano Carlo Lambertenghi"
+  description="Research on the reality gap, autonomous-driving robustness, failure forecasting, and real-to-simulation reconstruction."
+>
+  <section class="page-hero">
+    <div class="page-hero-inner container-wide">
+      <div>
+        <p class="eyebrow">Research / simulation ↔ reality</p>
+        <h1 class="page-title">Test the system, not just the <em>model.</em></h1>
+      </div>
+      <div>
+        <div class="research-hero-mark diagram-plate">
+          <img
+            src="/images/methodology.png"
+            alt="Diagram of the sim-to-real testing approach: a scenario runs through both physics and perception, is measured against real behavior, and mitigations feed back into the system"
+            width="1800"
+            height="495"
+            loading="eager"
+          />
+        </div>
+        <p class="page-hero-copy">
+          My research is about the sim-to-real gap: <strong>which testing results still hold when
+          an autonomous system moves from simulation into the physical world?</strong>
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="themes-heading">
+    <div class="container-wide">
+      <div class="section-heading" data-reveal>
+        <div>
+          <p class="eyebrow">Research themes</p>
+          <div class="diagram-plate theme-heading-diagram">
+            <img
+              src="/images/reality-gap.png"
+              alt="Diagram showing the gap between an autonomous driving system's simulated behavior and its real behavior on the same road"
+              width="1200"
+              height="1060"
+              loading="lazy"
+            />
+          </div>
+        </div>
+        <div>
+          <h2 id="themes-heading" class="display-title">One problem, examined from six directions.</h2>
+          <p class="section-lede">
+            The common thread is transferability: understanding what a convenient test setup
+            preserves, what it hides, and how to close that gap.
+          </p>
+        </div>
+      </div>
+
+      <div class="theme-grid">
+        {themes.map((theme) => (
+          <article class="theme-card" data-reveal>
+            <span class="theme-number">{theme.number}</span>
+            <h3>{theme.title}</h3>
+            <p>{theme.copy}</p>
+            <div class="theme-tags" aria-label={`${theme.title} topics`}>
+              {theme.tags.map((tag) => <span>{tag}</span>)}
+            </div>
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="demos-heading">
+    <div class="container-wide">
+      <div class="section-heading" data-reveal>
+        <p class="eyebrow">Seeing it work</p>
+        <div>
+          <h2 id="demos-heading" class="display-title">Three demos, the same research question.</h2>
+          <p class="section-lede">
+            Papers describe the method. These recordings show what it actually looks like.
+          </p>
+        </div>
+      </div>
+
+      <div class="demo-showcase-list">
+        <div class="demo-showcase" data-reveal>
+          <div class="video-frame" style="aspect-ratio: 1600 / 502;">
+            <video
+              src="/videos/cam2sim-demo.mp4"
+              poster="/images/demo-comparison-poster.jpg"
+              controls
+              muted
+              playsinline
+              preload="none"
+              style="object-fit: contain;"
+              aria-label="Side-by-side comparison of a Cam2Sim CARLA reconstruction and the same scenario rendered through Gaussian Splatting"
+            ></video>
+          </div>
+          <div class="demo-showcase-copy">
+            <p class="feature-kicker">Cam2Sim in action</p>
+            <h3>Real drives, replayed in simulation.</h3>
+            <p>
+              Cam2Sim turns a recorded drive into a closed-loop CARLA scenario: it extracts the
+              ego trajectory and road layout from the vehicle’s camera and localization data,
+              places the parked vehicles it detected, and trains a Gaussian Splatting model so
+              the simulated camera feed still looks like the street it came from. This clip was
+              built from Fortuna’s end-to-end recording: on the left, the CARLA reconstruction;
+              on the right, the same scenario rendered through Gaussian Splatting.
+            </p>
+            <a class="text-link" href={cam2simPaper.paper} target="_blank" rel="noreferrer">
+              Read the paper <span aria-hidden="true">↗</span>
+            </a>
+          </div>
+        </div>
+
+        <div class="demo-showcase" data-reveal>
+          <div class="video-frame">
+            <video
+              src="/videos/small-vs-full-scale.mp4"
+              poster="/images/media10-poster.jpg"
+              controls
+              muted
+              playsinline
+              preload="none"
+              aria-label="Multi-panel view comparing a small-scale digital-twin vehicle and its full-scale counterpart during a mixed-reality driving test"
+            ></video>
+          </div>
+          <div class="demo-showcase-copy">
+            <p class="feature-kicker">Small scale ↔ full scale</p>
+            <h3>The same reality gap, at two scales.</h3>
+            <p>
+              For this study I used an open-source small-scale vehicle with its own Unity digital
+              twin, driven on two tracks—a simple "nominal" room and a cluttered "generalization"
+              room—to compare simulation, vehicle-in-the-loop, and mixed-reality testing against
+              real driving, for both an end-to-end model and a modular pipeline. The same
+              questions now run on Fortuna at full scale.
+            </p>
+            <a class="text-link" href={realityGapPaper.paper} target="_blank" rel="noreferrer">
+              Read the paper <span aria-hidden="true">↗</span>
+            </a>
+          </div>
+        </div>
+
+        <div class="demo-showcase" data-reveal>
+          <div class="video-frame">
+            <video
+              src="/videos/perturbationdrive-demo.mp4"
+              poster="/images/perturbationdrive-poster.jpg"
+              controls
+              muted
+              playsinline
+              preload="none"
+              aria-label="Talk recording demonstrating PerturbationDrive, a tool that injects camera perturbations such as rain across multiple simulators"
+            ></video>
+          </div>
+          <div class="demo-showcase-copy">
+            <p class="feature-kicker">PerturbationDrive in action</p>
+            <h3>The same perturbation, any simulator.</h3>
+            <p>
+              PerturbationDrive generates camera perturbations—like rain, or a corrupted
+              feed—and applies them through a simulator adapter, so the same scenario runs
+              unchanged across Udacity's simulator, a small-scale digital twin, or a full driving
+              stack. This recording walks through the scenario generator and simulator adapter
+              behind the ICST 2025 benchmark.
+            </p>
+            <a class="text-link" href={perturbationBenchmarkPaper.paper} target="_blank" rel="noreferrer">
+              Read the paper <span aria-hidden="true">↗</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section-dark" aria-labelledby="workflow-heading">
+    <div class="container-wide">
+      <div class="section-heading" data-reveal>
+        <p class="eyebrow eyebrow-light">How I work</p>
+        <div>
+          <h2 id="workflow-heading" class="display-title">
+            Every physical result should make the next virtual test <em>better.</em>
+          </h2>
+          <p class="section-lede">
+            This loop connects empirical software engineering with the practical constraints of
+            robotics: latency, imperfect sensing, hardware, and safety.
+          </p>
+        </div>
+      </div>
+      <ResearchLoop />
+    </div>
+  </section>
+
+  <section class="section section-signal" aria-labelledby="open-heading">
+    <div class="container-wide two-column-story">
+      <aside class="story-aside" data-reveal>
+        <p class="eyebrow">Research in the open</p>
+      </aside>
+      <div class="story-copy" data-reveal>
+        <h2 id="open-heading" class="sr-only">Open research</h2>
+        <p>
+          A result is more valuable when someone else can interrogate it. The work is accompanied
+          wherever possible by <strong>code, datasets, replication packages, and executable
+          examples</strong>—from PerturbationDrive to Cam2Sim and vehicle-level artifacts.
+        </p>
+        <div class="hero-actions">
+          <a class="button button-dark" href={profileLinks.researchGroup} target="_blank" rel="noreferrer">
+            Browse open-source work
+          </a>
+          <a class="button button-dark" href="/publications/">Read the papers</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="nanodrones-heading">
+    <div class="container-wide two-column-story">
+      <aside class="story-aside" data-reveal>
+        <p class="eyebrow">Before the reality gap</p>
+      </aside>
+      <div class="story-copy" data-reveal>
+        <h2 id="nanodrones-heading" class="sr-only">Earlier work on nano-drones</h2>
+        <p>
+          Before autonomous cars, I worked on autonomous nano-drones. At the Dalle Molle
+          Institute for Artificial Intelligence (IDSIA) in Lugano, I helped fit a
+          relative-localization neural network onto a 40-gram nano-quadrotor: a single onboard
+          camera and under 100 mW of power, enough to track a peer drone in real time
+          (IEEE ICRA 2023). The platform changed; the question didn’t: what has to be true for a
+          learned model to work outside the lab it was trained in?
+        </p>
+        <a class="text-link" href="https://arxiv.org/abs/2303.01940" target="_blank" rel="noreferrer">
+          Read the paper <span aria-hidden="true">↗</span>
+        </a>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

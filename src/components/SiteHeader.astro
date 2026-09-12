@@ -1,0 +1,108 @@
+---
+import { navItems } from '../data/site';
+
+const currentPath = Astro.url.pathname;
+const isCurrent = (href: string) =>
+  href === '/' ? currentPath === '/' : currentPath.startsWith(href);
+---
+
+<header class="site-header" data-header>
+  <div class="header-inner container-wide">
+    <a class="wordmark" href="/" aria-label="Stefano Carlo Lambertenghi, home">
+      <span class="wordmark-mark" aria-hidden="true">SL</span>
+      <span class="wordmark-name">Stefano Lambertenghi</span>
+    </a>
+
+    <button
+      class="nav-toggle"
+      type="button"
+      aria-expanded="false"
+      aria-controls="primary-navigation"
+      data-nav-toggle
+    >
+      <span>Menu</span>
+      <span class="nav-toggle-lines" aria-hidden="true"><i></i><i></i></span>
+    </button>
+
+    <nav id="primary-navigation" class="primary-nav" aria-label="Primary" data-nav>
+      <ul>
+        {navItems.map((item) => (
+          <li>
+            <a href={item.href} aria-current={isCurrent(item.href) ? 'page' : undefined}>
+              {item.label}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<script>
+  const header = document.querySelector('[data-header]');
+  const toggle = document.querySelector<HTMLButtonElement>('[data-nav-toggle]');
+  const nav = document.querySelector<HTMLElement>('[data-nav]');
+  const pageRegions = document.querySelectorAll<HTMLElement>('main, .site-footer');
+  const desktopQuery = window.matchMedia('(min-width: 54.01rem)');
+
+  const setPageInert = (inert: boolean) => {
+    pageRegions.forEach((region) => {
+      region.inert = inert;
+    });
+  };
+
+  const closeMenu = (returnFocus = false) => {
+    const wasOpen = toggle?.getAttribute('aria-expanded') === 'true';
+    toggle?.setAttribute('aria-expanded', 'false');
+    nav?.removeAttribute('data-open');
+    document.body.removeAttribute('data-menu-open');
+    setPageInert(false);
+    if (returnFocus && wasOpen) toggle?.focus();
+  };
+
+  const openMenu = () => {
+    toggle?.setAttribute('aria-expanded', 'true');
+    nav?.setAttribute('data-open', '');
+    document.body.setAttribute('data-menu-open', '');
+    setPageInert(true);
+    nav?.querySelector<HTMLAnchorElement>('a')?.focus();
+  };
+
+  toggle?.addEventListener('click', () => {
+    if (toggle.getAttribute('aria-expanded') === 'true') closeMenu(true);
+    else openMenu();
+  });
+
+  nav?.querySelectorAll('a').forEach((link) => link.addEventListener('click', () => closeMenu()));
+  window.addEventListener('keydown', (event) => {
+    const isOpen = toggle?.getAttribute('aria-expanded') === 'true';
+    if (!isOpen) return;
+
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      closeMenu(true);
+      return;
+    }
+
+    if (event.key === 'Tab' && toggle && nav) {
+      const focusable = [toggle, ...nav.querySelectorAll<HTMLAnchorElement>('a')];
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    }
+  });
+
+  desktopQuery.addEventListener('change', (event) => {
+    if (event.matches) closeMenu();
+  });
+
+  const updateHeader = () => header?.toggleAttribute('data-scrolled', window.scrollY > 18);
+  updateHeader();
+  window.addEventListener('scroll', updateHeader, { passive: true });
+</script>

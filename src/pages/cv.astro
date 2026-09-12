@@ -1,0 +1,90 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { profileLinks, publications } from '../data/site';
+---
+
+<BaseLayout
+  title="CV — Stefano Carlo Lambertenghi"
+  description="A concise web CV for Stefano Carlo Lambertenghi, autonomous-systems researcher at fortiss and TUM."
+>
+  <article class="cv-sheet">
+    <header class="cv-heading">
+      <div>
+        <p class="eyebrow">Curriculum vitae / web edition</p>
+        <h1>Stefano Carlo Lambertenghi</h1>
+      </div>
+      <p>
+        Autonomous-systems researcher working across software testing, simulation, and physical
+        vehicle experiments in Munich.
+      </p>
+    </header>
+
+    <section class="cv-block">
+      <h2>Current work</h2>
+      <div>
+        <article class="cv-entry">
+          <h3>Researcher · Automated Software Testing</h3>
+          <p class="cv-entry-meta">fortiss · Munich</p>
+          <p>
+            Research and experimental engineering for autonomous-driving validation across
+            simulation, mixed reality, hardware-in-the-loop, and full-size vehicle operation.
+          </p>
+        </article>
+        <article class="cv-entry">
+          <h3>Doctoral researcher</h3>
+          <p class="cv-entry-meta">Technical University of Munich</p>
+          <p>
+            Empirical research on the transferability of autonomous-driving tests, with work on
+            reality-gap measurement, perturbation testing, and failure forecasting.
+          </p>
+        </article>
+      </div>
+    </section>
+
+    <section class="cv-block">
+      <h2>Research platform</h2>
+      <div class="cv-entry">
+        <h3>Fortuna · Full-size autonomous-driving research vehicle</h3>
+        <p class="cv-entry-meta">Platform recovery, integration, validation, and operation</p>
+        <p>
+          Work across drive-by-wire control, ROS, camera and LiDAR systems, modular and end-to-end
+          driving stacks, simulation integration, and repeatable real-world experiments.
+        </p>
+      </div>
+    </section>
+
+    <section class="cv-block">
+      <h2>Selected publications</h2>
+      <div>
+        {publications.slice(0, 5).map((publication) => (
+          <article class="cv-entry">
+            <h3><a href={publication.paper}>{publication.title}</a></h3>
+            <p class="cv-entry-meta">{publication.venue} · {publication.year}</p>
+            {publication.note && <p>{publication.note}</p>}
+          </article>
+        ))}
+      </div>
+    </section>
+
+    <section class="cv-block">
+      <h2>Profiles</h2>
+      <div class="cv-entry">
+        <h3>Research and code</h3>
+        <p>
+          <a href={profileLinks.dblp}>DBLP</a> · <a href={profileLinks.github}>GitHub</a>{' '}
+          · <a href={profileLinks.researchGroup}>fortiss/TUM research group</a>{' '}
+          · <a href={profileLinks.linkedin}>LinkedIn</a>
+        </p>
+      </div>
+    </section>
+
+    <div class="cv-actions">
+      <button class="button button-dark" type="button" data-print>Print / save PDF</button>
+      <a class="button button-dark" href={profileLinks.email}>Request full CV</a>
+    </div>
+  </article>
+
+  <script>
+    document.querySelector('[data-print]')?.addEventListener('click', () => window.print());
+  </script>
+</BaseLayout>

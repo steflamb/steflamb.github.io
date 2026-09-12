@@ -1,0 +1,75 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { profileLinks } from '../data/site';
+---
+
+<BaseLayout
+  title="About — Stefano Carlo Lambertenghi"
+  description="About Stefano Carlo Lambertenghi, an autonomous-systems researcher working between software engineering, machine learning, and robotics."
+>
+  <section class="page-hero">
+    <div class="page-hero-inner container-wide">
+      <div>
+        <p class="eyebrow">About / researcher + engineer</p>
+        <h1 class="page-title">Between code and the <em>road.</em></h1>
+      </div>
+      <p class="page-hero-copy">
+        I’m Stefano, an autonomous-systems researcher working at the intersection of{' '}
+        <strong>software engineering, machine learning, and robotics.</strong>
+      </p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container-wide about-layout">
+      <div class="about-portrait" data-reveal>
+        <div class="diagram-plate">
+          <img
+            src="/images/methodology.png"
+            alt="Diagram of the reality-gap testing approach: a scenario runs through both physics and perception, is measured against real behavior, and mitigations feed back into the system"
+            width="1800"
+            height="495"
+            loading="lazy"
+          />
+        </div>
+        <div class="about-portrait-label"><span>Munich, DE</span><span>Field / Lab / Code</span></div>
+      </div>
+      <div class="about-copy" data-reveal>
+        <p class="eyebrow">The short version</p>
+        <h2>I want simulations to earn our trust.</h2>
+        <p>
+          At fortiss and the Technical University of Munich, I research how autonomous-driving
+          tests transfer between simulated, mixed-reality, hardware-in-the-loop, and physical
+          environments.
+        </p>
+        <p>
+          That work is deliberately hands-on. It spans experimental design and peer-reviewed
+          studies, but also ROS integration, sensors, vehicle interfaces, debugging, and the
+          operational work needed to run a full-size research car safely and repeatedly.
+        </p>
+        <p>
+          Before Munich, I studied artificial intelligence at USI in Lugano and worked at the
+          Dalle Molle Institute for Artificial Intelligence (IDSIA) on embedded perception for
+          autonomous nano-drones—fitting a relative-localization neural network onto a 40-gram
+          quadrotor so it could track a peer drone in real time using a single onboard camera and
+          under 100 mW of power (<a href="https://arxiv.org/abs/2303.01940" target="_blank" rel="noreferrer">IEEE ICRA 2023</a>).
+          The scale changed; the question did not: what has to be true for learned behavior to
+          work outside the dataset?
+        </p>
+
+        <dl class="about-details">
+          <div><dt>Current</dt><dd>Researcher at fortiss · Doctoral researcher at TUM</dd></div>
+          <div><dt>Focus</dt><dd>Testing and validation of autonomous systems</dd></div>
+          <div><dt>Methods</dt><dd>Simulation, mixed reality, field experiments, empirical software engineering</dd></div>
+          <div><dt>Platform</dt><dd>Fortuna, a full-size autonomous-driving research vehicle</dd></div>
+        </dl>
+
+        <div class="hero-actions">
+          <a class="button button-dark" href={profileLinks.email}>Email me</a>
+          <a class="button button-dark" href={profileLinks.github} target="_blank" rel="noreferrer">GitHub</a>
+          <a class="button button-dark" href="/cv/">View CV</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

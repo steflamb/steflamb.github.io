@@ -1,0 +1,12 @@
+dist/
+.astro/
+node_modules/
+.env
+.env.*
+!.env.example
+.DS_Store
+.idea/
+.vscode/
+
+# Raw source images/video (large originals; optimized copies live in public/images and public/videos)
+pictures/

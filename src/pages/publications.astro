@@ -1,0 +1,55 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { profileLinks, publications } from '../data/site';
+---
+
+<BaseLayout
+  title="Publications — Stefano Carlo Lambertenghi"
+  description="Selected publications on autonomous-driving testing, the simulation-to-reality gap, robustness, and failure discovery."
+>
+  <section class="page-hero publications-hero">
+    <div class="page-hero-inner container-wide">
+      <div>
+        <p class="eyebrow">Selected publications / 2024–2026</p>
+        <h1 class="page-title">The evidence <em>layer.</em></h1>
+      </div>
+      <div class="page-hero-copy">
+        <p>
+          Papers are organized as a connected research story—not a wall of citations. Each asks
+          what our testing environment can and cannot tell us about <strong>the complete autonomous
+          system.</strong>
+        </p>
+        <div class="hero-actions">
+          <a class="button-secondary" href={profileLinks.dblp} target="_blank" rel="noreferrer">
+            DBLP profile
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" aria-label="Selected publications">
+    <div class="container-wide">
+      <ol class="publications-list">
+        {publications.map((publication) => (
+          <li class="publication-row" data-reveal>
+            <span class="publication-row-year">{publication.year}</span>
+            <span class="publication-row-venue">{publication.venue}</span>
+            <article class="publication-row-content">
+              <h2>{publication.title}</h2>
+              <p class="publication-authors">{publication.authors}</p>
+              <p class="publication-summary">{publication.summary}</p>
+              {publication.note && <p class="publication-note">{publication.note}</p>}
+            </article>
+            <div class="publication-links">
+              <a href={publication.paper} target="_blank" rel="noreferrer">Paper ↗</a>
+              {publication.code && (
+                <a href={publication.code} target="_blank" rel="noreferrer">Artifact ↗</a>
+              )}
+            </div>
+          </li>
+        ))}
+      </ol>
+    </div>
+  </section>
+</BaseLayout>
