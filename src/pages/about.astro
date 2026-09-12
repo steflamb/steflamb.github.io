@@ -7,8 +7,23 @@ import { profileLinks } from '../data/site';
   title="About — Stefano Carlo Lambertenghi"
   description="About Stefano Carlo Lambertenghi, an autonomous-systems researcher working between software engineering, machine learning, and robotics."
 >
-  <section class="page-hero">
-    <div class="page-hero-inner container-wide">
+  <section class="about-photo-section">
+    <div class="about-portrait" data-reveal>
+      <img
+        class="about-portrait-photo"
+        src="/images/me-and-fortuna.jpg"
+        alt="Stefano Carlo Lambertenghi standing next to Fortuna"
+        width="1400"
+        height="1050"
+        loading="eager"
+      />
+      <div class="about-portrait-scrim" aria-hidden="true"></div>
+      <div class="about-portrait-label"><span>Munich, DE</span></div>
+    </div>
+  </section>
+
+  <section class="page-hero page-hero-tight">
+    <div class="page-hero-inner container-wide about-hero-compact">
       <div>
         <p class="eyebrow">About / researcher + engineer</p>
         <h1 class="page-title">About <em>me.</em></h1>
@@ -21,19 +36,7 @@ import { profileLinks } from '../data/site';
   </section>
 
   <section class="section">
-    <div class="container-wide about-layout">
-      <div class="about-portrait" data-reveal>
-        <img
-          class="about-portrait-photo"
-          src="/images/me-and-fortuna.jpg"
-          alt="Stefano Carlo Lambertenghi standing next to Fortuna"
-          width="1400"
-          height="1050"
-          loading="lazy"
-        />
-        <div class="about-portrait-scrim" aria-hidden="true"></div>
-        <div class="about-portrait-label"><span>Munich, DE</span></div>
-      </div>
+    <div class="container-wide">
       <div class="about-copy" data-reveal>
         <p class="eyebrow">The short version</p>
         <h2>Background.</h2>
@@ -55,6 +58,11 @@ import { profileLinks } from '../data/site';
           under 100 mW of power (<a href="https://arxiv.org/abs/2303.01940" target="_blank" rel="noreferrer">IEEE ICRA 2023</a>).
           The scale changed; the question did not: what has to be true for learned behavior to
           work outside the dataset?
+        </p>
+        <p>
+          Mostly, I just like playing with hardware. Fortuna's recovery started as work and
+          became a bit of a hobby; scanning it into a 3D model afterwards was an excuse to keep
+          playing with it.
         </p>
 
         <dl class="about-details">

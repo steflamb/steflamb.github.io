@@ -63,6 +63,16 @@ export const publications: Publication[] = [
     code: 'https://github.com/ast-fortiss-tum/cam2sim',
   },
   {
+    year: '2026',
+    venue: 'Science of Computer Programming',
+    title: 'PerturbationDrive: A Framework for Perturbation-Based Testing of ADAS',
+    authors: 'Hannes Leonhard, Stefano Carlo Lambertenghi, Andrea Stocco',
+    summary:
+      'PerturbationDrive started as the benchmark behind our ICST 2025 paper, but we wanted it to work as reusable infrastructure rather than a one-off study. This paper describes the resulting framework: more than 30 image perturbations, offline evaluation on static datasets, and online closed-loop testing across multiple simulators, combined with procedural road generation and search-based testing.',
+    paper: 'https://arxiv.org/abs/2603.23661',
+    code: 'https://github.com/ast-fortiss-tum/perturbation-drive',
+  },
+  {
     year: '2025',
     venue: 'ASE',
     title: 'A Multi-Modality Evaluation of the Reality Gap in Autonomous Driving Systems',
