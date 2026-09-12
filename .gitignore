@@ -10,3 +10,6 @@ node_modules/
 
 # Raw source images/video (large originals; optimized copies live in public/images and public/videos)
 pictures/
+
+# Raw CV export (clean copy served from public/files)
+/Awesome_CV2*.pdf

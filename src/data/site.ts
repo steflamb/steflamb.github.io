@@ -13,6 +13,8 @@ export const profileLinks = {
   researchGroup: 'https://github.com/ast-fortiss-tum',
   dblp: 'https://dblp.org/pid/341/5500',
   linkedin: 'https://www.linkedin.com/in/stefano-carlo-lambertenghi-a30b9592/',
+  scholar: 'https://scholar.google.com/citations?hl=en&user=GRb-W38AAAAJ',
+  cvPdf: '/files/stefano-lambertenghi-cv.pdf',
 };
 
 export type Publication = {

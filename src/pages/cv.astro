@@ -1,6 +1,13 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { profileLinks, publications } from '../data/site';
+
+const nanodronePaper = {
+  title: 'Ultra-Low Power Deep Learning-based Monocular Relative Localization Onboard Nano-Quadrotors',
+  venue: 'ICRA',
+  year: '2023',
+  paper: 'https://arxiv.org/abs/2303.01940',
+};
 ---
 
 <BaseLayout
@@ -9,6 +16,7 @@ import { profileLinks, publications } from '../data/site';
 >
   <article class="cv-sheet">
     <header class="cv-heading">
+      <img class="cv-photo" src="/images/me.jpg" alt="Stefano Carlo Lambertenghi" width="600" height="601" loading="eager" />
       <div>
         <p class="eyebrow">Curriculum vitae / web edition</p>
         <h1>Stefano Carlo Lambertenghi</h1>
@@ -23,33 +31,99 @@ import { profileLinks, publications } from '../data/site';
       <h2>Current work</h2>
       <div>
         <article class="cv-entry">
-          <h3>Researcher · Automated Software Testing</h3>
-          <p class="cv-entry-meta">fortiss · Munich</p>
+          <h3>Scientific Researcher</h3>
+          <p class="cv-entry-meta">fortiss GmbH · Munich · Jun 2023–Now</p>
           <p>
-            Research and experimental engineering for autonomous-driving validation across
-            simulation, mixed reality, hardware-in-the-loop, and full-size vehicle operation.
+            Responsible for the development, deployment, operation, and maintenance of Fortuna, a
+            Volkswagen Passat adapted and certified for autonomous driving on public roads.
+            Restored the platform to full operational status and lead its use for research and
+            testing.
+          </p>
+          <p>
+            Designed and ran nearly 100 hours of autonomous-driving experiments on public roads;
+            deployed and adapted Autoware and Apollo, including trajectory-planning changes for
+            narrow two-way urban roads, and end-to-end models from NVIDIA DAVE-2 to recent CARLA
+            Leaderboard agents.
           </p>
         </article>
         <article class="cv-entry">
-          <h3>Doctoral researcher</h3>
-          <p class="cv-entry-meta">Technical University of Munich</p>
+          <h3>Doctoral Candidate</h3>
+          <p class="cv-entry-meta">Technical University of Munich · Jun 2023–Now</p>
           <p>
-            Empirical research on the transferability of autonomous-driving tests, with work on
-            reality-gap measurement, perturbation testing, and failure forecasting.
+            Topic: measuring and mitigating the sim-to-real gap in testing of cyber-physical
+            systems.
           </p>
         </article>
       </div>
     </section>
 
     <section class="cv-block">
-      <h2>Research platform</h2>
-      <div class="cv-entry">
-        <h3>Fortuna · Full-size autonomous-driving research vehicle</h3>
-        <p class="cv-entry-meta">Platform recovery, integration, validation, and operation</p>
-        <p>
-          Work across drive-by-wire control, ROS, camera and LiDAR systems, modular and end-to-end
-          driving stacks, simulation integration, and repeatable real-world experiments.
-        </p>
+      <h2>Earlier experience</h2>
+      <div>
+        <article class="cv-entry">
+          <h3>Intern</h3>
+          <p class="cv-entry-meta">IDSIA, Dalle Molle Institute for AI · Lugano · Sep 2022–Jun 2023</p>
+          <p>
+            Developed ultra-low-power deep-learning-based monocular relative localization for
+            nano-quadrotors, enabling real-time onboard inference on resource-constrained embedded
+            hardware.
+          </p>
+        </article>
+        <article class="cv-entry">
+          <h3>Intern</h3>
+          <p class="cv-entry-meta">eVs Embedded Vision Systems · Verona · May–Aug 2019</p>
+          <p>
+            Developed FPGA-based vehicle classification algorithms using support vector machines
+            for intelligent guidance systems.
+          </p>
+        </article>
+      </div>
+    </section>
+
+    <section class="cv-block">
+      <h2>Research platforms</h2>
+      <div>
+        <article class="cv-entry">
+          <h3>Fortuna · Full-size autonomous-driving research vehicle</h3>
+          <p class="cv-entry-meta">Platform recovery, integration, validation, and operation</p>
+          <p>
+            Work across drive-by-wire control, ROS, camera and LiDAR systems, modular and
+            end-to-end driving stacks, simulation integration, and repeatable real-world
+            experiments.
+          </p>
+        </article>
+        <article class="cv-entry">
+          <h3>Donkey Car · Small-scale research vehicle</h3>
+          <p class="cv-entry-meta">Digital-twin testing across simulation, VIL, and mixed reality</p>
+          <p>
+            An open-source small-scale platform with its own Unity digital twin, used to compare
+            simulation, vehicle-in-the-loop, and mixed-reality testing against real driving before
+            validating results on Fortuna at full scale.
+          </p>
+        </article>
+      </div>
+    </section>
+
+    <section class="cv-block">
+      <h2>Education</h2>
+      <div>
+        <article class="cv-entry">
+          <h3>Doctoral Candidate</h3>
+          <p class="cv-entry-meta">TUM, Technical University of Munich · Munich · Jun 2023–Now</p>
+        </article>
+        <article class="cv-entry">
+          <h3>MSc in Artificial Intelligence</h3>
+          <p class="cv-entry-meta">USI, Università della Svizzera Italiana · Lugano · Oct 2020–Sep 2022</p>
+          <p>
+            Thesis: drone-to-drone on-board relative pose estimation and control of nano-class
+            autonomous UAVs. GPA 9.21, summa cum laude.
+          </p>
+        </article>
+        <article class="cv-entry">
+          <h3>Bachelor’s in IT Science and Technology</h3>
+          <p class="cv-entry-meta">UNIVR, Università di Verona · Verona · Oct 2016–Jul 2020</p>
+          <p>Thesis: interactive holographic displays for advertisement. GPA 97/110.</p>
+        </article>
       </div>
     </section>
 
@@ -63,7 +137,20 @@ import { profileLinks, publications } from '../data/site';
             {publication.note && <p>{publication.note}</p>}
           </article>
         ))}
+        <article class="cv-entry">
+          <h3><a href={nanodronePaper.paper}>{nanodronePaper.title}</a></h3>
+          <p class="cv-entry-meta">{nanodronePaper.venue} · {nanodronePaper.year}</p>
+        </article>
       </div>
+    </section>
+
+    <section class="cv-block">
+      <h2>Skills</h2>
+      <dl class="about-details">
+        <div><dt>Programming</dt><dd>Python, C/C++/C#, Java, Swift, MATLAB</dd></div>
+        <div><dt>Frameworks &amp; tools</dt><dd>PyTorch, TensorFlow, OpenCV, ROS, Docker, Unity, Blender, Autoware, Apollo</dd></div>
+        <div><dt>Languages</dt><dd>Italian (native), English (C1)</dd></div>
+      </dl>
     </section>
 
     <section class="cv-block">
@@ -71,7 +158,8 @@ import { profileLinks, publications } from '../data/site';
       <div class="cv-entry">
         <h3>Research and code</h3>
         <p>
-          <a href={profileLinks.dblp}>DBLP</a> · <a href={profileLinks.github}>GitHub</a>{' '}
+          <a href={profileLinks.scholar} target="_blank" rel="noreferrer">Google Scholar</a>{' '}
+          · <a href={profileLinks.dblp}>DBLP</a> · <a href={profileLinks.github}>GitHub</a>{' '}
           · <a href={profileLinks.researchGroup}>fortiss/TUM research group</a>{' '}
           · <a href={profileLinks.linkedin}>LinkedIn</a>
         </p>
@@ -79,8 +167,10 @@ import { profileLinks, publications } from '../data/site';
     </section>
 
     <div class="cv-actions">
+      <a class="button button-dark" href={profileLinks.cvPdf} target="_blank" rel="noreferrer">
+        Open CV (PDF) <span aria-hidden="true">↗</span>
+      </a>
       <button class="button button-dark" type="button" data-print>Print / save PDF</button>
-      <a class="button button-dark" href={profileLinks.email}>Request full CV</a>
     </div>
   </article>
 
