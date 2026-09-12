@@ -166,7 +166,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
   renderer.shadowMap.enabled = true;
-  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.shadowMap.type = THREE.PCFShadowMap;
 
   function resize() {
     const w = section.clientWidth;
@@ -244,6 +244,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   // --- Car ---
   let car: THREE.Object3D | null = null;
   let carLength = 4.6;
+  // The model's front faces -Z; add a half-turn so "forward" (+Z) drives nose-first.
+  const carHeadingOffset = Math.PI;
 
   const dracoLoader = new DRACOLoader();
   dracoLoader.setDecoderPath('/draco/');
@@ -334,13 +336,15 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   const friction = 5;
   const maxTurnRate = 2.0;
 
-  const clock = new THREE.Clock();
+  const timer = new THREE.Timer();
+  timer.connect(document);
   const camPos = new THREE.Vector3(0, 6, -10);
   const camTarget = new THREE.Vector3();
 
   function tick() {
     requestAnimationFrame(tick);
-    const dt = Math.min(clock.getDelta(), 0.05);
+    timer.update();
+    const dt = Math.min(timer.getDelta(), 0.05);
 
     if (input.forward) car_state.speed += accel * dt;
     else if (input.back) car_state.speed -= accel * dt;
@@ -361,7 +365,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     if (car) {
       car.position.x = car_state.x;
       car.position.z = car_state.z;
-      car.rotation.y = car_state.heading;
+      car.rotation.y = car_state.heading + carHeadingOffset;
     }
 
     const camDistance = carLength * 1.9 + 4;

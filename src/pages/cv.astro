@@ -2,12 +2,7 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { profileLinks, publications } from '../data/site';
 
-const nanodronePaper = {
-  title: 'Ultra-Low Power Deep Learning-based Monocular Relative Localization Onboard Nano-Quadrotors',
-  venue: 'ICRA',
-  year: '2023',
-  paper: 'https://arxiv.org/abs/2303.01940',
-};
+const nanodronePaper = publications.find((p) => p.title.startsWith('Ultra-Low Power'))!;
 ---
 
 <BaseLayout
