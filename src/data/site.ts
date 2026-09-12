@@ -9,7 +9,8 @@ export const navItems = [
 ];
 
 export const profileLinks = {
-  email: 'mailto:lambertenghi@fortiss.org',
+  emailUser: 'lambertenghi',
+  emailDomain: 'fortiss.org',
   github: 'https://github.com/steflamb',
   researchGroup: 'https://github.com/ast-fortiss-tum',
   dblp: 'https://dblp.org/pid/341/5500',

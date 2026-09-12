@@ -65,7 +65,14 @@ import { profileLinks } from '../data/site';
         </dl>
 
         <div class="hero-actions">
-          <a class="button button-dark" href={profileLinks.email}>Email me</a>
+          <a
+            class="button button-dark js-email-link"
+            href="#"
+            data-email-user={profileLinks.emailUser}
+            data-email-domain={profileLinks.emailDomain}
+          >
+            Email me
+          </a>
           <a class="button button-dark" href={profileLinks.github} target="_blank" rel="noreferrer">GitHub</a>
           <a class="button button-dark" href="/cv/">View CV</a>
         </div>

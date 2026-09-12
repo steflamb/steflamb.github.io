@@ -12,24 +12,28 @@ const themes = [
     number: '01',
     title: 'Reality-gap measurement',
     copy: 'Measure which actuation, perception, and behavioral differences matter when a test moves between virtual and physical environments.',
+    finding: 'Vehicle-in-the-loop testing reduced the actuation gap, and mixed-reality testing reduced the perception gap, compared with simulation alone.',
     tags: ['SiL', 'ViL', 'Mixed reality', 'Physical testing'],
   },
   {
     number: '02',
     title: 'Robustness under perturbation',
     copy: 'Stress camera and LiDAR pipelines, then follow the effect beyond model accuracy into timing, planning, control, and system behavior.',
+    finding: 'Offline robustness was only weakly predictive of closed-loop failures on the real vehicle; training on perturbed data improved robustness under adverse conditions.',
     tags: ['Camera', 'LiDAR', 'Closed loop', 'PerturbationDrive'],
   },
   {
     number: '03',
     title: 'Focused failure discovery',
     copy: 'Use near misses and predicted future states to spend the testing budget where failures are more likely to surface.',
+    finding: 'Focusing the search around forecasted near misses found failures using a smaller testing budget than an unfocused search.',
     tags: ['Forecasting', 'Search', 'CARLA', 'System testing'],
   },
   {
     number: '04',
     title: 'Real-to-simulation reconstruction',
     copy: 'Turn recorded road scenes into replayable simulations that preserve the geometry, trajectory, and visual character of the original drive.',
+    finding: "It's not a full replacement for the real environment, but it lets us reuse real drives for closed-loop testing.",
     tags: ['Cam2Sim', 'Gaussian Splatting', 'OSM', 'CARLA'],
   },
   {
@@ -57,9 +61,9 @@ const themes = [
         <p class="eyebrow">Research / simulation ↔ reality</p>
         <h1 class="page-title">Research.</h1>
         <p class="page-hero-copy">
-          This page covers the specific questions behind that work: how to measure the gap
-          between simulated and real behavior, how to make a system more robust once that gap is
-          known, and how to reuse real driving data to make simulation more realistic in turn.
+          I study how well results transfer between simulation and the real world, how to make an
+          autonomous-driving system more robust once that gap is measured, and how to reuse real
+          driving data to make simulation more realistic in turn.
         </p>
       </div>
       <div class="diagram-plate research-hero-image-full">
@@ -98,6 +102,9 @@ const themes = [
             <span class="theme-number">{theme.number}</span>
             <h3>{theme.title}</h3>
             <p>{theme.copy}</p>
+            {theme.finding && (
+              <p class="theme-finding"><strong>Found:</strong> {theme.finding}</p>
+            )}
             <div class="theme-tags" aria-label={`${theme.title} topics`}>
               {theme.tags.map((tag) => <span>{tag}</span>)}
             </div>
