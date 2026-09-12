@@ -1,9 +1,8 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import ResearchLoop from '../components/ResearchLoop.astro';
 import { publications } from '../data/site';
 
-const featuredPublications = publications;
+const featuredPublications = publications.slice(0, 4);
 ---
 
 <BaseLayout>
@@ -15,15 +14,13 @@ const featuredPublications = publications;
           Stefano Carlo <em>Lambertenghi.</em>
         </h1>
         <p class="hero-intro">
-          I’m a researcher at fortiss and a doctoral candidate at TUM. I work on testing
-          autonomous-driving systems, in particular the differences between simulation and
-          real-world execution. My work includes simulation, machine learning, autonomous-driving
-          software, and experiments with real vehicles.
+          Researcher at fortiss, doctoral candidate at TUM, and technical lead for Fortuna, our
+          autonomous-driving research vehicle.
         </p>
         <p class="hero-intro">
-          At fortiss I’m the technical lead for Fortuna, an autonomous Volkswagen Passat we use
-          as a research platform. I took responsibility for restoring it after a period of
-          inactivity and now coordinate its technical development and experimental use.
+          I work on testing autonomous-driving systems, in particular the differences between
+          simulation and real-world execution, using simulation, machine learning, and
+          experiments with real vehicles.
         </p>
         <div class="hero-actions">
           <a class="button" href="/fortuna/">Meet Fortuna</a>
@@ -122,24 +119,6 @@ const featuredPublications = publications;
         </a>
         <a class="text-link" href="/fortuna/">Read Fortuna’s story <span aria-hidden="true">↗︎</span></a>
       </div>
-    </div>
-  </section>
-
-  <section class="section section-dark" aria-labelledby="method-heading">
-    <div class="container-wide">
-      <div class="section-heading" data-reveal>
-        <p class="eyebrow eyebrow-light">A continuous loop</p>
-        <div>
-          <h2 id="method-heading" class="display-title">
-            Road tests feed back into <em>simulation.</em>
-          </h2>
-          <p class="section-lede">
-            I connect observations from physical experiments back to simulation, then use what
-            breaks to design more focused tests.
-          </p>
-        </div>
-      </div>
-      <ResearchLoop />
     </div>
   </section>
 
