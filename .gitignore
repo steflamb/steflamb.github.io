@@ -13,3 +13,7 @@ pictures/
 
 # Raw CV export (clean copy served from public/files)
 /Awesome_CV2*.pdf
+
+# Raw 3D source model (huge; decimated/compressed copy lives in public/models)
+/fortuna.obj
+/fortuna.mtl
