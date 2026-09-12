@@ -385,6 +385,7 @@
 
   .hero-title {
     max-width: 12ch;
+    overflow-wrap: break-word;
     font-size: clamp(3.8rem, 7.7vw, 8rem);
     font-weight: 540;
     letter-spacing: -0.072em;
@@ -2075,7 +2076,7 @@
     }
 
     .hero-title {
-      font-size: clamp(3.35rem, 17vw, 5.3rem);
+      font-size: clamp(3.35rem, 15vw, 5.3rem);
     }
 
     .hero-actions {
