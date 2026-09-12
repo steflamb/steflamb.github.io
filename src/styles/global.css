@@ -404,6 +404,10 @@
     line-height: 1.55;
   }
 
+  .hero-intro + .hero-intro {
+    margin-top: 1.1em;
+  }
+
   .hero-intro strong {
     color: var(--paper-bright);
     font-weight: 600;
