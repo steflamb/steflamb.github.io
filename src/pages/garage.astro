@@ -3,17 +3,21 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 ---
 
 <BaseLayout
-  title="Garage — Stefano Carlo Lambertenghi"
-  description="Just for fun: drive a 3D model of Fortuna around an empty lot."
+  title="Just for fun — Stefano Carlo Lambertenghi"
+  description="I also scanned Fortuna into a 3D model. Take it for a spin around an empty lot, no research question required."
   noindex={true}
 >
   <section class="garage">
     <canvas id="garage-canvas"></canvas>
 
     <div class="garage-hud" data-reveal>
-      <p class="eyebrow eyebrow-light">Just for fun</p>
-      <h1>Take Fortuna for a spin.</h1>
+      <p class="eyebrow eyebrow-light">Fortuna, in 3D</p>
+      <h1>Just for fun.</h1>
       <p class="garage-instructions">
+        I also scanned Fortuna into a 3D model. You can take it for a spin around an empty lot,
+        no research question required.
+      </p>
+      <p class="garage-controls">
         <span class="garage-desktop-only">Arrow keys or WASD to drive. Space to brake.</span>
         <span class="garage-mobile-only">Use the on-screen controls to drive.</span>
       </p>
@@ -23,12 +27,20 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     <p class="garage-loading" id="garage-loading">Loading Fortuna…</p>
 
     <div class="garage-touch" id="garage-touch" aria-hidden="true">
-      <button type="button" class="garage-btn" data-control="left" aria-label="Steer left">◀</button>
+      <button type="button" class="garage-btn" data-control="left" aria-label="Steer left">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><polygon points="16,4 16,20 6,12" /></svg>
+      </button>
       <div class="garage-touch-col">
-        <button type="button" class="garage-btn" data-control="forward" aria-label="Accelerate">▲</button>
-        <button type="button" class="garage-btn" data-control="back" aria-label="Reverse">▼</button>
+        <button type="button" class="garage-btn" data-control="forward" aria-label="Accelerate">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><polygon points="4,16 20,16 12,6" /></svg>
+        </button>
+        <button type="button" class="garage-btn" data-control="back" aria-label="Reverse">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><polygon points="4,8 20,8 12,18" /></svg>
+        </button>
       </div>
-      <button type="button" class="garage-btn" data-control="right" aria-label="Steer right">▶</button>
+      <button type="button" class="garage-btn" data-control="right" aria-label="Steer right">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><polygon points="8,4 8,20 18,12" /></svg>
+      </button>
     </div>
   </section>
 </BaseLayout>
@@ -82,6 +94,13 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     display: none;
   }
 
+  .garage-controls {
+    margin-top: 0.6rem;
+    font-size: 0.85rem;
+    opacity: 0.85;
+    text-shadow: 0 1px 12px rgba(16, 19, 17, 0.5);
+  }
+
   .garage-loading {
     position: absolute;
     z-index: 1;
@@ -117,14 +136,23 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   }
 
   .garage-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     width: 3.4rem;
     height: 3.4rem;
     border: 1px solid rgba(250, 248, 241, 0.5);
     border-radius: 50%;
     background: rgba(16, 19, 17, 0.45);
     color: var(--paper-bright);
-    font-size: 1.1rem;
     -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  .garage-btn svg {
+    pointer-events: none;
   }
 
   .garage-btn:active {
