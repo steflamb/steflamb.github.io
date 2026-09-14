@@ -4,7 +4,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
 <BaseLayout
   title="Just for fun — Stefano Carlo Lambertenghi"
-  description="I also scanned Fortuna into a 3D model. Take it for a spin around an empty lot, no research question required."
+  description="I also scanned Fortuna into a 3D model. Take it for a lap around the track, no research question required."
   noindex={true}
 >
   <section class="garage">
@@ -14,15 +14,20 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       <p class="eyebrow eyebrow-light">Fortuna, in 3D</p>
       <h1>Just for fun.</h1>
       <p class="garage-instructions">
-        I also scanned Fortuna into a 3D model. You can take it for a spin around an empty lot,
+        I also scanned Fortuna into a 3D model. You can take it for a lap around the track,
         no research question required.
       </p>
-      <p class="garage-controls garage-desktop-only">Arrow keys or WASD to drive. Space to brake.</p>
+      <p class="garage-controls garage-desktop-only">Arrow keys or WASD to drive.</p>
       <p class="garage-controls garage-mobile-only">Use the on-screen controls to drive.</p>
       <a class="text-link text-link-light" href="/fortuna/">← Back to Fortuna</a>
     </div>
 
     <p class="garage-loading" id="garage-loading">Loading Fortuna…</p>
+    <div class="garage-stats" id="garage-stats">
+      <p id="garage-cone-stat">18 standing · 0 knocked over</p>
+      <p id="garage-lap-stat">Drive through the start line to begin a lap</p>
+    </div>
+    <p class="garage-penalty-toast" id="garage-penalty-toast" hidden>Cone hit — +10s</p>
 
     <div class="garage-touch" id="garage-touch" aria-hidden="true">
       <button type="button" class="garage-btn" data-control="left" aria-label="Steer left">
@@ -119,6 +124,71 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     display: none;
   }
 
+  .garage-penalty-toast[hidden] {
+    display: none;
+  }
+
+  .garage-stats {
+    position: absolute;
+    z-index: 1;
+    right: 1.5rem;
+    top: calc(5rem + 1.5rem);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.4rem;
+    text-align: right;
+    color: var(--paper-bright);
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    text-shadow: 0 1px 12px rgba(16, 19, 17, 0.6);
+  }
+
+  .garage-stats p {
+    transition: color 0.15s ease;
+  }
+
+  .garage-stat-flash {
+    animation: garage-stat-flash 0.9s ease;
+  }
+
+  @keyframes garage-stat-flash {
+    0% {
+      color: var(--paper-bright);
+    }
+    25% {
+      color: #ff6034;
+    }
+    100% {
+      color: var(--paper-bright);
+    }
+  }
+
+  .garage-penalty-toast {
+    position: absolute;
+    z-index: 2;
+    top: 32%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.9);
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: clamp(1.4rem, 4vw, 2.6rem);
+    letter-spacing: 0.02em;
+    color: #ff6034;
+    text-shadow: 0 2px 20px rgba(16, 19, 17, 0.7);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s ease, transform 0.15s ease;
+  }
+
+  .garage-penalty-toast-show {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+    transition: opacity 0.15s ease, transform 0.25s cubic-bezier(0.2, 1.4, 0.4, 1);
+  }
+
   .garage-touch {
     position: absolute;
     z-index: 1;
@@ -174,6 +244,12 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     .garage-touch {
       display: flex;
     }
+
+    .garage-stats {
+      top: auto;
+      bottom: 9rem;
+      right: 1.25rem;
+    }
   }
 </style>
 
@@ -184,6 +260,29 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
   const canvas = document.getElementById('garage-canvas') as HTMLCanvasElement;
   const loadingEl = document.getElementById('garage-loading') as HTMLElement;
+  const coneStatEl = document.getElementById('garage-cone-stat') as HTMLElement;
+  const lapStatEl = document.getElementById('garage-lap-stat') as HTMLElement;
+  const penaltyToastEl = document.getElementById('garage-penalty-toast') as HTMLElement;
+
+  function flashStat(el: HTMLElement) {
+    el.classList.remove('garage-stat-flash');
+    void el.offsetWidth; // restart the animation even if it's already running
+    el.classList.add('garage-stat-flash');
+  }
+
+  let penaltyToastTimeout: ReturnType<typeof setTimeout> | undefined;
+  function showPenaltyToast(text: string) {
+    penaltyToastEl.textContent = text;
+    penaltyToastEl.hidden = false;
+    penaltyToastEl.classList.remove('garage-penalty-toast-show');
+    void penaltyToastEl.offsetWidth;
+    penaltyToastEl.classList.add('garage-penalty-toast-show');
+    clearTimeout(penaltyToastTimeout);
+    penaltyToastTimeout = setTimeout(() => {
+      penaltyToastEl.classList.remove('garage-penalty-toast-show');
+      penaltyToastEl.hidden = true;
+    }, 1400);
+  }
   const section = canvas.closest('.garage') as HTMLElement;
 
   const scene = new THREE.Scene();
@@ -192,7 +291,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   scene.fog = new THREE.Fog(skyColor.getHex(), 70, 260);
 
   const camera = new THREE.PerspectiveCamera(55, 1, 0.1, 1000);
-  camera.position.set(0, 6, -10);
 
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
@@ -259,14 +357,165 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   ground.receiveShadow = true;
   scene.add(ground);
 
-  // --- A loose ring of cones to give a sense of a test track ---
+  // --- Track: a stadium shape (two straights joined by two turns), built as a strip of
+  // points with a tangent at each one. Everything below (the road mesh, the dashed
+  // centerline, the cones, and the lap-crossing math) is derived from this same path,
+  // so it's all guaranteed to line up with the actual shape of the road.
+  const straightLength = 44;
+  const turnRadius = 15;
+  const roadWidth = 9;
+
+  type PathPoint = { x: number; z: number; tx: number; tz: number };
+
+  function buildTrackPath(): PathPoint[] {
+    const halfL = straightLength / 2;
+    const segsPerTurn = 40;
+    // Sample the straights at roughly the same point-per-length density as the turns,
+    // so the path (and anything placed along it—dashes, cones) is spaced evenly by
+    // actual distance, not by which segment happens to own more array indices.
+    const straightSegs = Math.max(4, Math.round((segsPerTurn / (Math.PI * turnRadius)) * straightLength));
+    const raw: { x: number; z: number }[] = [];
+
+    // Each loop below contributes points up to (but not including) its own endpoint,
+    // since that endpoint is the very next segment's starting point.
+    for (let i = 0; i < straightSegs; i++) {
+      const t = i / straightSegs;
+      raw.push({ x: -halfL + t * straightLength, z: -turnRadius }); // bottom straight, left to right
+    }
+    for (let i = 0; i < segsPerTurn; i++) {
+      const theta = -Math.PI / 2 + (i / segsPerTurn) * Math.PI;
+      raw.push({ x: halfL + Math.cos(theta) * turnRadius, z: Math.sin(theta) * turnRadius }); // right turn
+    }
+    for (let i = 0; i < straightSegs; i++) {
+      const t = i / straightSegs;
+      raw.push({ x: halfL - t * straightLength, z: turnRadius }); // top straight, right to left
+    }
+    for (let i = 0; i < segsPerTurn; i++) {
+      const theta = Math.PI / 2 + (i / segsPerTurn) * Math.PI;
+      raw.push({ x: -halfL + Math.cos(theta) * turnRadius, z: Math.sin(theta) * turnRadius }); // left turn
+    }
+
+    const n = raw.length;
+    return raw.map((p, i) => {
+      const next = raw[(i + 1) % n];
+      const prev = raw[(i - 1 + n) % n];
+      const dx = next.x - prev.x;
+      const dz = next.z - prev.z;
+      const len = Math.hypot(dx, dz) || 1;
+      return { x: p.x, z: p.z, tx: dx / len, tz: dz / len };
+    });
+  }
+
+  const trackPath = buildTrackPath();
+
+  // Signed perpendicular distance of (x, z) from the track's centerline: 0 = dead
+  // center, positive = toward the outer edge. Used both to draw the road and to
+  // tell whether the car is still on it.
+  function trackOffset(x: number, z: number) {
+    let best = Infinity;
+    let bestOffset = 0;
+    for (const p of trackPath) {
+      const dx = x - p.x;
+      const dz = z - p.z;
+      const distSq = dx * dx + dz * dz;
+      if (distSq < best) {
+        best = distSq;
+        bestOffset = dx * p.tz - dz * p.tx; // dot with the outward normal (tz, -tx)
+      }
+    }
+    return bestOffset;
+  }
+
+  function buildRoadGeometry(path: PathPoint[], width: number, y: number) {
+    const n = path.length;
+    const positions: number[] = [];
+    const uvs: number[] = [];
+    const indices: number[] = [];
+    for (let i = 0; i < n; i++) {
+      const p = path[i];
+      const nx = p.tz;
+      const nz = -p.tx;
+      positions.push(p.x - nx * (width / 2), y, p.z - nz * (width / 2));
+      positions.push(p.x + nx * (width / 2), y, p.z + nz * (width / 2));
+      uvs.push(0, i, 1, i);
+    }
+    for (let i = 0; i < n; i++) {
+      const a = i * 2;
+      const b = i * 2 + 1;
+      const c = ((i + 1) % n) * 2;
+      const d = ((i + 1) % n) * 2 + 1;
+      indices.push(a, b, d, a, d, c);
+    }
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+    geo.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
+    geo.setIndex(indices);
+    geo.computeVertexNormals();
+    return geo;
+  }
+
+  const road = new THREE.Mesh(
+    buildRoadGeometry(trackPath, roadWidth, 0.05),
+    new THREE.MeshStandardMaterial({ color: '#45454b', roughness: 1, side: THREE.DoubleSide }),
+  );
+  road.receiveShadow = true;
+  scene.add(road);
+
+  // Dashed centerline: each dash is aligned to the road's actual tangent at that point,
+  // computed directly (via setFromUnitVectors) rather than a hand-derived angle formula.
+  const dashGeo = new THREE.PlaneGeometry(1.6, 0.25);
+  dashGeo.rotateX(-Math.PI / 2);
+  const dashMat = new THREE.MeshStandardMaterial({ color: '#f5f2e8', roughness: 0.9 });
+  const localXAxis = new THREE.Vector3(1, 0, 0);
+  for (let i = 0; i < trackPath.length; i += 5) {
+    const p = trackPath[i];
+    const dash = new THREE.Mesh(dashGeo, dashMat);
+    dash.position.set(p.x, 0.07, p.z);
+    dash.quaternion.setFromUnitVectors(localXAxis, new THREE.Vector3(p.tx, 0, p.tz));
+    dash.receiveShadow = true;
+    scene.add(dash);
+  }
+
+  // Checkered start/finish line, at the start of the path, spanning the full road width.
+  function makeCheckerTexture() {
+    const size = 32;
+    const cnv = document.createElement('canvas');
+    cnv.width = cnv.height = size;
+    const ctx = cnv.getContext('2d')!;
+    ctx.fillStyle = '#f5f2e8';
+    ctx.fillRect(0, 0, size, size);
+    ctx.fillStyle = '#141614';
+    ctx.fillRect(0, 0, size / 2, size / 2);
+    ctx.fillRect(size / 2, size / 2, size / 2, size / 2);
+    const tex = new THREE.CanvasTexture(cnv);
+    tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+    tex.repeat.set(2, 10);
+    tex.magFilter = THREE.NearestFilter;
+    return tex;
+  }
+
+  const startPoint = trackPath[0];
+  const finishLineGeo = new THREE.PlaneGeometry(1.6, roadWidth);
+  finishLineGeo.rotateX(-Math.PI / 2); // lie flat on the ground, like the dashes
+  const finishLine = new THREE.Mesh(
+    finishLineGeo,
+    new THREE.MeshStandardMaterial({ map: makeCheckerTexture(), roughness: 0.9, side: THREE.DoubleSide }),
+  );
+  finishLine.position.set(startPoint.x, 0.08, startPoint.z);
+  finishLine.quaternion.setFromUnitVectors(localXAxis, new THREE.Vector3(startPoint.tx, 0, startPoint.tz));
+  finishLine.receiveShadow = true;
+  scene.add(finishLine);
+
+  // --- Cones lining the outer edge of the track ---
   // Knock them over by driving into them.
   const coneHeight = 0.8;
   const coneGeo = new THREE.ConeGeometry(0.35, coneHeight, 12);
   coneGeo.translate(0, coneHeight / 2, 0); // pivot at the base, so it topples instead of sinking
   const coneMat = new THREE.MeshStandardMaterial({ color: '#ff6034', roughness: 0.8 });
-  const coneRingRadius = 26;
-  const coneCount = 18;
+  const coneMargin = roadWidth / 2 + 1.3;
+  const carHitRadius = 1.5;
+  const coneHitRadius = 0.5;
+  const knockSpeedThreshold = 0.6;
   type Cone = {
     mesh: THREE.Mesh;
     base: THREE.Vector3;
@@ -275,19 +524,57 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     fallAxis: THREE.Vector3;
   };
   const cones: Cone[] = [];
-  for (let i = 0; i < coneCount; i++) {
-    const angle = (i / coneCount) * Math.PI * 2;
+  function spawnCone(x: number, z: number) {
     const cone = new THREE.Mesh(coneGeo, coneMat);
-    const base = new THREE.Vector3(Math.sin(angle) * coneRingRadius, 0, Math.cos(angle) * coneRingRadius);
+    const base = new THREE.Vector3(x, 0, z);
     cone.position.copy(base);
     cone.castShadow = true;
     scene.add(cone);
     cones.push({ mesh: cone, base, knocked: false, progress: 0, fallAxis: new THREE.Vector3(1, 0, 0) });
   }
 
-  const carHitRadius = 1.5;
-  const coneHitRadius = 0.5;
-  const knockSpeedThreshold = 0.6;
+  for (let i = 0; i < trackPath.length; i += 8) {
+    const p = trackPath[i];
+    const nx = p.tz;
+    const nz = -p.tx;
+    spawnCone(p.x + nx * coneMargin, p.z + nz * coneMargin);
+  }
+
+  // --- Obstacle cones, planted inside the road itself ---
+  // A car needs its center at least carHitRadius + coneHitRadius from a cone to
+  // clear it without knocking it over, and the road's usable half-width (before
+  // "off road") is roughly roadWidth / 2 + 0.5. Both the slalom offsets and the
+  // gate gap below are chosen to leave real clearance on that math, not just by eye.
+  const minClearance = carHitRadius + coneHitRadius + 0.5; // +0.5 safety margin
+  function pointAt(frac: number) {
+    const idx = Math.floor(frac * trackPath.length) % trackPath.length;
+    const p = trackPath[idx];
+    return { p, nx: p.tz, nz: -p.tx };
+  }
+
+  const slalomCount = 12;
+  const slalomSpots = Array.from({ length: slalomCount }, (_, i) => 0.06 + (i / (slalomCount - 1)) * 0.88);
+  const slalomLateral = roadWidth / 4; // leaves minClearance+ of room to pass on the outside
+  slalomSpots.forEach((frac, i) => {
+    const { p, nx, nz } = pointAt(frac);
+    const lateral = (i % 2 === 0 ? 1 : -1) * slalomLateral;
+    spawnCone(p.x + nx * lateral, p.z + nz * lateral);
+  });
+
+  const gateSpots = [0.35, 0.65];
+  const gateHalfGap = minClearance + 0.5; // comfortable gap to thread through the middle
+  gateSpots.forEach((frac) => {
+    const { p, nx, nz } = pointAt(frac);
+    spawnCone(p.x + nx * gateHalfGap, p.z + nz * gateHalfGap);
+    spawnCone(p.x - nx * gateHalfGap, p.z - nz * gateHalfGap);
+  });
+
+  function updateStats() {
+    const knocked = cones.filter((c) => c.knocked).length;
+    const standing = cones.length - knocked;
+    coneStatEl.textContent = `${standing} standing · ${knocked} knocked over`;
+  }
+  updateStats();
 
   function updateCones(dt: number) {
     for (const cone of cones) {
@@ -301,6 +588,9 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           const dist = Math.sqrt(distSq) || 1;
           // Tip over away from the car, perpendicular to the impact direction.
           cone.fallAxis.set(dz / dist, 0, -dx / dist);
+          updateStats();
+          flashStat(coneStatEl);
+          applyConePenalty();
         }
         continue;
       }
@@ -405,7 +695,16 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   });
 
   // --- Simulation state ---
-  const car_state = { x: 0, z: 0, heading: 0, speed: 0 };
+  // Spawn a few steps back along the path from the start line (still genuinely on the
+  // road, mid-corner), facing the way the track actually points there, so driving
+  // forward naturally brings the car up to, and then across, the start line.
+  const spawnBehind = 6;
+  const car_state = {
+    x: startPoint.x - spawnBehind * startPoint.tx,
+    z: startPoint.z - spawnBehind * startPoint.tz,
+    heading: Math.atan2(startPoint.tx, startPoint.tz),
+    speed: 0,
+  };
   const maxSpeed = 16;
   const maxReverse = 7;
   const accel = 9;
@@ -414,8 +713,91 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
   const timer = new THREE.Timer();
   timer.connect(document);
-  const camPos = new THREE.Vector3(0, 6, -10);
-  const camTarget = new THREE.Vector3();
+  // Frame the camera on the car's actual spawn point from the first frame, no catch-up pan.
+  const spawnCamDistance = carLength * 1.9 + 4;
+  const spawnCamHeight = carLength * 0.55 + 2.5;
+  const camPos = new THREE.Vector3(
+    car_state.x - Math.sin(car_state.heading) * spawnCamDistance,
+    spawnCamHeight,
+    car_state.z - Math.cos(car_state.heading) * spawnCamDistance,
+  );
+  camera.position.copy(camPos);
+  const camTarget = new THREE.Vector3(
+    car_state.x + Math.sin(car_state.heading) * 3,
+    1.2,
+    car_state.z + Math.cos(car_state.heading) * 3,
+  );
+
+  // --- Lap timer: crossing the checkered line while on the road starts or completes a
+  // lap. "Crossing" is measured as signed distance along the start line's own tangent,
+  // which works regardless of the track's shape. Driving off the road cancels the
+  // lap in progress.
+  function forwardOffset(x: number, z: number) {
+    return (x - startPoint.x) * startPoint.tx + (z - startPoint.z) * startPoint.tz;
+  }
+
+  let lapPrevForward = forwardOffset(car_state.x, car_state.z);
+  let lapStarted = false;
+  let lapNumber = 0;
+  let lapElapsed = 0;
+  let bestLapTime: number | null = null;
+  let lapCrossingCooldown = 0;
+  let offRoad = false;
+
+  function formatLapTime(t: number) {
+    return `${t.toFixed(1)}s`;
+  }
+
+  function updateLapDisplay() {
+    if (offRoad) {
+      lapStatEl.textContent = 'Out of road';
+    } else if (!lapStarted) {
+      lapStatEl.textContent = 'Drive through the start line to begin a lap';
+    } else if (bestLapTime === null) {
+      lapStatEl.textContent = `Lap ${lapNumber} — ${formatLapTime(lapElapsed)}`;
+    } else {
+      lapStatEl.textContent = `Lap ${lapNumber} — ${formatLapTime(lapElapsed)} · best ${formatLapTime(bestLapTime)}`;
+    }
+  }
+  updateLapDisplay();
+
+  const conePenaltySeconds = 10;
+  function applyConePenalty() {
+    if (!lapStarted || offRoad) return;
+    lapElapsed += conePenaltySeconds;
+    updateLapDisplay();
+    flashStat(lapStatEl);
+    showPenaltyToast(`Cone hit — +${conePenaltySeconds}s`);
+  }
+
+  function updateLap(dt: number) {
+    if (lapCrossingCooldown > 0) lapCrossingCooldown -= dt;
+
+    const nowOffRoad = Math.abs(trackOffset(car_state.x, car_state.z)) > roadWidth / 2 + 0.5;
+    if (nowOffRoad && !offRoad && lapStarted) {
+      lapStarted = false;
+      lapElapsed = 0;
+    }
+    offRoad = nowOffRoad;
+
+    const forward = forwardOffset(car_state.x, car_state.z);
+    if (!offRoad) {
+      const crossedFinish = lapPrevForward < 0 && forward >= 0;
+      if (crossedFinish && lapCrossingCooldown <= 0) {
+        if (lapStarted && (bestLapTime === null || lapElapsed < bestLapTime)) {
+          bestLapTime = lapElapsed;
+        }
+        lapNumber += 1;
+        lapStarted = true;
+        lapElapsed = 0;
+        lapCrossingCooldown = 2;
+      }
+    }
+    lapPrevForward = forward;
+
+    if (lapStarted) lapElapsed += dt;
+    updateLapDisplay();
+  }
 
   function tick() {
     requestAnimationFrame(tick);
@@ -445,6 +827,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     }
 
     updateCones(dt);
+    updateLap(dt);
 
     const camDistance = carLength * 1.9 + 4;
     const camHeight = carLength * 0.55 + 2.5;
