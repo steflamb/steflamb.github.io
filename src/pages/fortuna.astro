@@ -3,8 +3,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import { publications } from '../data/site';
 
 const realityGapPaper = publications.find((p) => p.title.startsWith('A Multi-Modality Evaluation'))!;
-const perturbationBenchmarkPaper = publications.find((p) => p.title.startsWith('Benchmarking Image Perturbations'))!;
-const perturbationDriveJournalPaper = publications.find((p) => p.title.startsWith('PerturbationDrive:'))!;
 ---
 
 <BaseLayout
@@ -337,163 +335,83 @@ const perturbationDriveJournalPaper = publications.find((p) => p.title.startsWit
           <h2 id="people-heading" class="display-title">Students who have driven this forward.</h2>
           <p class="section-lede">
             I lead the technical work around the platform under the supervision of Prof. Andrea
-            Stocco, but the research around it is a shared effort. Here is some of what students
-            working with us have built.
+            Stocco, but the research around it is a shared effort. Here is some of the student
+            projects that have grown around the platforms.
           </p>
         </div>
       </div>
 
-      <div class="people-grid">
-        <article class="person-card" data-reveal>
-          <div class="person-photo" style="aspect-ratio: 1200 / 1135;">
-            <img
-              src="/images/davide-xun.jpg"
-              alt="Davide Jannussi and Xun Ma next to Fortuna"
-              width="1200"
-              height="1135"
-              loading="lazy"
-            />
-          </div>
-          <div class="person-body">
-            <p class="person-role">Master’s students</p>
-            <h3>Davide Jannussi &amp; Xun Ma</h3>
+      <ul class="contributor-list" aria-label="Students and collaborators">
+        <li class="contributor-row" data-reveal>
+          <div>
+            <h3>Davide Jannussi</h3>
             <p>
               Davide built Cam2Sim, turning our recorded drives into playable, closed-loop CARLA
-              scenarios reconstructed with Gaussian Splatting. Xun’s thesis studied how to adapt
-              a model trained purely in simulation so it holds up when tested in the real world.
+              scenarios.
             </p>
-            <a class="text-link" href="https://arxiv.org/abs/2607.04770" target="_blank" rel="noreferrer">
-              Read Davide’s paper <span aria-hidden="true">↗︎</span>
-            </a>
           </div>
-        </article>
-        <article class="person-card" data-reveal>
-          <div class="person-photo">
-            <img
-              src="/images/matthias-andrea-me.jpg"
-              alt="Matthias Weil, Andrea Stocco, and Stefano Carlo Lambertenghi next to Fortuna"
-              width="1400"
-              height="1050"
-              loading="lazy"
-            />
+        </li>
+        <li class="contributor-row" data-reveal>
+          <div>
+            <h3>Xun Ma</h3>
+            <p>
+              Xun’s thesis studied how to adapt a model trained purely in simulation so it holds
+              up in the real world.
+            </p>
           </div>
-          <div class="person-body">
-            <p class="person-role">Bachelor’s thesis</p>
+        </li>
+        <li class="contributor-row" data-reveal>
+          <div>
             <h3>Matthias Weil</h3>
             <p>
               As a bachelor’s student, Matthias co-led the real-world perturbation study that
-              became our ASE 2026 paper: 72 camera and LiDAR perturbations compared across
-              offline analysis, hardware-in-the-loop execution, and 740+ closed-loop runs on the
-              physical vehicle.
+              became our ASE 2026 paper.
             </p>
-            <a class="text-link" href="https://arxiv.org/abs/2607.04953" target="_blank" rel="noreferrer">
-              Read the paper <span aria-hidden="true">↗︎</span>
-            </a>
           </div>
-        </article>
-        <article class="person-card" data-reveal>
-          <div class="person-photo" style="aspect-ratio: 1920 / 1080;">
-            <img
-              src="/images/mirena-work.jpg"
-              alt="Mirena Flores Valdez, and a split view comparing the real fortiss Labs test room with its simulated digital twin"
-              width="1920"
-              height="1080"
-              loading="lazy"
-            />
-          </div>
-          <div class="person-body">
-            <p class="person-role">Master’s thesis</p>
+        </li>
+        <li class="contributor-row" data-reveal>
+          <div>
             <h3>Mirena Flores Valdez</h3>
             <p>
-              Her master's thesis became the ASE 2025 study comparing simulation,
+              Her master’s thesis became the ASE 2025 study comparing simulation,
               vehicle-in-the-loop, and mixed-reality testing on the small-scale platform.
             </p>
-            <a class="text-link" href={realityGapPaper.paper} target="_blank" rel="noreferrer">
-              Read the paper <span aria-hidden="true">↗︎</span>
-            </a>
           </div>
-        </article>
-        <article class="person-card" data-reveal>
-          <div class="person-photo">
-            <img
-              src="/images/skander.jpg"
-              alt="Skander Jneyeh presenting his bachelor's thesis alongside Stefano Carlo Lambertenghi and Andrea Stocco"
-              width="1400"
-              height="1050"
-              loading="lazy"
-            />
-          </div>
-          <div class="person-body">
-            <p class="person-role">Bachelor’s thesis</p>
+        </li>
+        <li class="contributor-row" data-reveal>
+          <div>
             <h3>Skander Jneyeh</h3>
             <p>
               For his bachelor’s thesis, Skander built a physical, IoT-connected traffic-light
-              system for the small-scale platform, so the vehicle can detect and react to traffic
-              lights through camera perception or direct communication.
+              system for the small-scale platform.
             </p>
           </div>
-        </article>
-        <article class="person-card" data-reveal>
-          <div class="person-photo" style="aspect-ratio: 1487 / 910;">
-            <img
-              src="/images/hannes-thesis.jpg"
-              alt="Hannes Leonhard, and a diagram of PerturbationDrive applying motion blur to a camera feed before it reaches the driving model"
-              width="1487"
-              height="910"
-              loading="lazy"
-            />
-          </div>
-          <div class="person-body">
-            <p class="person-role">Bachelor’s thesis</p>
+        </li>
+        <li class="contributor-row" data-reveal>
+          <div>
             <h3>Hannes Leonhard</h3>
             <p>
               As a bachelor's student, Hannes built PerturbationDrive, the image-perturbation
-              framework for testing automated driving assistance systems. His thesis was the
-              basis for both the framework and the ICST 2025 paper benchmarking it.
+              framework for testing automated driving assistance systems.
             </p>
-            <div class="contributor-links">
-              <a class="text-link" href={perturbationDriveJournalPaper.paper} target="_blank" rel="noreferrer">
-                Journal paper <span aria-hidden="true">↗︎</span>
-              </a>
-              <a class="text-link" href={perturbationBenchmarkPaper.paper} target="_blank" rel="noreferrer">
-                ICST 2025 paper <span aria-hidden="true">↗︎</span>
-              </a>
-            </div>
           </div>
-        </article>
-        <article class="person-card" data-reveal>
-          <div class="person-photo" style="aspect-ratio: 1118 / 669;">
-            <img
-              src="/images/constantin-thesis.jpg"
-              alt="Constantin Carste, next to CARLA reconstructions and photos of the Tesla Model 3 and Fortuna used to record real driving data"
-              width="1118"
-              height="669"
-              loading="lazy"
-            />
-          </div>
-          <div class="person-body">
-            <p class="person-role">Bachelor’s thesis</p>
+        </li>
+        <li class="contributor-row" data-reveal>
+          <div>
             <h3>Constantin Carste</h3>
             <p>
               Constantin's bachelor's thesis used Stable Diffusion and CARLA to reconstruct real
-              driving scenarios and automatically generate matching road layouts from recordings
-              taken on a Tesla Model 3 and on Fortuna—the basis Cam2Sim was later built on.
+              driving scenarios and generate matching road layouts from recordings—the basis
+              Cam2Sim was later built on.
             </p>
-            <a class="text-link" href="https://arxiv.org/abs/2607.04770" target="_blank" rel="noreferrer">
-              Read the paper <span aria-hidden="true">↗︎</span>
-            </a>
           </div>
-        </article>
-      </div>
-
-      <ul class="contributor-list" aria-label="More collaborators">
+        </li>
         <li class="contributor-row" data-reveal>
           <div>
             <h3>Timo Götz</h3>
             <p>
               Timo's industrial thesis, done in collaboration with BMW, automatically validates
-              acoustic test-bench recordings of electric motors—separating whether a test ran the
-              right physical scenario from whether the recorded signal itself is trustworthy.
+              acoustic test-bench recordings of electric motors.
             </p>
           </div>
         </li>
@@ -501,47 +419,18 @@ const perturbationDriveJournalPaper = publications.find((p) => p.title.startsWit
           <div>
             <h3>Gökce Sengün</h3>
             <p>
-              Gökce's thesis extends the ICST 2024 quality-metrics study to system-level testing:
-              instead of checking offline model accuracy alone, it tests whether the same
-              image-quality metrics also predict how the driving system behaves on a physical
-              vehicle.
+              Gökce's thesis extends the ICST 2024 quality-metrics study to system-level testing
+              on a physical vehicle.
             </p>
           </div>
         </li>
       </ul>
-    </div>
-  </section>
 
-  <section class="section" aria-labelledby="practicum-heading">
-    <div class="container-wide demo-showcase">
-      <div class="video-frame">
-        <iframe
-          src="https://www.youtube-nocookie.com/embed/Q8-Wu7h2mlo"
-          title="ADS testing practicum final presentations"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-          allowfullscreen
-          loading="lazy"
-        ></iframe>
-      </div>
-      <div class="demo-showcase-copy">
-        <p class="feature-kicker">Teaching</p>
-        <h2 id="practicum-heading">A practicum on testing autonomous driving.</h2>
-        <p>
-          Together with my colleagues Xingcheng Chen and Lev Sorokin, and under the supervision
-          of Andrea Stocco, I helped organize a practicum course on testing automated driving
-          systems. Students worked in small, mentored teams, applying automated testing
-          techniques—both in simulation and on small-scale physical vehicles—to systems such as a
-          lane-keeping controller based on a deep neural network. The course ended with a final
-          event where each team presented its prototype.
-        </p>
-        <p>
-          That edition's two groups worked on opposite sides of the same problem. One used
-          generative models to translate simulated camera images into realistic ones in real
-          time, so a model trained on real data could still drive in simulation. The other used
-          domain-augmentation techniques during training, so a model trained only in simulation
-          could hold up when tested in the real world.
-        </p>
-      </div>
+      <p class="section-lede" style="margin-top: 3rem;">
+        Several of these students came through a practicum course I help organize on testing
+        autonomous driving systems.{' '}
+        <a class="text-link" href="/teaching/">More on teaching <span aria-hidden="true">↗︎</span></a>
+      </p>
     </div>
   </section>
 
