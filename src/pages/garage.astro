@@ -576,6 +576,17 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   }
   updateStats();
 
+  // Give every cone a clean slate at the start of each lap.
+  function resetCones() {
+    for (const cone of cones) {
+      cone.knocked = false;
+      cone.progress = 0;
+      cone.mesh.position.copy(cone.base);
+      cone.mesh.quaternion.identity();
+    }
+    updateStats();
+  }
+
   function updateCones(dt: number) {
     for (const cone of cones) {
       if (!cone.knocked) {
@@ -791,6 +802,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         lapStarted = true;
         lapElapsed = 0;
         lapCrossingCooldown = 2;
+        resetCones();
       }
     }
     lapPrevForward = forward;
