@@ -1087,6 +1087,10 @@
     line-height: 1.55;
   }
 
+  .demo-showcase-copy p + p {
+    margin-top: 1em;
+  }
+
   .demo-showcase-copy .text-link {
     margin-top: 1.2rem;
   }
@@ -1356,6 +1360,10 @@
     display: flex;
     flex-direction: column;
     background: var(--paper);
+  }
+
+  .person-card:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
   }
 
   .person-photo {

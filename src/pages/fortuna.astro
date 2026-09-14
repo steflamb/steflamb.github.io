@@ -433,27 +433,115 @@ const perturbationDriveJournalPaper = publications.find((p) => p.title.startsWit
             </p>
           </div>
         </article>
+        <article class="person-card" data-reveal>
+          <div class="person-photo" style="aspect-ratio: 1487 / 910;">
+            <img
+              src="/images/hannes-thesis.jpg"
+              alt="Hannes Leonhard, and a diagram of PerturbationDrive applying motion blur to a camera feed before it reaches the driving model"
+              width="1487"
+              height="910"
+              loading="lazy"
+            />
+          </div>
+          <div class="person-body">
+            <p class="person-role">Bachelor’s thesis</p>
+            <h3>Hannes Leonhard</h3>
+            <p>
+              As a bachelor's student, Hannes built PerturbationDrive, the image-perturbation
+              framework for testing automated driving assistance systems. His thesis was the
+              basis for both the framework and the ICST 2025 paper benchmarking it.
+            </p>
+            <div class="contributor-links">
+              <a class="text-link" href={perturbationDriveJournalPaper.paper} target="_blank" rel="noreferrer">
+                Journal paper <span aria-hidden="true">↗︎</span>
+              </a>
+              <a class="text-link" href={perturbationBenchmarkPaper.paper} target="_blank" rel="noreferrer">
+                ICST 2025 paper <span aria-hidden="true">↗︎</span>
+              </a>
+            </div>
+          </div>
+        </article>
+        <article class="person-card" data-reveal>
+          <div class="person-photo" style="aspect-ratio: 1118 / 669;">
+            <img
+              src="/images/constantin-thesis.jpg"
+              alt="Constantin Carste, next to CARLA reconstructions and photos of the Tesla Model 3 and Fortuna used to record real driving data"
+              width="1118"
+              height="669"
+              loading="lazy"
+            />
+          </div>
+          <div class="person-body">
+            <p class="person-role">Bachelor’s thesis</p>
+            <h3>Constantin Carste</h3>
+            <p>
+              Constantin's bachelor's thesis used Stable Diffusion and CARLA to reconstruct real
+              driving scenarios and automatically generate matching road layouts from recordings
+              taken on a Tesla Model 3 and on Fortuna—the basis Cam2Sim was later built on.
+            </p>
+            <a class="text-link" href="https://arxiv.org/abs/2607.04770" target="_blank" rel="noreferrer">
+              Read the paper <span aria-hidden="true">↗︎</span>
+            </a>
+          </div>
+        </article>
       </div>
 
       <ul class="contributor-list" aria-label="More collaborators">
         <li class="contributor-row" data-reveal>
           <div>
-            <h3>Hannes Leonhard</h3>
+            <h3>Timo Götz</h3>
             <p>
-              As a bachelor's student, Hannes built PerturbationDrive, the image-perturbation
-              framework for testing automated driving assistance systems.
+              Timo's industrial thesis, done in collaboration with BMW, automatically validates
+              acoustic test-bench recordings of electric motors—separating whether a test ran the
+              right physical scenario from whether the recorded signal itself is trustworthy.
             </p>
           </div>
-          <div class="contributor-links">
-            <a class="text-link" href={perturbationDriveJournalPaper.paper} target="_blank" rel="noreferrer">
-              Journal paper <span aria-hidden="true">↗︎</span>
-            </a>
-            <a class="text-link" href={perturbationBenchmarkPaper.paper} target="_blank" rel="noreferrer">
-              ICST 2025 paper <span aria-hidden="true">↗︎</span>
-            </a>
+        </li>
+        <li class="contributor-row" data-reveal>
+          <div>
+            <h3>Gökce Sengün</h3>
+            <p>
+              Gökce's thesis extends the ICST 2024 quality-metrics study to system-level testing:
+              instead of checking offline model accuracy alone, it tests whether the same
+              image-quality metrics also predict how the driving system behaves on a physical
+              vehicle.
+            </p>
           </div>
         </li>
       </ul>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="practicum-heading">
+    <div class="container-wide demo-showcase">
+      <div class="video-frame">
+        <iframe
+          src="https://www.youtube-nocookie.com/embed/Q8-Wu7h2mlo"
+          title="ADS testing practicum final presentations"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          allowfullscreen
+          loading="lazy"
+        ></iframe>
+      </div>
+      <div class="demo-showcase-copy">
+        <p class="feature-kicker">Teaching</p>
+        <h2 id="practicum-heading">A practicum on testing autonomous driving.</h2>
+        <p>
+          Together with my colleagues Xingcheng Chen and Lev Sorokin, and under the supervision
+          of Andrea Stocco, I helped organize a practicum course on testing automated driving
+          systems. Students worked in small, mentored teams, applying automated testing
+          techniques—both in simulation and on small-scale physical vehicles—to systems such as a
+          lane-keeping controller based on a deep neural network. The course ended with a final
+          event where each team presented its prototype.
+        </p>
+        <p>
+          That edition's two groups worked on opposite sides of the same problem. One used
+          generative models to translate simulated camera images into realistic ones in real
+          time, so a model trained on real data could still drive in simulation. The other used
+          domain-augmentation techniques during training, so a model trained only in simulation
+          could hold up when tested in the real world.
+        </p>
+      </div>
     </div>
   </section>
 

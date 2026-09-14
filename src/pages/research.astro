@@ -6,6 +6,7 @@ const cam2simPaper = publications.find((p) => p.title.startsWith('Cam2Sim'))!;
 const realityGapPaper = publications.find((p) => p.title.startsWith('A Multi-Modality Evaluation'))!;
 const perturbationBenchmarkPaper = publications.find((p) => p.title.startsWith('Benchmarking Image Perturbations'))!;
 const forecastingPaper = publications.find((p) => p.title.startsWith('Misbehavior Forecasting'))!;
+const qualityMetricsPaper = publications.find((p) => p.title.startsWith('Assessing Quality Metrics'))!;
 
 const themes = [
   {
@@ -167,7 +168,7 @@ const themes = [
           </div>
           <div class="demo-showcase-copy">
             <p class="feature-kicker">ASE 2025</p>
-            <h3>The same reality gap, at two scales.</h3>
+            <h3>The same reality gap, across three execution levels.</h3>
             <p>
               An open-source small-scale vehicle and its Unity digital twin, compared against
               Fortuna at full scale, across simulation, vehicle-in-the-loop, and mixed-reality
@@ -232,6 +233,63 @@ const themes = [
             </a>
           </div>
         </div>
+
+        <div class="demo-showcase" data-reveal>
+          <div class="video-frame">
+            <video
+              src="/videos/icst-final-demo.mp4"
+              poster="/images/icst-final-poster.jpg"
+              controls
+              muted
+              playsinline
+              preload="none"
+              aria-label="Talk recording for Assessing Quality Metrics for Neural Reality Gap Input Mitigation in Autonomous Driving Testing"
+            ></video>
+          </div>
+          <div class="demo-showcase-copy">
+            <p class="feature-kicker">ICST 2024</p>
+            <h3>Do image-quality metrics track what actually matters?</h3>
+            <p>
+              A recording of the ICST 2024 talk on assessing quality metrics for neural
+              reality-gap input mitigation—testing whether standard image-quality metrics track
+              how neural image translation affects a driving system's perception and control.
+            </p>
+            <a class="text-link" href={qualityMetricsPaper.paper} target="_blank" rel="noreferrer">
+              Read the paper <span aria-hidden="true">↗︎</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="nanodrones-heading">
+    <div class="container-wide two-column-story" style="grid-template-columns: minmax(20rem, 1.15fr) minmax(0, 0.85fr);">
+      <aside class="story-aside" data-reveal>
+        <p class="eyebrow">Before the reality gap</p>
+        <div class="video-frame" style="margin-top: 1.5rem;">
+          <iframe
+            src="https://www.youtube-nocookie.com/embed/pUGL1qu3Z1k"
+            title="Nano-drone relative localization demo video"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowfullscreen
+            loading="lazy"
+          ></iframe>
+        </div>
+      </aside>
+      <div class="story-copy" data-reveal>
+        <h2 id="nanodrones-heading" class="sr-only">Earlier work on nano-drones</h2>
+        <p>
+          Before autonomous cars, I worked on autonomous nano-drones. At the Dalle Molle
+          Institute for Artificial Intelligence (IDSIA) in Lugano, I helped fit a
+          relative-localization neural network onto a 40-gram nano-quadrotor: a single onboard
+          camera and under 100 mW of power, enough to track a peer drone in real time
+          (IEEE ICRA 2023). The platform changed; the question didn’t: what has to be true for a
+          learned model to work outside the lab it was trained in?
+        </p>
+        <a class="text-link" href="https://arxiv.org/abs/2303.01940" target="_blank" rel="noreferrer">
+          Read the paper <span aria-hidden="true">↗︎</span>
+        </a>
       </div>
     </div>
   </section>
@@ -254,28 +312,6 @@ const themes = [
           </a>
           <a class="button button-dark" href="/publications/">Read the papers</a>
         </div>
-      </div>
-    </div>
-  </section>
-
-  <section class="section" aria-labelledby="nanodrones-heading">
-    <div class="container-wide two-column-story">
-      <aside class="story-aside" data-reveal>
-        <p class="eyebrow">Before the reality gap</p>
-      </aside>
-      <div class="story-copy" data-reveal>
-        <h2 id="nanodrones-heading" class="sr-only">Earlier work on nano-drones</h2>
-        <p>
-          Before autonomous cars, I worked on autonomous nano-drones. At the Dalle Molle
-          Institute for Artificial Intelligence (IDSIA) in Lugano, I helped fit a
-          relative-localization neural network onto a 40-gram nano-quadrotor: a single onboard
-          camera and under 100 mW of power, enough to track a peer drone in real time
-          (IEEE ICRA 2023). The platform changed; the question didn’t: what has to be true for a
-          learned model to work outside the lab it was trained in?
-        </p>
-        <a class="text-link" href="https://arxiv.org/abs/2303.01940" target="_blank" rel="noreferrer">
-          Read the paper <span aria-hidden="true">↗︎</span>
-        </a>
       </div>
     </div>
   </section>

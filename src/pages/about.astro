@@ -1,6 +1,34 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { profileLinks } from '../data/site';
+
+const journeyStops = [
+  {
+    name: 'Sondrio, Italy',
+    note: 'Grew up here, until the third year of high school.',
+    lat: 46.1707,
+    lon: 9.8714,
+  },
+  {
+    name: 'Mercer Island, WA, USA',
+    note: 'Finished high school at Mercer Island High School.',
+    lat: 47.5707,
+    lon: -122.2221,
+  },
+  { name: 'Verona, Italy', note: 'Studied computer science.', lat: 45.4384, lon: 10.9916 },
+  {
+    name: 'Lugano, Switzerland',
+    note: 'Studied artificial intelligence at USI—where I met Andrea Stocco.',
+    lat: 46.0037,
+    lon: 8.9511,
+  },
+  {
+    name: 'Munich, Germany',
+    note: 'fortiss and the Technical University of Munich, since 2023.',
+    lat: 48.1372,
+    lon: 11.5755,
+  },
+];
 ---
 
 <BaseLayout
@@ -43,7 +71,8 @@ import { profileLinks } from '../data/site';
         <p>
           I’m Stefano, an Italian computer scientist and researcher currently living in Munich. I
           grew up in Sondrio, a small town in the Italian Alps, and studied computer science in
-          Verona before moving to Lugano to study artificial intelligence at USI.
+          Verona, Italy, before moving to Lugano, Switzerland, to study artificial intelligence at
+          USI.
         </p>
         <p>
           While at USI, I met my current PhD supervisor, Andrea Stocco, at Formula USI, a
@@ -114,4 +143,192 @@ import { profileLinks } from '../data/site';
       </div>
     </div>
   </section>
+
+  <section class="section section-dark" aria-labelledby="places-heading">
+    <div class="container-wide">
+      <div class="section-heading" data-reveal>
+        <p class="eyebrow eyebrow-light">The places</p>
+        <div>
+          <h2 id="places-heading" class="display-title">Where I’ve lived.</h2>
+          <p class="section-lede">Five stops so far, roughly in order. Click a pin on the map.</p>
+        </div>
+      </div>
+
+      <div class="journey-map-wrap" data-reveal>
+        <div
+          id="journey-map"
+          class="journey-map"
+          aria-label="Map of places Stefano has lived"
+          data-stops={JSON.stringify(journeyStops)}
+        ></div>
+        <button type="button" class="journey-reset" id="journey-reset">Show whole journey</button>
+      </div>
+
+      <ol class="journey-list">
+        {journeyStops.map((stop, i) => (
+          <li>
+            <span class="journey-list-index">{i + 1}</span>
+            <span>
+              <strong>{stop.name}</strong> — {stop.note}
+            </span>
+          </li>
+        ))}
+      </ol>
+    </div>
+  </section>
 </BaseLayout>
+
+<style>
+  .journey-map-wrap {
+    position: relative;
+    margin-top: 3rem;
+  }
+
+  .journey-map {
+    width: 100%;
+    height: 26rem;
+    border-radius: 4px;
+    background: var(--ink);
+  }
+
+  :global(.journey-tiles) {
+    filter: invert(1) grayscale(1) brightness(0.95) contrast(1.05);
+  }
+
+  .journey-reset {
+    position: absolute;
+    z-index: 500;
+    top: 0.75rem;
+    right: 0.75rem;
+    border: 1px solid rgba(250, 248, 241, 0.5);
+    border-radius: 4px;
+    background: rgba(16, 19, 17, 0.75);
+    color: var(--paper-bright);
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    padding: 0.5rem 0.75rem;
+    cursor: pointer;
+  }
+
+  .journey-reset:hover {
+    background: var(--signal);
+    border-color: var(--signal);
+  }
+
+  .journey-list {
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--line-dark);
+    display: grid;
+    gap: 0.9rem;
+  }
+
+  .journey-list li {
+    display: flex;
+    align-items: baseline;
+    gap: 0.9rem;
+    color: var(--muted-dark);
+    font-size: 0.92rem;
+  }
+
+  .journey-list strong {
+    color: var(--paper-bright);
+    font-weight: 600;
+  }
+
+  .journey-list-index {
+    flex: none;
+    width: 1.6rem;
+    height: 1.6rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: var(--signal);
+    color: var(--ink);
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    font-weight: 700;
+  }
+
+  :global(.journey-pin) {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--signal);
+    border: 2px solid var(--paper-bright);
+    color: var(--ink);
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 13px;
+  }
+
+  :global(.leaflet-popup-content-wrapper) {
+    background: var(--ink);
+    color: var(--paper-bright);
+    border-radius: 4px;
+  }
+
+  :global(.leaflet-popup-tip) {
+    background: var(--ink);
+  }
+
+  :global(.leaflet-popup-content strong) {
+    display: block;
+    margin-bottom: 0.25rem;
+  }
+
+  :global(.leaflet-container a.leaflet-popup-close-button) {
+    color: var(--muted-dark);
+  }
+</style>
+
+<script>
+  import L from 'leaflet';
+  import 'leaflet/dist/leaflet.css';
+
+  const container = document.getElementById('journey-map');
+  if (container) {
+    const stopsData = JSON.parse(container.dataset.stops || '[]') as Array<{
+      name: string;
+      note: string;
+      lat: number;
+      lon: number;
+    }>;
+
+    const map = L.map(container, { scrollWheelZoom: false });
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      subdomains: 'abc',
+      maxZoom: 19,
+      className: 'journey-tiles',
+    }).addTo(map);
+
+    const markers = stopsData.map((stop, i) => {
+      const icon = L.divIcon({
+        className: 'journey-pin-wrap',
+        html: `<div class="journey-pin">${i + 1}</div>`,
+        iconSize: [28, 28],
+        iconAnchor: [14, 14],
+      });
+      const marker = L.marker([stop.lat, stop.lon], { icon }).addTo(map);
+      marker.bindPopup(`<strong>${stop.name}</strong>${stop.note}`);
+      marker.on('click', () => map.flyTo([stop.lat, stop.lon], 11, { duration: 0.8 }));
+      return marker;
+    });
+
+    const bounds = L.latLngBounds(stopsData.map((s) => [s.lat, s.lon] as [number, number]));
+    map.fitBounds(bounds, { padding: [40, 40] });
+
+    document.getElementById('journey-reset')?.addEventListener('click', () => {
+      map.closePopup();
+      map.flyToBounds(bounds, { padding: [40, 40], duration: 0.8 });
+    });
+  }
+</script>
