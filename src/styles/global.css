@@ -888,26 +888,6 @@
     transform: translate(3px, -3px);
   }
 
-  .quote-band {
-    padding-block: clamp(5rem, 10vw, 10rem);
-    background: var(--signal);
-    color: var(--ink);
-  }
-
-  .quote-statement {
-    max-width: 21ch;
-    font-size: clamp(2.6rem, 6.5vw, 6.6rem);
-    font-weight: 520;
-    letter-spacing: -0.065em;
-    line-height: 0.98;
-  }
-
-  .quote-statement em {
-    color: var(--paper-bright);
-    font-family: Georgia, serif;
-    font-weight: 400;
-  }
-
   .page-hero {
     position: relative;
     overflow: hidden;
