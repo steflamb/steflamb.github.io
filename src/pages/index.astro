@@ -63,6 +63,9 @@ const menuBlocks = [
     imageWidth: 600,
     imageHeight: 601,
     imageAlt: 'Stefano Carlo Lambertenghi',
+    contain: true,
+    transparent: true,
+    inset: true,
     secondaryLink: { label: 'Open the CV', href: '/cv/' },
   },
   {
@@ -111,7 +114,7 @@ const menuBlocks = [
       {menuBlocks.map((block) => (
         <article class="mini-feature" data-reveal>
           <div
-            class:list={['mini-feature-visual', { 'mini-feature-visual-3d': block.is3D, 'mini-feature-visual-contain': block.contain, 'mini-feature-visual-transparent': block.transparent }]}
+            class:list={['mini-feature-visual', { 'mini-feature-visual-3d': block.is3D, 'mini-feature-visual-contain': block.contain, 'mini-feature-visual-transparent': block.transparent, 'mini-feature-visual-inset': block.inset }]}
             style={block.is3D ? undefined : `--visual-ratio: ${block.imageWidth} / ${block.imageHeight};`}
           >
             {block.is3D ? (

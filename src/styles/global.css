@@ -808,6 +808,10 @@
     background: transparent;
   }
 
+  .mini-feature-visual-inset {
+    padding: clamp(2rem, 7vw, 4.5rem);
+  }
+
   .mini-feature-visual-3d {
     display: flex;
     align-items: center;
@@ -1422,7 +1426,7 @@
   }
 
   .theme-card h3 {
-    margin-top: auto;
+    margin-top: 0.9rem;
     font-size: clamp(1.65rem, 3vw, 2.5rem);
     font-weight: 530;
     letter-spacing: -0.05em;
