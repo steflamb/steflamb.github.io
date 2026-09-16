@@ -6,7 +6,7 @@ const menuBlocks = [
     kicker: 'The reality gap',
     title: 'Research.',
     description:
-      'How well results transfer between simulation and the real world, how to make a system more robust once that gap is measured, and how to reuse real driving data to make simulation more realistic in turn.',
+      'How well results transfer between simulation and the real world, how to make a system more robust once that gap is measured, and how to reuse real driving data to make simulation more realistic.',
     href: '/research/',
     linkLabel: 'Explore the research',
     image: '/images/reality-gap.png',
@@ -35,7 +35,7 @@ const menuBlocks = [
       'A practicum course on testing autonomous-driving systems, and the student projects I have supervised or co-supervised around it.',
     href: '/teaching/',
     linkLabel: 'See the projects',
-    image: '/images/matthias-andrea-me.jpg',
+    image: '/images/matthias-andrea-me.png',
     imageWidth: 1400,
     imageHeight: 1050,
     imageAlt: 'Matthias Weil, Andrea Stocco, and Stefano Carlo Lambertenghi next to Fortuna',
@@ -59,22 +59,11 @@ const menuBlocks = [
     description: 'Where I grew up, how I ended up here, and what I do outside research.',
     href: '/about/',
     linkLabel: 'Read more',
-    image: '/images/me.jpg',
+    image: '/images/me.png',
     imageWidth: 600,
     imageHeight: 601,
     imageAlt: 'Stefano Carlo Lambertenghi',
-  },
-  {
-    kicker: 'Résumé',
-    title: 'CV.',
-    description: 'Education, experience, and a full list of publications.',
-    href: '/cv/',
-    linkLabel: 'Open the CV',
-    image: '/images/cv-preview.jpg',
-    imageWidth: 1654,
-    imageHeight: 795,
-    imageAlt: "A preview of Stefano Carlo Lambertenghi's CV",
-    contain: true,
+    secondaryLink: { label: 'Open the CV', href: '/cv/' },
   },
   {
     kicker: 'Just for fun',
@@ -143,9 +132,16 @@ const menuBlocks = [
             <p class="feature-kicker">{block.kicker}</p>
             <h2>{block.title}</h2>
             <p>{block.description}</p>
-            <a class="text-link" href={block.href}>
-              {block.linkLabel} <span aria-hidden="true">↗︎</span>
-            </a>
+            <div class="mini-feature-links">
+              <a class="text-link" href={block.href}>
+                {block.linkLabel} <span aria-hidden="true">↗︎</span>
+              </a>
+              {block.secondaryLink && (
+                <a class="text-link" href={block.secondaryLink.href}>
+                  {block.secondaryLink.label} <span aria-hidden="true">↗︎</span>
+                </a>
+              )}
+            </div>
           </div>
         </article>
       ))}

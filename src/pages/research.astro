@@ -5,8 +5,15 @@ import { profileLinks, publications } from '../data/site';
 const cam2simPaper = publications.find((p) => p.title.startsWith('Cam2Sim'))!;
 const realityGapPaper = publications.find((p) => p.title.startsWith('A Multi-Modality Evaluation'))!;
 const perturbationBenchmarkPaper = publications.find((p) => p.title.startsWith('Benchmarking Image Perturbations'))!;
+const perturbationDriveJournalPaper = publications.find((p) => p.title.startsWith('PerturbationDrive:'))!;
 const forecastingPaper = publications.find((p) => p.title.startsWith('Misbehavior Forecasting'))!;
 const qualityMetricsPaper = publications.find((p) => p.title.startsWith('Assessing Quality Metrics'))!;
+
+const paperLink = (p: (typeof publications)[number]) => ({
+  meta: `${p.venue} · ${p.year}`,
+  label: p.title,
+  href: p.paper,
+});
 
 const themes = [
   {
@@ -14,40 +21,43 @@ const themes = [
     title: 'Reality-gap measurement',
     copy: 'Measure which actuation, perception, and behavioral differences matter when a test moves between virtual and physical environments.',
     finding: 'Vehicle-in-the-loop testing reduced the actuation gap, and mixed-reality testing reduced the perception gap, compared with simulation alone.',
-    tags: ['SiL', 'ViL', 'Mixed reality', 'Physical testing'],
+    links: [paperLink(realityGapPaper)],
   },
   {
     number: '02',
     title: 'Robustness under perturbation',
     copy: 'Stress camera and LiDAR pipelines, then follow the effect beyond model accuracy into timing, planning, control, and system behavior.',
     finding: 'Offline robustness was only weakly predictive of closed-loop failures on the real vehicle; training on perturbed data improved robustness under adverse conditions.',
-    tags: ['Camera', 'LiDAR', 'Closed loop', 'PerturbationDrive'],
+    links: [paperLink(perturbationBenchmarkPaper), paperLink(perturbationDriveJournalPaper)],
   },
   {
     number: '03',
     title: 'Focused failure discovery',
     copy: 'Use near misses and predicted future states to spend the testing budget where failures are more likely to surface.',
     finding: 'Focusing the search around forecasted near misses found failures using a smaller testing budget than an unfocused search.',
-    tags: ['Forecasting', 'Search', 'CARLA', 'System testing'],
+    links: [paperLink(forecastingPaper)],
   },
   {
     number: '04',
     title: 'Real-to-simulation reconstruction',
     copy: 'Turn recorded road scenes into replayable simulations that preserve the geometry, trajectory, and visual character of the original drive.',
     finding: "It's not a full replacement for the real environment, but it lets us reuse real drives for closed-loop testing.",
-    tags: ['Cam2Sim', 'Gaussian Splatting', 'OSM', 'CARLA'],
+    links: [paperLink(cam2simPaper), paperLink(qualityMetricsPaper)],
   },
   {
     number: '05',
     title: 'Execution environments',
     copy: 'The interfaces and tooling that let the same test run in simulation, hardware-in-the-loop, or on a physical vehicle, without rewriting it each time.',
-    tags: ['ROS', 'Hardware-in-loop', 'Tooling', 'Reproducibility'],
+    links: [paperLink(realityGapPaper)],
   },
   {
     number: '06',
     title: 'Research platforms',
     copy: 'Fortuna, the small-scale platform, and the tools around them are maintained so other students and researchers can keep using them, not just demo them once.',
-    tags: ['Fortuna', 'Open artifacts', 'Supervision', 'Field work'],
+    links: [
+      { meta: 'Vehicle', label: 'Fortuna, the research platform', href: '/fortuna/' },
+      { meta: 'Students', label: 'Teaching and student projects', href: '/teaching/' },
+    ],
   },
 ];
 ---
@@ -56,23 +66,23 @@ const themes = [
   title="Research — Stefano Carlo Lambertenghi"
   description="Research on the reality gap, autonomous-driving robustness, failure forecasting, and real-to-simulation reconstruction."
 >
-  <section class="page-hero">
-    <div class="page-hero-inner research-hero-stacked container-wide">
+  <section class="page-hero page-hero-light">
+    <div class="page-hero-inner research-hero-grid container-wide">
       <div>
         <p class="eyebrow">Research / simulation ↔ reality</p>
         <h1 class="page-title">Research.</h1>
         <p class="page-hero-copy">
           I study how well results transfer between simulation and the real world, how to make an
           autonomous-driving system more robust once that gap is measured, and how to reuse real
-          driving data to make simulation more realistic in turn.
+          driving data to make simulation more realistic.
         </p>
       </div>
-      <div class="diagram-plate research-hero-image-full">
+      <div class="diagram-plate research-hero-image-small">
         <img
-          src="/images/methodology.jpg"
-          alt="Diagram of the sim-to-real testing approach: a scenario runs through both physics and perception, is measured against real behavior, and mitigations feed back into the system"
-          width="2400"
-          height="1104"
+          src="/images/reality-gap.jpg"
+          alt="Diagram showing the gap between an autonomous driving system's simulated behavior and its real behavior on the same road"
+          width="2260"
+          height="1995"
           loading="eager"
         />
       </div>
@@ -88,15 +98,6 @@ const themes = [
         </div>
       </div>
 
-      <img
-        class="theme-heading-diagram-full"
-        src="/images/reality-gap.png"
-        alt="Diagram showing the gap between an autonomous driving system's simulated behavior and its real behavior on the same road"
-        width="1200"
-        height="1060"
-        loading="lazy"
-      />
-
       <div class="theme-grid">
         {themes.map((theme) => (
           <article class="theme-card" data-reveal>
@@ -106,8 +107,13 @@ const themes = [
             {theme.finding && (
               <p class="theme-finding"><strong>Found:</strong> {theme.finding}</p>
             )}
-            <div class="theme-tags" aria-label={`${theme.title} topics`}>
-              {theme.tags.map((tag) => <span>{tag}</span>)}
+            <div class="theme-papers" aria-label={`Related work on ${theme.title}`}>
+              {theme.links.map((link) => (
+                <a class="theme-paper" href={link.href} target={link.href.startsWith('/') ? undefined : '_blank'} rel={link.href.startsWith('/') ? undefined : 'noreferrer'}>
+                  <span class="theme-paper-meta">{link.meta}</span>
+                  <span class="theme-paper-title">{link.label} <span aria-hidden="true">↗︎</span></span>
+                </a>
+              ))}
             </div>
           </article>
         ))}

@@ -7,21 +7,34 @@ import { profileLinks, publications } from '../data/site';
   title="Publications — Stefano Carlo Lambertenghi"
   description="Selected publications on autonomous-driving testing, the simulation-to-reality gap, robustness, and failure discovery."
 >
-  <section class="page-hero publications-hero">
-    <div class="page-hero-inner container-wide">
-      <div>
-        <p class="eyebrow">2023–2026</p>
-        <h1 class="page-title">Selected publications.</h1>
-      </div>
-      <div class="page-hero-copy">
-        <p>
-          A complete list is available on DBLP.
-        </p>
-        <div class="hero-actions">
-          <a class="button-secondary" href={profileLinks.dblp} target="_blank" rel="noreferrer">
-            DBLP profile
-          </a>
+  <section class="page-hero page-hero-light publications-hero">
+    <div class="page-hero-inner research-hero-stacked container-wide">
+      <div class="publications-hero-top">
+        <div>
+          <p class="eyebrow">2023–2026</p>
+          <h1 class="page-title">Selected publications.</h1>
         </div>
+        <div class="page-hero-copy-col">
+          <p class="page-hero-copy">
+            Peer-reviewed papers, executable tools, and replication packages on the reality gap,
+            robustness under perturbation, and reusing real driving data for simulation. A complete
+            list is available on DBLP.
+          </p>
+          <div class="hero-actions">
+            <a class="button-secondary" href={profileLinks.dblp} target="_blank" rel="noreferrer">
+              DBLP profile
+            </a>
+          </div>
+        </div>
+      </div>
+      <div class="diagram-plate research-hero-image-full">
+        <img
+          src="/images/whatido.png"
+          alt="Diagram of the sim-to-real testing approach: a scenario runs through both physics and perception, is measured against real behavior, and mitigations feed back into the system"
+          width="2400"
+          height="1104"
+          loading="eager"
+        />
       </div>
     </div>
   </section>
