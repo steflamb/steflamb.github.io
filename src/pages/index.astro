@@ -121,7 +121,10 @@ const menuBlocks = [
     <div class="container-wide">
       {menuBlocks.map((block) => (
         <article class="mini-feature" data-reveal>
-          <div class:list={['mini-feature-visual', { 'mini-feature-visual-3d': block.is3D, 'mini-feature-visual-contain': block.contain, 'mini-feature-visual-transparent': block.transparent }]}>
+          <div
+            class:list={['mini-feature-visual', { 'mini-feature-visual-3d': block.is3D, 'mini-feature-visual-contain': block.contain, 'mini-feature-visual-transparent': block.transparent }]}
+            style={block.is3D ? undefined : `--visual-ratio: ${block.imageWidth} / ${block.imageHeight};`}
+          >
             {block.is3D ? (
               <div class="video-frame" id="home-3d-frame">
                 <canvas id="home-3d-preview" aria-label="Rotating 3D model of Fortuna"></canvas>

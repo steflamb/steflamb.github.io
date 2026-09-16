@@ -2012,6 +2012,11 @@
       order: 2;
     }
 
+    .mini-feature-visual:not(.mini-feature-visual-3d) {
+      min-height: 0;
+      aspect-ratio: var(--visual-ratio, 4 / 3);
+    }
+
     .fortuna-feature-copy {
       min-height: 42rem;
     }
