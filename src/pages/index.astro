@@ -1,12 +1,103 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import { publications } from '../data/site';
 
-const featuredPublications = publications.slice(0, 4);
+const menuBlocks = [
+  {
+    kicker: 'The reality gap',
+    title: 'Research.',
+    description:
+      'How well results transfer between simulation and the real world, how to make a system more robust once that gap is measured, and how to reuse real driving data to make simulation more realistic in turn.',
+    href: '/research/',
+    linkLabel: 'Explore the research',
+    image: '/images/reality-gap.png',
+    imageWidth: 2667,
+    imageHeight: 2662,
+    imageAlt: "Diagram showing the gap between an autonomous driving system's simulated behavior and its real behavior on the same road",
+    contain: true,
+    transparent: true,
+  },
+  {
+    kicker: 'The research platform',
+    title: 'Fortuna.',
+    description:
+      'A full-size, street-legal Volkswagen Passat used for camera- and LiDAR-based autonomous-driving research, which I brought back into operation after a period of inactivity.',
+    href: '/fortuna/',
+    linkLabel: 'Meet Fortuna',
+    image: '/images/fortuna-profile.png',
+    imageWidth: 775,
+    imageHeight: 435,
+    imageAlt: "Fortuna, fortiss's modified Passat GTE, with its roof-mounted camera and LiDAR sensor rack",
+  },
+  {
+    kicker: 'Students and courses',
+    title: 'Teaching.',
+    description:
+      'A practicum course on testing autonomous-driving systems, and the student projects I have supervised or co-supervised around it.',
+    href: '/teaching/',
+    linkLabel: 'See the projects',
+    image: '/images/matthias-andrea-me.jpg',
+    imageWidth: 1400,
+    imageHeight: 1050,
+    imageAlt: 'Matthias Weil, Andrea Stocco, and Stefano Carlo Lambertenghi next to Fortuna',
+  },
+  {
+    kicker: 'Selected work',
+    title: 'Publications.',
+    description: 'Peer-reviewed papers, executable tools, and replication packages.',
+    href: '/publications/',
+    linkLabel: 'Read the papers',
+    image: '/images/whatido.png',
+    imageWidth: 2400,
+    imageHeight: 1104,
+    imageAlt: 'Diagram of the sim-to-real testing approach: a scenario runs through both physics and perception, is measured against real behavior, and mitigations feed back into the system',
+    contain: true,
+    transparent: true,
+  },
+  {
+    kicker: 'The longer version',
+    title: 'About.',
+    description: 'Where I grew up, how I ended up here, and what I do outside research.',
+    href: '/about/',
+    linkLabel: 'Read more',
+    image: '/images/me.jpg',
+    imageWidth: 600,
+    imageHeight: 601,
+    imageAlt: 'Stefano Carlo Lambertenghi',
+  },
+  {
+    kicker: 'Résumé',
+    title: 'CV.',
+    description: 'Education, experience, and a full list of publications.',
+    href: '/cv/',
+    linkLabel: 'Open the CV',
+    image: '/images/cv-preview.jpg',
+    imageWidth: 1654,
+    imageHeight: 795,
+    imageAlt: "A preview of Stefano Carlo Lambertenghi's CV",
+    contain: true,
+  },
+  {
+    kicker: 'Just for fun',
+    title: 'Drive Fortuna.',
+    description: 'I scanned Fortuna into a 3D model. Take it for a spin, no research question required.',
+    href: '/garage/',
+    linkLabel: 'Open it up',
+    is3D: true,
+  },
+];
 ---
 
 <BaseLayout>
   <section class="hero">
+    <div class="hero-visual" aria-label="Stefano Carlo Lambertenghi standing next to Fortuna">
+      <img
+        src="/images/me-and-fortuna.jpg"
+        alt="Stefano Carlo Lambertenghi standing next to Fortuna"
+        width="1400"
+        height="1050"
+        loading="eager"
+      />
+    </div>
     <div class="hero-layout container-wide">
       <div class="hero-copy">
         <p class="eyebrow">fortiss · Technical University of Munich</p>
@@ -14,142 +105,127 @@ const featuredPublications = publications.slice(0, 4);
           Stefano Carlo <em>Lambertenghi.</em>
         </h1>
         <p class="hero-intro">
+          I like taking systems apart to see why they break, then putting them back together
+          better. Fortuna, the research vehicle on the right, is the biggest thing I have taken
+          apart so far.
+        </p>
+        <p class="hero-intro">
           Researcher at fortiss, doctoral candidate at TUM, and technical lead for Fortuna, our
           autonomous-driving research vehicle.
         </p>
-        <p class="hero-intro">
-          I work on testing autonomous-driving systems, in particular the differences between
-          simulation and real-world execution, using simulation, machine learning, and
-          experiments with real vehicles.
-        </p>
-        <div class="hero-actions">
-          <a class="button" href="/fortuna/">Meet Fortuna</a>
-          <a class="button-secondary" href="/research/">Explore the research</a>
-        </div>
-      </div>
-
-      <div class="hero-visual" aria-label="Fortuna, the fortiss research vehicle">
-        <div class="fortuna-photo">
-          <img
-            src="/images/home-hero.png"
-            alt="Fortuna split down the middle: the real vehicle on the left, its digital twin model on the right"
-            width="1400"
-            height="1225"
-            loading="eager"
-          />
-        </div>
       </div>
     </div>
   </section>
 
-  <section class="section" aria-labelledby="work-heading">
+  <section class="mini-feature-list" aria-label="Explore the site">
     <div class="container-wide">
-      <div class="section-heading" data-reveal>
-        <p class="eyebrow">What I work on</p>
-        <div>
-          <h2 id="work-heading" class="display-title">
-            Simulation and real-world <em>testing.</em>
-          </h2>
-          <p class="section-lede">
-            Testing autonomous-driving systems only in the real world is expensive and difficult,
-            so we use simulation instead. My research looks at how well results from simulation
-            transfer to a real vehicle, how that gap can be measured, and how real driving data
-            can be brought back into simulation for further testing.
-          </p>
-        </div>
-      </div>
-
-      <div class="pillar-grid">
-        <a class="pillar-card" href="/fortuna/" data-reveal>
-          <span class="pillar-number">01 / PLATFORM</span>
-          <span class="pillar-symbol" aria-hidden="true">F.</span>
-          <h3>Fortuna</h3>
-          <p>A full-size, street-legal research vehicle used for camera and LiDAR testing on public roads.</p>
-          <span class="pillar-arrow" aria-hidden="true">↗︎</span>
-        </a>
-        <a class="pillar-card" href="/research/" data-reveal>
-          <span class="pillar-number">02 / METHOD</span>
-          <span class="pillar-symbol" aria-hidden="true">S↔R</span>
-          <h3>Simulation to reality</h3>
-          <p>Testing, reconstruction, perturbation, and validation across multiple levels of fidelity.</p>
-          <span class="pillar-arrow" aria-hidden="true">↗︎</span>
-        </a>
-        <a class="pillar-card" href="/publications/" data-reveal>
-          <span class="pillar-number">03 / OPEN RESEARCH</span>
-          <span class="pillar-symbol" aria-hidden="true">O</span>
-          <h3>Code, data, and papers</h3>
-          <p>Peer-reviewed papers, executable tools, and replication packages.</p>
-          <span class="pillar-arrow" aria-hidden="true">↗︎</span>
-        </a>
-      </div>
+      {menuBlocks.map((block) => (
+        <article class="mini-feature" data-reveal>
+          <div class:list={['mini-feature-visual', { 'mini-feature-visual-3d': block.is3D, 'mini-feature-visual-contain': block.contain, 'mini-feature-visual-transparent': block.transparent }]}>
+            {block.is3D ? (
+              <div class="video-frame" id="home-3d-frame">
+                <canvas id="home-3d-preview" aria-label="Rotating 3D model of Fortuna"></canvas>
+              </div>
+            ) : (
+              <img
+                src={block.image}
+                alt={block.imageAlt}
+                width={block.imageWidth}
+                height={block.imageHeight}
+                loading="lazy"
+              />
+            )}
+          </div>
+          <div class="mini-feature-copy">
+            <p class="feature-kicker">{block.kicker}</p>
+            <h2>{block.title}</h2>
+            <p>{block.description}</p>
+            <a class="text-link" href={block.href}>
+              {block.linkLabel} <span aria-hidden="true">↗︎</span>
+            </a>
+          </div>
+        </article>
+      ))}
     </div>
   </section>
-
-  <section class="fortuna-feature" aria-labelledby="fortuna-heading">
-    <div class="fortuna-feature-visual">
-      <figure class="fortuna-photo">
-        <img
-          src="/images/fortuna-profile.png"
-          alt="Fortuna, fortiss's modified Passat GTE, with its roof-mounted camera and LiDAR sensor rack"
-          width="775"
-          height="435"
-          loading="lazy"
-        />
-        <figcaption class="video-frame-caption">(I am horrible at cropping images.)</figcaption>
-      </figure>
-    </div>
-    <div class="fortuna-feature-copy">
-      <div class="fortuna-feature-lead">
-        <p class="feature-kicker">The research platform</p>
-        <h2 id="fortuna-heading">Meet <em>Fortuna.</em></h2>
-        <p class="feature-description">
-          A 2018 Volkswagen Passat Variant GTE turned into a working experimental platform for
-          camera- and LiDAR-based autonomous driving, hardware-in-the-loop testing, and
-          public-road research.
-        </p>
-      </div>
-      <div>
-        <div class="feature-metrics" aria-label="Recent Fortuna study metrics">
-          <div class="feature-metric"><strong>72</strong><span>camera + LiDAR perturbations</span></div>
-          <div class="feature-metric"><strong>740+</strong><span>test executions</span></div>
-          <div class="feature-metric"><strong>48h+</strong><span>physical driving in one study</span></div>
-          <div class="feature-metric"><strong>3</strong><span>testing modalities compared</span></div>
-        </div>
-        <a class="feature-source" href="https://arxiv.org/abs/2607.04953" target="_blank" rel="noreferrer">
-          Source: ASE 2026 study ↗︎
-        </a>
-        <a class="text-link" href="/fortuna/">Read Fortuna’s story <span aria-hidden="true">↗︎</span></a>
-      </div>
-    </div>
-  </section>
-
-  <section class="section" aria-labelledby="papers-heading">
-    <div class="container-wide publication-preview">
-      <div class="publication-preview-copy" data-reveal>
-        <p class="eyebrow">Selected work</p>
-        <h2 id="papers-heading" class="display-title">Publications.</h2>
-        <p class="section-lede">
-          Papers on the reality gap, robustness testing, failure forecasting, and reconstructing
-          real drives in simulation.
-        </p>
-        <a class="text-link" href="/publications/" style="margin-top: 2rem;">
-          All publications <span aria-hidden="true">→</span>
-        </a>
-      </div>
-
-      <div class="publication-mini-list">
-        {featuredPublications.map((publication) => (
-          <a class="publication-mini" href={publication.paper} target="_blank" rel="noreferrer" data-reveal>
-            <span class="pub-year">{publication.year}</span>
-            <span>
-              <span class="pub-venue">{publication.venue}</span>
-              <h3>{publication.title}</h3>
-            </span>
-            <span class="pub-arrow" aria-hidden="true">↗︎</span>
-          </a>
-        ))}
-      </div>
-    </div>
-  </section>
-
 </BaseLayout>
+
+<script>
+  import * as THREE from 'three';
+  import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+  import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
+
+  const canvas = document.getElementById('home-3d-preview') as HTMLCanvasElement | null;
+  const frame = document.getElementById('home-3d-frame') as HTMLElement | null;
+
+  if (canvas && frame) {
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(38, 1, 0.1, 100);
+    const viewDir = new THREE.Vector3(3.4, 1.7, 4.6).normalize();
+    camera.position.copy(viewDir).multiplyScalar(6);
+    camera.lookAt(0, 0, 0);
+
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+
+    scene.add(new THREE.HemisphereLight('#ffffff', '#1b1f1c', 1.1));
+    const key = new THREE.DirectionalLight('#fff6e8', 2.2);
+    key.position.set(4, 6, 3);
+    scene.add(key);
+    const rim = new THREE.DirectionalLight('#ff6034', 0.6);
+    rim.position.set(-4, 2, -4);
+    scene.add(rim);
+
+    let model: THREE.Object3D | null = null;
+    let modelRadius = 0;
+
+    function fitCamera() {
+      if (!modelRadius) return;
+      const vFov = THREE.MathUtils.degToRad(camera.fov);
+      const hFov = 2 * Math.atan(Math.tan(vFov / 2) * camera.aspect);
+      const margin = 1.2;
+      const distance = Math.max(modelRadius / Math.sin(vFov / 2), modelRadius / Math.sin(hFov / 2)) * margin;
+      camera.position.copy(viewDir).multiplyScalar(distance);
+      camera.lookAt(0, 0, 0);
+      camera.updateProjectionMatrix();
+    }
+
+    const dracoLoader = new DRACOLoader();
+    dracoLoader.setDecoderPath('/draco/');
+    const loader = new GLTFLoader();
+    loader.setDRACOLoader(dracoLoader);
+    loader.load('/models/fortuna.glb', (gltf) => {
+      model = gltf.scene;
+      const box = new THREE.Box3().setFromObject(model);
+      const center = new THREE.Vector3();
+      box.getCenter(center);
+      model.position.sub(center);
+      const sphere = new THREE.Sphere();
+      box.getBoundingSphere(sphere);
+      modelRadius = sphere.radius;
+      scene.add(model);
+      fitCamera();
+    });
+
+    function resize() {
+      const w = frame!.clientWidth;
+      const h = frame!.clientHeight;
+      if (!w || !h) return;
+      renderer.setSize(w, h, false);
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+      fitCamera();
+    }
+
+    const resizeObserver = new ResizeObserver(resize);
+    resizeObserver.observe(frame);
+    resize();
+
+    function tick() {
+      requestAnimationFrame(tick);
+      if (model) model.rotation.y += 0.005;
+      renderer.render(scene, camera);
+    }
+    tick();
+  }
+</script>

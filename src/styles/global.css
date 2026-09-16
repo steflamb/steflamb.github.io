@@ -362,12 +362,10 @@
 
   .hero-layout {
     position: relative;
-    z-index: 1;
-    display: grid;
-    min-height: calc(100svh - 7rem);
-    grid-template-columns: minmax(0, 0.82fr) minmax(28rem, 1.18fr);
+    z-index: 2;
+    display: flex;
     align-items: center;
-    gap: clamp(1.5rem, 3vw, 4rem);
+    min-height: calc(100svh - 7rem);
     padding-bottom: 3rem;
   }
 
@@ -375,6 +373,7 @@
     position: relative;
     z-index: 2;
     min-width: 0;
+    max-width: 42rem;
     padding-block: 3rem;
   }
 
@@ -392,9 +391,11 @@
   }
 
   .hero-title em {
+    display: inline-block;
     color: var(--signal);
     font-family: Georgia, serif;
     font-weight: 400;
+    font-size: 0.82em;
     white-space: nowrap;
   }
 
@@ -423,8 +424,22 @@
   }
 
   .hero-visual {
-    position: relative;
+    position: absolute;
+    z-index: 1;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: clamp(22rem, 46vw, 46rem);
+    overflow: hidden;
     min-width: 0;
+  }
+
+  .hero-visual img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 24% 32%;
   }
 
   .fortuna-photo {
@@ -735,6 +750,108 @@
 
   .feature-source:hover {
     opacity: 1;
+  }
+
+  .mini-feature-list {
+    padding-block: var(--section-space);
+  }
+
+  .mini-feature {
+    display: grid;
+    min-height: 22rem;
+    grid-template-columns: minmax(18rem, 1fr) minmax(0, 1.15fr);
+    border-top: 1px solid var(--line);
+  }
+
+  .mini-feature:last-child {
+    border-bottom: 1px solid var(--line);
+  }
+
+  .mini-feature-visual {
+    order: 1;
+    position: relative;
+    overflow: hidden;
+    min-height: 16rem;
+  }
+
+  .mini-feature:nth-child(even) .mini-feature-visual {
+    order: 2;
+  }
+
+  .mini-feature-visual img,
+  .mini-feature-visual canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .mini-feature-visual .video-frame {
+    width: 100%;
+    height: 100%;
+    aspect-ratio: auto;
+    border-radius: 0;
+    background: transparent;
+  }
+
+  .mini-feature-visual-contain {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--paper-bright);
+  }
+
+  .mini-feature-visual-contain img {
+    height: auto;
+    object-fit: contain;
+  }
+
+  .mini-feature-visual-transparent {
+    background: transparent;
+  }
+
+  .mini-feature-visual-3d {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+  }
+
+  .mini-feature-visual-3d .video-frame {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 4 / 3;
+  }
+
+  .mini-feature-copy {
+    order: 2;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: clamp(2rem, 4vw, 3.5rem) var(--gutter);
+  }
+
+  .mini-feature:nth-child(even) .mini-feature-copy {
+    order: 1;
+  }
+
+  .mini-feature-copy h2 {
+    margin-block: 0.75rem 1rem;
+    font-size: clamp(2.2rem, 4vw, 3.2rem);
+    font-weight: 530;
+    letter-spacing: -0.05em;
+    line-height: 0.95;
+  }
+
+  .mini-feature-copy p {
+    max-width: 30rem;
+    color: var(--muted);
+    font-size: clamp(0.95rem, 1.3vw, 1.1rem);
+    line-height: 1.5;
+  }
+
+  .mini-feature-copy .text-link {
+    margin-top: 1.5rem;
   }
 
   .research-loop {
@@ -1865,8 +1982,12 @@
   }
 
   @media (max-width: 68rem) {
-    .hero-layout {
-      grid-template-columns: minmax(0, 0.9fr) minmax(21rem, 1.1fr);
+    .hero-visual {
+      width: clamp(18rem, 40vw, 32rem);
+    }
+
+    .hero-copy {
+      max-width: 30rem;
     }
 
     .hero-title {
@@ -1875,6 +1996,20 @@
 
     .fortuna-feature {
       grid-template-columns: 1fr;
+    }
+
+    .mini-feature {
+      grid-template-columns: 1fr;
+    }
+
+    .mini-feature-visual,
+    .mini-feature:nth-child(even) .mini-feature-visual {
+      order: 1;
+    }
+
+    .mini-feature-copy,
+    .mini-feature:nth-child(even) .mini-feature-copy {
+      order: 2;
     }
 
     .fortuna-feature-copy {
@@ -1968,12 +2103,13 @@
     }
 
     .hero-layout {
+      display: block;
       min-height: auto;
-      grid-template-columns: 1fr;
-      padding-bottom: 5rem;
+      padding-bottom: 1.5rem;
     }
 
     .hero-copy {
+      max-width: none;
       padding-bottom: 0;
     }
 
@@ -1983,8 +2119,13 @@
     }
 
     .hero-visual {
-      width: min(100%, 38rem);
-      margin-inline: auto;
+      position: relative;
+      top: auto;
+      right: auto;
+      bottom: auto;
+      width: 100%;
+      height: 16rem;
+      margin-bottom: 1.5rem;
     }
 
     .section-heading,
