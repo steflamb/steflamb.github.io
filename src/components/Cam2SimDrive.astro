@@ -8,6 +8,10 @@
     <figure class="c2s-pane">
       <canvas id="c2s-sim" aria-hidden="true"></canvas>
       <figcaption>Simulator</figcaption>
+      <small class="c2s-attribution">
+        Map data ©
+        <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">OpenStreetMap contributors</a>
+      </small>
     </figure>
     <figure class="c2s-pane" id="c2s-splat-pane">
       <canvas id="c2s-splat" aria-hidden="true"></canvas>
@@ -97,6 +101,20 @@
     font-size: 0.6875rem;
     letter-spacing: 0.06em;
     text-transform: uppercase;
+  }
+
+  .c2s-attribution {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    padding: 0.2rem 0.45rem;
+    background: rgba(250, 248, 241, 0.85);
+    color: var(--ink);
+    font-size: 0.6875rem;
+  }
+
+  .c2s-attribution a {
+    color: inherit;
   }
 
   .c2s-pane:last-of-type figcaption {

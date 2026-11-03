@@ -22,14 +22,19 @@ type Split = {
   width: number;
   height: number;
 };
-type Drive = { path: [number, number, number, number][]; splits: Split[] };
+type OsmMap = {
+  roads: { w: number; pts: number[][] }[];
+  paths: { w: number; pts: number[][] }[];
+  buildings: { h: number; pts: number[][] }[];
+  green: number[][][];
+};
+type Drive = { path: [number, number, number, number][]; splits: Split[]; map: OsmMap };
 type Cameras = { poses: number[][]; frames: [number, string][] };
 
 // The splats only cover views near the recorded drive, so the car stays in this corridor.
 const MAX_OFFSET = 1.3; // metres either side of the recorded path
 const MAX_HEADING = THREE.MathUtils.degToRad(28);
 const MAX_SPEED = 9;
-const ROAD_HALF_WIDTH = 3;
 
 const mat3 = (m: number[][]) => new THREE.Matrix4().set(...m[0], 0, ...m[1], 0, ...m[2], 0, 0, 0, 0, 1);
 
@@ -81,31 +86,59 @@ export async function startCam2SimDrive({ root, simCanvas, splatCanvas, recorded
     const material = new THREE.MeshStandardMaterial({ color, roughness: 0.95, side: THREE.DoubleSide, polygonOffset: true, polygonOffsetFactor: -height * 40 });
     return new THREE.Mesh(geometry, material);
   }
-  const ground = new THREE.Mesh(new THREE.PlaneGeometry(1200, 1200), new THREE.MeshStandardMaterial({ color: '#8a9480' }));
+  // The street network around the drive, from OpenStreetMap, in the drive's own frame.
+  const flat = (color: string, offset = 0) =>
+    new THREE.MeshStandardMaterial({ color, roughness: 0.95, side: THREE.DoubleSide, polygonOffset: true, polygonOffsetFactor: offset, polygonOffsetUnits: offset });
+  const ground = new THREE.Mesh(new THREE.PlaneGeometry(1600, 1600), flat('#a3a79a'));
   ground.rotation.x = -Math.PI / 2;
-  ground.position.set(150, -0.02, -60);
+  ground.position.set(140, -0.05, -80);
   sim.add(ground);
-  sim.add(strip(-ROAD_HALF_WIDTH - 2.2, ROAD_HALF_WIDTH + 2.2, 0, '#b9b8b1'));
-  sim.add(strip(-ROAD_HALF_WIDTH, ROAD_HALF_WIDTH, 0.01, '#4a4c4b'));
-  sim.add(strip(-ROAD_HALF_WIDTH + 0.15, -ROAD_HALF_WIDTH + 0.3, 0.02, '#e9e7df'));
-  sim.add(strip(ROAD_HALF_WIDTH - 0.3, ROAD_HALF_WIDTH - 0.15, 0.02, '#e9e7df'));
 
-  // The corridor the generated view can follow, drawn as a faint guide.
-  sim.add(strip(-MAX_OFFSET, MAX_OFFSET, 0.015, '#5a5d5b'));
+  const polygon = (pts: number[][]) => new THREE.Shape(pts.map(([x, y]) => new THREE.Vector2(x, y)));
+  const greenMaterial = flat('#8fa279', -1);
+  for (const pts of drive.map.green) {
+    const mesh = new THREE.Mesh(new THREE.ShapeGeometry(polygon(pts)), greenMaterial);
+    mesh.rotation.x = -Math.PI / 2;
+    mesh.position.y = 0.01;
+    sim.add(mesh);
+  }
 
-  // Blocks either side stand in for the buildings along the street.
-  const blockMaterial = new THREE.MeshStandardMaterial({ color: '#d7d6cf', roughness: 0.9 });
-  for (let i = 4; i < path.length - 4; i += 16) {
-    const h = headingAt(i);
-    for (const side of [-1, 1]) {
-      const d = ROAD_HALF_WIDTH + 2.2 + 7 + (i % 3) * 2;
-      const height = 9 + ((i * 7) % 11);
-      const block = new THREE.Mesh(new THREE.BoxGeometry(8, height, 12), blockMaterial);
-      const p = toWorld(path[i].x - Math.sin(h) * d * side, path[i].y + Math.cos(h) * d * side);
-      block.position.set(p.x, height / 2, p.z);
-      block.rotation.y = h;
-      sim.add(block);
-    }
+  // Roads as ribbons along their OSM centrelines, at their mapped or typical width.
+  function ribbon(pts: number[][], halfWidth: number, y: number, material: THREE.Material) {
+    const positions: number[] = [];
+    const indices: number[] = [];
+    pts.forEach(([x, z], i) => {
+      const [px, pz] = pts[Math.max(0, i - 1)];
+      const [nx, nz] = pts[Math.min(pts.length - 1, i + 1)];
+      const len = Math.hypot(nx - px, nz - pz) || 1;
+      const ox = (-(nz - pz) / len) * halfWidth;
+      const oz = ((nx - px) / len) * halfWidth;
+      positions.push(x + ox, y, -(z + oz), x - ox, y, -(z - oz));
+      if (i < pts.length - 1) indices.push(i * 2, i * 2 + 1, i * 2 + 2, i * 2 + 1, i * 2 + 3, i * 2 + 2);
+    });
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+    geometry.setIndex(indices);
+    geometry.computeVertexNormals();
+    return new THREE.Mesh(geometry, material);
+  }
+  const sidewalk = flat('#c4c2ba', -2);
+  const asphalt = flat('#4a4c4b', -3);
+  const footway = flat('#d3cfc3', -2);
+  for (const road of drive.map.roads) {
+    sim.add(ribbon(road.pts, road.w / 2 + 2, 0.02, sidewalk));
+    sim.add(ribbon(road.pts, road.w / 2, 0.03, asphalt));
+  }
+  for (const way of drive.map.paths) sim.add(ribbon(way.pts, way.w / 2, 0.025, footway));
+
+  // The corridor the generated view can follow, drawn as a faint guide on the street.
+  sim.add(strip(-MAX_OFFSET, MAX_OFFSET, 0.04, '#5d605e'));
+
+  const buildingMaterial = new THREE.MeshStandardMaterial({ color: '#dddbd3', roughness: 0.9 });
+  for (const building of drive.map.buildings) {
+    const geometry = new THREE.ExtrudeGeometry(polygon(building.pts), { depth: building.h, bevelEnabled: false });
+    geometry.rotateX(-Math.PI / 2);
+    sim.add(new THREE.Mesh(geometry, buildingMaterial));
   }
 
   const simCamera = new THREE.PerspectiveCamera(50, 16 / 10, 0.3, 800);
