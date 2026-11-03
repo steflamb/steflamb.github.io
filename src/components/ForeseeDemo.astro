@@ -1,0 +1,248 @@
+---
+// Foresee, interactive: monitor, classify, rank, clip and fuzz, as a small in-browser simulation.
+---
+
+<div class="demo-showcase fz" id="foresee-demo">
+  <div class="fz-stage">
+    <canvas id="fz-canvas" aria-hidden="true"></canvas>
+    <p class="fz-caption">Monitor · forecast 1.6 s ahead</p>
+  </div>
+
+  <div class="demo-showcase-copy">
+    <slot />
+
+    <div class="fz-pipeline">
+      <div class="fz-step">
+        <p class="fz-label">
+          Monitor <span id="fz-score-value">0%</span>
+        </p>
+        <div class="fz-score" id="fz-score" role="img" aria-label="How close the forecast comes to the road edge">
+          <i></i>
+        </div>
+      </div>
+
+      <div class="fz-step">
+        <p class="fz-label">Classify and rank: closest calls first</p>
+        <ol class="fz-list" id="fz-list"></ol>
+        <p class="fz-empty">Near misses appear here as the car laps the track.</p>
+      </div>
+
+      <div class="fz-step">
+        <p class="fz-label">Clip and fuzz</p>
+        <p class="fz-result" id="fz-result">Pick a near miss to replay the seconds before it as 24 varied runs.</p>
+        <div class="fz-actions">
+          <button type="button" class="fz-run" id="fz-run" aria-pressed="true">Pause</button>
+          <button type="button" class="fz-random" id="fz-random" disabled>Fuzz at random points instead</button>
+        </div>
+      </div>
+
+      <p class="fz-note">
+        A small simulation running in your browser to show the idea. The counts come from this
+        page, not from the paper.
+      </p>
+      <p class="sr-only" id="fz-status" aria-live="polite"></p>
+    </div>
+    <slot name="link" />
+  </div>
+</div>
+
+<style>
+  .fz {
+    align-items: start;
+  }
+
+  .fz-stage {
+    position: relative;
+    aspect-ratio: 4 / 3;
+    background: #9aa58c;
+  }
+
+  .fz-stage canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  .fz-caption {
+    position: absolute;
+    top: 0.8rem;
+    left: 0.8rem;
+    padding: 0.35rem 0.55rem;
+    background: rgba(16, 19, 17, 0.82);
+    color: #ffd23f;
+    font-family: var(--mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .fz-pipeline {
+    display: grid;
+    gap: 1.3rem;
+    margin-top: 1.6rem;
+  }
+
+  .fz-label {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+    color: var(--muted) !important;
+    font-size: 0.85rem !important;
+  }
+
+  .fz-label span {
+    color: var(--ink);
+    font-family: var(--mono);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .fz-score {
+    height: 0.6rem;
+    background: var(--line);
+  }
+
+  .fz-score i {
+    display: block;
+    width: var(--score, 0%);
+    height: 100%;
+    background: #e0a800;
+    transition: width 120ms linear;
+  }
+
+  .fz-score:global(.is-near) i {
+    background: var(--signal);
+  }
+
+  .fz-list {
+    display: grid;
+    gap: 0.3rem;
+    list-style: none;
+  }
+
+  .fz-list:not(:empty) + .fz-empty {
+    display: none;
+  }
+
+  .fz-empty {
+    font-size: 0.85rem !important;
+  }
+
+  .fz-list :global(button) {
+    display: grid;
+    grid-template-columns: 1.6rem 1fr auto;
+    align-items: center;
+    gap: 0.6rem;
+    width: 100%;
+    min-height: 2.75rem;
+    padding: 0 0.75rem;
+    border: 1px solid var(--line);
+    background: var(--paper-bright);
+    color: var(--ink);
+    font: inherit;
+    font-size: 0.85rem;
+    text-align: left;
+    cursor: pointer;
+  }
+
+  .fz-list :global(button span:first-child) {
+    display: grid;
+    width: 1.4rem;
+    height: 1.4rem;
+    place-items: center;
+    border-radius: 50%;
+    background: var(--ink);
+    color: var(--paper-bright);
+    font-family: var(--mono);
+    font-size: 0.75rem;
+  }
+
+  .fz-list :global(.fz-action) {
+    color: var(--signal-ink);
+    font-weight: 600;
+  }
+
+  .fz-list :global(button.is-active) {
+    border-color: var(--ink);
+    background: #ffd23f;
+  }
+
+  .fz-list :global(button:hover) {
+    border-color: var(--ink);
+  }
+
+  .fz-result {
+    font-size: 0.9rem !important;
+  }
+
+  .fz-result :global(strong) {
+    color: var(--ink);
+  }
+
+  .fz-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.8rem;
+  }
+
+  .fz-run,
+  .fz-random {
+    min-height: 2.75rem;
+    padding: 0 1rem;
+    border: 1px solid var(--ink);
+    border-radius: 0;
+    background: var(--ink);
+    color: var(--paper-bright);
+    font: inherit;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .fz-run[aria-pressed='true'],
+  .fz-random {
+    background: transparent;
+    color: var(--ink);
+  }
+
+  .fz-random:disabled {
+    opacity: 0.4;
+    cursor: default;
+  }
+
+  .fz-run:focus-visible,
+  .fz-random:focus-visible,
+  .fz-list :global(button:focus-visible) {
+    outline: 3px solid var(--signal);
+    outline-offset: 3px;
+  }
+
+  .fz-note {
+    font-size: 0.8rem !important;
+  }
+</style>
+
+<script>
+  const root = document.getElementById('foresee-demo');
+  if (root) {
+    new IntersectionObserver(
+      ([entry], observer) => {
+        if (!entry.isIntersecting) return;
+        observer.disconnect();
+        import('./foresee').then(({ startForesee }) =>
+          startForesee({
+            canvas: document.getElementById('fz-canvas') as HTMLCanvasElement,
+            scoreBar: document.getElementById('fz-score') as HTMLElement,
+            scoreValue: document.getElementById('fz-score-value') as HTMLElement,
+            list: document.getElementById('fz-list') as HTMLOListElement,
+            result: document.getElementById('fz-result') as HTMLElement,
+            runButton: document.getElementById('fz-run') as HTMLButtonElement,
+            randomButton: document.getElementById('fz-random') as HTMLButtonElement,
+            status: document.getElementById('fz-status') as HTMLElement,
+          }),
+        );
+      },
+      { rootMargin: '300px 0px' },
+    ).observe(root);
+  }
+</script>

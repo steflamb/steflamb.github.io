@@ -17,7 +17,8 @@ export const PERTURBATIONS: Perturbation[] = [
   { id: 'gaussian_blur', label: 'Gaussian blur', group: 'Blur' },
   { id: 'low_pass_filter', label: 'Low-pass filter', group: 'Blur' },
 
-  { id: 'increase_brightness', label: 'Brightness', group: 'Colour and tone' },
+  { id: 'increase_brightness', label: 'Brightness up', group: 'Colour and tone' },
+  { id: 'decrease_brightness', label: 'Brightness down', group: 'Colour and tone' },
   { id: 'contrast', label: 'Contrast', group: 'Colour and tone' },
   { id: 'saturation_filter', label: 'Saturation up', group: 'Colour and tone' },
   { id: 'saturation_decrease_filter', label: 'Saturation down', group: 'Colour and tone' },
@@ -304,6 +305,11 @@ export const perturbationFragment = /* glsl */ `
     } else if (uMode == ${m('increase_brightness')}) {
       vec3 h = rgb2hsv(col);
       h.z = min(h.z * pick(1.1, 1.2, 1.3, 1.5, 1.7), 1.0);
+      col = hsv2rgb(h);
+    } else if (uMode == ${m('decrease_brightness')}) {
+      // Not in perturbationfuncs.py; mirrors increase_brightness with the inverse factors.
+      vec3 h = rgb2hsv(col);
+      h.z /= pick(1.1, 1.2, 1.3, 1.5, 1.7);
       col = hsv2rgb(h);
     } else if (uMode == ${m('contrast')}) {
       col = 0.5 + (col - 0.5) * pick(1.1, 1.2, 1.3, 1.5, 1.7);

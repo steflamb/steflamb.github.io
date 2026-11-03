@@ -1,0 +1,408 @@
+---
+// PertOV on-vehicle results: each recorded run on the real street, its outcome, and a
+// simulated camera replay of the trajectory with the same perturbation applied.
+---
+
+<div class="demo-showcase pv" id="pertov-replay">
+  <div class="pv-stage">
+    <figure class="pv-pane pv-map-pane">
+      <svg class="pv-map" id="pv-map" role="img" aria-label="Map of Guerickestraße with the nominal run and the selected perturbed run"></svg>
+      <figcaption>Recorded trajectory</figcaption>
+      <ul class="pv-legend" aria-label="Distance from the nominal run">
+        <li><i style="background:#2f6f4f"></i>&lt; 0.5 m</li>
+        <li><i style="background:#e0a800"></i>&lt; 1.2 m</li>
+        <li><i style="background:#ff6034"></i>&lt; 2.5 m</li>
+        <li><i style="background:#b3001b"></i>more</li>
+      </ul>
+      <small class="pv-attribution">
+        Map data ©
+        <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">OpenStreetMap contributors</a>
+      </small>
+    </figure>
+    <figure class="pv-pane">
+      <canvas id="pv-canvas" aria-hidden="true"></canvas>
+      <figcaption>Simulator replay, bird's-eye</figcaption>
+      <p class="pv-readout" id="pv-readout" aria-hidden="true">Loading the runs…</p>
+    </figure>
+  </div>
+
+  <div class="demo-showcase-copy pv-copy">
+    <div>
+      <slot />
+      <div class="pv-steering">
+        <p class="pv-label">Steering, this run against the nominal run</p>
+        <svg id="pv-steering" aria-hidden="true"></svg>
+      </div>
+    </div>
+
+    <form class="pv-controls" id="pv-controls">
+      <div>
+        <label class="pv-label" for="pv-perturbation">Perturbation driven on the vehicle</label>
+        <select id="pv-perturbation" name="perturbation"></select>
+      </div>
+      <fieldset>
+        <legend class="pv-label">Intensity</legend>
+        <div class="pv-scale">
+          {[0, 1, 2, 3, 4].map((scale) => (
+            <label><input type="radio" name="scale" value={scale} checked={scale === 4} /><span>{scale}</span></label>
+          ))}
+        </div>
+      </fieldset>
+      <button type="button" class="pv-play" id="pv-play" aria-pressed="true">Pause</button>
+      <dl class="pv-card" id="pv-card" aria-live="polite"></dl>
+      <p class="pv-note">
+        Trajectories, outcomes and errors are the processed on-vehicle results published with
+        <a href="https://github.com/ast-fortiss-tum/pertOV" target="_blank" rel="noreferrer">PertOV</a>.
+        The bird's-eye view replays each recorded trajectory in our simulator on the OpenStreetMap
+        street. Where a run ended in a collision, the other car is drawn just ahead of where the
+        recording stops.
+      </p>
+      <slot name="link" />
+    </form>
+  </div>
+</div>
+
+<style>
+  .pv {
+    grid-template-columns: 1fr;
+    gap: clamp(1.5rem, 3vw, 2.5rem);
+  }
+
+  .pv-stage {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+    background: var(--ink);
+  }
+
+  .pv-pane {
+    position: relative;
+    margin: 0;
+    aspect-ratio: 16 / 10;
+    overflow: hidden;
+    background: #e9e7df;
+  }
+
+  .pv-pane canvas,
+  .pv-map {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  .pv-pane figcaption,
+  .pv-readout {
+    position: absolute;
+    left: 0.8rem;
+    padding: 0.35rem 0.55rem;
+    background: rgba(16, 19, 17, 0.82);
+    color: var(--paper-bright);
+    font-family: var(--mono);
+    font-size: 0.6875rem;
+  }
+
+  .pv-pane figcaption {
+    top: 0.8rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .pv-readout {
+    bottom: 0.8rem;
+    color: #ffd23f;
+  }
+
+  .pv-legend {
+    position: absolute;
+    top: 0.8rem;
+    right: 0.8rem;
+    display: grid;
+    gap: 0.2rem;
+    padding: 0.45rem 0.6rem;
+    background: rgba(250, 248, 241, 0.9);
+    font-size: 0.6875rem;
+    list-style: none;
+  }
+
+  .pv-legend li {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  .pv-legend i {
+    width: 0.9rem;
+    height: 0.25rem;
+  }
+
+  .pv-attribution {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    padding: 0.2rem 0.45rem;
+    background: rgba(250, 248, 241, 0.85);
+    font-size: 0.6875rem;
+  }
+
+  .pv-attribution a {
+    color: inherit;
+  }
+
+  .pv-map :global(.pv-green) {
+    fill: #c9d3bb;
+  }
+
+  .pv-map :global(.pv-road) {
+    fill: none;
+    stroke: #d6d3ca;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .pv-map :global(.pv-asphalt) {
+    fill: none;
+    stroke: #b9b7af;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .pv-map :global(.pv-building) {
+    fill: #d2cfc6;
+    stroke: #bdbab1;
+    stroke-width: 0.3;
+  }
+
+  .pv-map :global(.pv-nominal) {
+    fill: none;
+    stroke: var(--ink);
+    stroke-width: 0.5;
+    stroke-dasharray: 1.5 1.2;
+  }
+
+  .pv-map :global(.pv-run) {
+    stroke-width: 1.1;
+    stroke-linecap: round;
+  }
+
+  .pv-map :global(.pv-car) {
+    fill: var(--paper-bright);
+    stroke: var(--ink);
+    stroke-width: 0.6;
+  }
+
+  .pv-map :global(.pv-other) {
+    fill: #56606a;
+    stroke: var(--ink);
+    stroke-width: 0.3;
+  }
+
+  .pv-map :global(.pv-cross) {
+    stroke: #b3001b;
+    stroke-width: 0.9;
+    stroke-linecap: round;
+  }
+
+  .pv-copy {
+    display: grid;
+    grid-template-columns: minmax(0, 1.2fr) minmax(16rem, 0.8fr);
+    gap: clamp(1.5rem, 4vw, 4rem);
+    align-items: start;
+  }
+
+  .pv-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--muted);
+    font-size: 0.85rem;
+  }
+
+  .pv-steering {
+    margin-top: 1.6rem;
+  }
+
+  #pv-steering {
+    display: block;
+    width: 100%;
+    height: 5.5rem;
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+  }
+
+  #pv-steering :global(.pv-axis) {
+    stroke: var(--line);
+  }
+
+  #pv-steering :global(.pv-steer-nominal) {
+    fill: none;
+    stroke: var(--muted);
+    stroke-width: 1;
+    stroke-dasharray: 3 2;
+  }
+
+  #pv-steering :global(.pv-steer-run) {
+    fill: none;
+    stroke: var(--signal-ink);
+    stroke-width: 1.5;
+  }
+
+  #pv-steering :global(.pv-playhead) {
+    stroke: var(--ink);
+    stroke-width: 1;
+  }
+
+  .pv-copy > *,
+  .pv-controls {
+    min-width: 0;
+  }
+
+  .pv-controls {
+    display: grid;
+    gap: 1.2rem;
+  }
+
+  .pv-controls fieldset {
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+
+  .pv-controls select,
+  .pv-play,
+  .pv-scale span {
+    min-height: 2.75rem;
+    border: 1px solid var(--line);
+    border-radius: 0;
+    background: var(--paper-bright);
+    color: var(--ink);
+    font: inherit;
+    font-size: 0.9rem;
+  }
+
+  .pv-controls select {
+    width: 100%;
+    padding: 0 0.75rem;
+  }
+
+  .pv-scale {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 0.3rem;
+  }
+
+  .pv-scale label {
+    position: relative;
+    cursor: pointer;
+  }
+
+  .pv-scale input {
+    position: absolute;
+    opacity: 0;
+  }
+
+  .pv-scale span {
+    display: grid;
+    place-items: center;
+    font-family: var(--mono);
+  }
+
+  .pv-scale input:checked + span {
+    border-color: var(--ink);
+    background: var(--ink);
+    color: #ffd23f;
+  }
+
+  .pv-scale input:disabled + span {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+
+  .pv-play {
+    background: var(--ink);
+    border-color: var(--ink);
+    color: var(--paper-bright);
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .pv-play[aria-pressed='true'] {
+    background: transparent;
+    color: var(--ink);
+  }
+
+  .pv-controls select:focus-visible,
+  .pv-play:focus-visible,
+  .pv-scale input:focus-visible + span {
+    outline: 3px solid var(--signal);
+    outline-offset: 3px;
+  }
+
+  .pv-card {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.45rem 1rem;
+    padding-block: 1rem;
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    font-size: 0.85rem;
+  }
+
+  .pv-card :global(dt) {
+    color: var(--muted);
+  }
+
+  .pv-card :global(dd) {
+    font-variant-numeric: tabular-nums;
+  }
+
+  .pv-card :global(.pv-fail) {
+    color: #b3001b;
+    font-weight: 600;
+  }
+
+  .pv-card :global(.pv-ok) {
+    color: #2f6f4f;
+    font-weight: 600;
+  }
+
+  .pv-note {
+    color: var(--muted);
+    font-size: 0.8rem;
+    line-height: 1.5;
+  }
+
+  .pv-note a {
+    color: var(--ink);
+  }
+
+  @media (max-width: 54rem) {
+    .pv-stage,
+    .pv-copy {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+<script>
+  const root = document.getElementById('pertov-replay');
+  if (root) {
+    new IntersectionObserver(
+      ([entry], observer) => {
+        if (!entry.isIntersecting) return;
+        observer.disconnect();
+        import('./pertov-replay').then(({ startPertovReplay }) =>
+          startPertovReplay({
+            root,
+            mapSvg: document.getElementById('pv-map') as unknown as SVGSVGElement,
+            canvas: document.getElementById('pv-canvas') as HTMLCanvasElement,
+            steeringSvg: document.getElementById('pv-steering') as unknown as SVGSVGElement,
+            form: document.getElementById('pv-controls') as HTMLFormElement,
+            playButton: document.getElementById('pv-play') as HTMLButtonElement,
+            card: document.getElementById('pv-card') as HTMLElement,
+            readout: document.getElementById('pv-readout') as HTMLElement,
+          }),
+        );
+      },
+      { rootMargin: '400px 0px' },
+    ).observe(root);
+  }
+</script>
