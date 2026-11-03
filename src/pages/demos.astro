@@ -1,0 +1,197 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ConceptLab from '../components/ConceptLab.astro';
+import Cam2SimDrive from '../components/Cam2SimDrive.astro';
+import { publications } from '../data/site';
+
+const cam2simPaper = publications.find((p) => p.title.startsWith('Cam2Sim'))!;
+const realityGapPaper = publications.find((p) => p.title.startsWith('A Multi-Modality Evaluation'))!;
+const perturbationBenchmarkPaper = publications.find((p) => p.title.startsWith('Benchmarking Image Perturbations'))!;
+const perturbationDriveJournalPaper = publications.find((p) => p.title.startsWith('PerturbationDrive:'))!;
+const forecastingPaper = publications.find((p) => p.title.startsWith('Misbehavior Forecasting'))!;
+const qualityMetricsPaper = publications.find((p) => p.title.startsWith('Assessing Quality Metrics'))!;
+---
+
+<BaseLayout
+  title="Demos — Stefano Carlo Lambertenghi"
+  description="Interactive demos and talks: perturb a driving camera feed, drive a Gaussian-splat reconstruction of a Munich street, and see the reality gap across execution levels."
+>
+  <section class="page-hero page-hero-light">
+    <div class="page-hero-inner container-wide">
+      <div>
+        <p class="eyebrow">Seeing it work</p>
+        <h1 class="page-title">Demos.</h1>
+        <p class="page-hero-copy">
+          Papers describe the method. These show what it actually looks like, some of it running
+          live in your browser.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section-tight-top" aria-label="Demos">
+    <div class="container-wide">
+      <div class="demo-showcase-list">
+        <div class="demo-showcase" data-reveal>
+          <div class="video-frame">
+            <iframe
+              src="https://www.youtube-nocookie.com/embed/KmZ74l1__lI"
+              title="Cam2Sim demo video"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowfullscreen
+              loading="lazy"
+            ></iframe>
+          </div>
+          <div class="demo-showcase-copy">
+            <p class="feature-kicker">Cam2Sim</p>
+            <h3>Real drives, replayed in simulation.</h3>
+            <p>
+              Cam2Sim started from a practical problem. We had many hours of real driving
+              recordings, but once an experiment was finished we could only replay the recorded
+              sensor data. We wanted to turn these recordings into environments in which the
+              driving system could interact again. Cam2Sim reconstructs the recorded environment
+              in CARLA and uses Gaussian Splatting for the camera view. The reconstruction is not
+              a complete replacement for the real environment, but it allows us to reuse real
+              experiments for closed-loop simulation.
+            </p>
+            <a class="text-link" href={cam2simPaper.paper} target="_blank" rel="noreferrer">
+              Read the paper <span aria-hidden="true">↗︎</span>
+            </a>
+          </div>
+        </div>
+
+        <Cam2SimDrive>
+          <p class="feature-kicker">Cam2Sim, interactive</p>
+          <h3>Drive the reconstructed street.</h3>
+          <p>
+            On the left, a simple simulator on Guerickestraße in Munich, with the road traced from
+            the recorded drive. On the right, the camera view for the car's current pose,
+            generated from a Gaussian-splat reconstruction trained on that drive's camera
+            frames, in three segments.
+          </p>
+          <a slot="link" class="text-link" href={cam2simPaper.paper} target="_blank" rel="noreferrer">
+            Read the paper <span aria-hidden="true">↗︎</span>
+          </a>
+        </Cam2SimDrive>
+
+        <div class="demo-showcase" data-reveal>
+          <div class="video-frame">
+            <iframe
+              src="https://www.youtube-nocookie.com/embed/-YGdyNXgKb8"
+              title="ASE 2025 demo video"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowfullscreen
+              loading="lazy"
+            ></iframe>
+          </div>
+          <div class="demo-showcase-copy">
+            <p class="feature-kicker">ASE 2025</p>
+            <h3>The same reality gap, across four execution levels.</h3>
+            <p>
+              An open-source small-scale vehicle and its Unity digital twin, compared against
+              Fortuna at full scale, across simulation, vehicle-in-the-loop, mixed-reality, and
+              real-world testing.
+            </p>
+            <a class="text-link" href={realityGapPaper.paper} target="_blank" rel="noreferrer">
+              Read the paper <span aria-hidden="true">↗︎</span>
+            </a>
+          </div>
+        </div>
+
+        <ConceptLab>
+          <p class="feature-kicker">PerturbationDrive</p>
+          <h3>The same perturbation, any simulator.</h3>
+          <p>
+            PerturbationDrive generates camera perturbations—like rain, or a corrupted
+            feed—and applies them through a simulator adapter, so the same scenario runs
+            unchanged across Udacity's simulator, a small-scale digital twin, or a full driving
+            stack. Here it runs on the camera following a scan of Fortuna round a test track:
+            pick any of the library's perturbations and the scale it is applied at.
+          </p>
+          <a slot="link" class="text-link" href={perturbationBenchmarkPaper.paper} target="_blank" rel="noreferrer">
+            Read the paper <span aria-hidden="true">↗︎</span>
+          </a>
+        </ConceptLab>
+
+        <div class="demo-showcase" data-reveal>
+          <div class="video-frame">
+            <video
+              src="/videos/foresee-demo.mp4"
+              poster="/images/foresee-poster.jpg"
+              controls
+              muted
+              playsinline
+              preload="none"
+              aria-label="Talk recording explaining Foresee, a misbehavior-forecasting pipeline that monitors, classifies, ranks, clips, and fuzzes near-miss scenarios"
+            ></video>
+          </div>
+          <div class="demo-showcase-copy">
+            <p class="feature-kicker">Foresee</p>
+            <h3>Forecasting near misses to focus fuzzing.</h3>
+            <p>
+              Foresee monitors nearby agents, classifies and ranks the riskiest ones, then clips
+              and fuzzes the scenario around them—so testing time goes where failures are most
+              likely to surface.
+            </p>
+            <a class="text-link" href={forecastingPaper.paper} target="_blank" rel="noreferrer">
+              Read the paper <span aria-hidden="true">↗︎</span>
+            </a>
+          </div>
+        </div>
+
+        <div class="demo-showcase" data-reveal>
+          <div class="video-frame">
+            <video
+              src="/videos/icst-final-demo.mp4"
+              poster="/images/icst-final-poster.jpg"
+              controls
+              muted
+              playsinline
+              preload="none"
+              aria-label="Talk recording for Assessing Quality Metrics for Neural Reality Gap Input Mitigation in Autonomous Driving Testing"
+            ></video>
+          </div>
+          <div class="demo-showcase-copy">
+            <p class="feature-kicker">ICST 2024</p>
+            <h3>Do image-quality metrics track what actually matters?</h3>
+            <p>
+              The ICST 2024 talk on assessing quality metrics for neural
+              reality-gap input mitigation—testing whether standard image-quality metrics track
+              how neural image translation affects a driving system's perception and control.
+            </p>
+            <a class="text-link" href={qualityMetricsPaper.paper} target="_blank" rel="noreferrer">
+              Read the paper <span aria-hidden="true">↗︎</span>
+            </a>
+          </div>
+        </div>
+
+        <div class="demo-showcase" data-reveal>
+          <div class="video-frame">
+            <iframe
+              src="https://www.youtube-nocookie.com/embed/pUGL1qu3Z1k"
+              title="Nano-drone relative localization demo video"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowfullscreen
+              loading="lazy"
+            ></iframe>
+          </div>
+          <div class="demo-showcase-copy">
+            <p class="feature-kicker">Before the reality gap</p>
+            <h3>Fitting a neural network onto a 40-gram nano-drone.</h3>
+            <p>
+              Before autonomous cars, I worked on autonomous nano-drones. At the Dalle Molle
+              Institute for Artificial Intelligence (IDSIA) in Lugano, I helped fit a
+              relative-localization neural network onto a 40-gram nano-quadrotor: a single onboard
+              camera and under 100 mW of power, enough to track a peer drone in real time
+              (IEEE ICRA 2023). The platform changed; the question didn’t: what has to be true for a
+              learned model to work outside the lab it was trained in?
+            </p>
+            <a class="text-link" href="https://arxiv.org/abs/2303.01940" target="_blank" rel="noreferrer">
+              Read the paper <span aria-hidden="true">↗︎</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

@@ -7,7 +7,7 @@ const menuBlocks = [
     title: 'Research.',
     description:
       'How well results transfer between simulation and the real world, how to make a system more robust once that gap is measured, and how to reuse real driving data to make simulation more realistic.',
-    href: '/research/',
+    href: '/publications/',
     linkLabel: 'Explore the research',
     image: '/images/reality-gap.png',
     imageWidth: 2667,
@@ -41,11 +41,11 @@ const menuBlocks = [
     imageAlt: 'Matthias Weil, Andrea Stocco, and Stefano Carlo Lambertenghi next to Fortuna',
   },
   {
-    kicker: 'Selected work',
-    title: 'Publications.',
-    description: 'Peer-reviewed papers, executable tools, and replication packages.',
-    href: '/publications/',
-    linkLabel: 'Read the papers',
+    kicker: 'Seeing it work',
+    title: 'Demos.',
+    description: 'Perturb a driving camera feed, drive a reconstructed Munich street, and see the reality gap across four execution levels.',
+    href: '/demos/',
+    linkLabel: 'Try the demos',
     image: '/images/whatido.png',
     imageWidth: 2400,
     imageHeight: 1104,
@@ -81,7 +81,7 @@ const menuBlocks = [
 
 <BaseLayout>
   <section class="hero">
-    <div class="hero-visual" aria-label="Stefano Carlo Lambertenghi standing next to Fortuna">
+    <div class="hero-visual" id="gap-scrubber">
       <img
         src="/images/me-and-fortuna.jpg"
         alt="Stefano Carlo Lambertenghi standing next to Fortuna"
@@ -89,12 +89,39 @@ const menuBlocks = [
         height="1050"
         loading="eager"
       />
+      <div class="gap-sim" aria-hidden="true">
+        <img id="gap-sim-image" src="/images/me-and-fortuna-sim.jpg" alt="" width="1400" height="1050" loading="eager" decoding="async" draggable="false" />
+        <span class="gap-tag gap-tag-sim">Simulation</span>
+      </div>
+      <div class="gap-wire" aria-hidden="true">
+        <img id="gap-wire-image" src="/images/me-and-fortuna-wireframe.jpg" alt="" width="1400" height="1050" loading="eager" decoding="async" draggable="false" />
+      </div>
+      <span class="gap-tag gap-tag-real" aria-hidden="true">Reality</span>
+      <div
+        class="gap-divider"
+        id="gap-divider"
+        role="slider"
+        tabindex="0"
+        aria-label="Compare the 3D scan of Fortuna with the photo"
+        aria-valuemin="0"
+        aria-valuemax="100"
+        aria-valuenow="100"
+        aria-valuetext="Photo only"
+      >
+        <span class="gap-label" aria-hidden="true">
+          Gap
+          <svg viewBox="0 0 100 12" preserveAspectRatio="none"><path d="M2 6h96" /></svg>
+        </span>
+        <span class="gap-knob" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="18" height="18"><path d="M9 6 3 12l6 6M15 6l6 6-6 6" /></svg>
+        </span>
+      </div>
     </div>
     <div class="hero-layout container-wide">
       <div class="hero-copy">
         <p class="eyebrow">fortiss · Technical University of Munich</p>
         <h1 class="hero-title">
-          Stefano Carlo <em>Lambertenghi.</em>
+          <span class="hero-title-line">Stefano Carlo</span> <em class="hero-title-line">Lambertenghi.</em>
         </h1>
         <p class="hero-intro">
           I like taking systems apart to see why they break, then putting them back together
@@ -157,6 +184,129 @@ const menuBlocks = [
   import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
   import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
 
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+  // --- Hero: the same scene, simulated and real ---
+
+  // #gap-sim-image and #gap-wire-image are renders of the simulated scene, framed identically
+  // to the photo; the wireframe shows only inside the gap band that rides the divider.
+  const REST_SPLIT = 50;
+  const PHOTO = { width: 1400, height: 1050, focusX: 0.24 };
+  // Right edge of the person in the frame (px in the 1400px photo). The photoreal render
+  // stops there; dragging further stretches the wireframe band over him instead.
+  const FIGURE_RIGHT = 420;
+  const BAND = { min: 52, share: 0.09, max: 88 };
+
+  const scrubber = document.getElementById('gap-scrubber') as HTMLElement | null;
+  const simImage = document.getElementById('gap-sim-image') as HTMLImageElement | null;
+  const wireImage = document.getElementById('gap-wire-image') as HTMLImageElement | null;
+  const divider = document.getElementById('gap-divider') as HTMLElement | null;
+
+  if (scrubber && simImage && divider) {
+    let split = 100;
+    let halfBand = 3;
+    let figureEdge = 0;
+    let tween = 0;
+
+    // Mirror the img's object-fit: cover crop to find the figure's edge in the panel.
+    function measure() {
+      const w = scrubber!.clientWidth;
+      const h = scrubber!.clientHeight;
+      if (!w || !h) return;
+      const scale = Math.max(w / PHOTO.width, h / PHOTO.height);
+      const cropX = (PHOTO.width * scale - w) * PHOTO.focusX;
+      figureEdge = ((FIGURE_RIGHT * scale - cropX) / w) * 100;
+      halfBand = (Math.max(BAND.min, Math.min(BAND.max, w * BAND.share)) / 2 / w) * 100;
+      divider!.setAttribute('aria-valuemin', String(Math.round(halfBand)));
+      setSplit(split);
+    }
+
+    // `split` is the centre of the gap band. The band's right edge, where the photoreal
+    // render begins, never passes the figure; past that point the band only widens.
+    function setSplit(value: number) {
+      split = Math.max(halfBand, Math.min(100, value));
+      const left = split - halfBand;
+      const right = Math.max(split + halfBand, figureEdge);
+      scrubber!.style.setProperty('--gap-left', `${left}%`);
+      scrubber!.style.setProperty('--gap-right', `${right}%`);
+      scrubber!.style.setProperty('--gap-knob', `${((split - left) / (right - left)) * 100}%`);
+      divider!.setAttribute('aria-valuenow', String(Math.round(split)));
+      divider!.setAttribute('aria-valuetext', left >= 100 ? 'Photo only' : `${Math.round(Math.max(0, 100 - right))}% simulation`);
+    }
+
+    function stopTween() {
+      cancelAnimationFrame(tween);
+      tween = 0;
+    }
+
+    function sweepTo(target: number, duration: number) {
+      stopTween();
+      const from = split;
+      const start = performance.now();
+      const step = (now: number) => {
+        const t = Math.min(1, (now - start) / duration);
+        setSplit(from + (target - from) * (1 - Math.pow(2, -10 * t)));
+        tween = t < 1 ? requestAnimationFrame(step) : 0;
+      };
+      tween = requestAnimationFrame(step);
+    }
+
+    function splitFromPointer(event: PointerEvent) {
+      const rect = scrubber!.getBoundingClientRect();
+      setSplit(((event.clientX - rect.left) / rect.width) * 100);
+    }
+
+    let dragging = false;
+    scrubber.addEventListener('pointerdown', (event) => {
+      if (!scrubber!.classList.contains('is-ready') || event.button !== 0) return;
+      event.preventDefault();
+      dragging = true;
+      stopTween();
+      scrubber!.setPointerCapture(event.pointerId);
+      scrubber!.classList.add('is-dragging');
+      splitFromPointer(event);
+    });
+    scrubber.addEventListener('pointermove', (event) => {
+      if (dragging) splitFromPointer(event);
+    });
+    const endDrag = () => {
+      dragging = false;
+      scrubber!.classList.remove('is-dragging');
+    };
+    scrubber.addEventListener('pointerup', endDrag);
+    scrubber.addEventListener('pointercancel', endDrag);
+
+    divider.addEventListener('keydown', (event) => {
+      const steps: Record<string, number> = {
+        ArrowLeft: -5,
+        ArrowDown: -5,
+        ArrowRight: 5,
+        ArrowUp: 5,
+        PageDown: -20,
+        PageUp: 20,
+      };
+      if (event.key in steps) setSplit(split + steps[event.key]);
+      else if (event.key === 'Home') setSplit(0);
+      else if (event.key === 'End') setSplit(100);
+      else return;
+      stopTween();
+      event.preventDefault();
+    });
+
+    // Without the render, the hero stays a plain photo.
+    Promise.all([simImage.decode(), wireImage?.decode()])
+      .then(() => {
+        scrubber!.classList.add('is-ready');
+        measure();
+        new ResizeObserver(measure).observe(scrubber!);
+        if (reduceMotion.matches) setSplit(REST_SPLIT);
+        else sweepTo(REST_SPLIT, 1400);
+      })
+      .catch(() => {});
+  }
+
+  // --- "Drive Fortuna" preview: the solid model, turning ---
+
   const canvas = document.getElementById('home-3d-preview') as HTMLCanvasElement | null;
   const frame = document.getElementById('home-3d-frame') as HTMLElement | null;
 
@@ -192,22 +342,25 @@ const menuBlocks = [
       camera.updateProjectionMatrix();
     }
 
-    const dracoLoader = new DRACOLoader();
-    dracoLoader.setDecoderPath('/draco/');
-    const loader = new GLTFLoader();
-    loader.setDRACOLoader(dracoLoader);
-    loader.load('/models/fortuna.glb', (gltf) => {
-      model = gltf.scene;
-      const box = new THREE.Box3().setFromObject(model);
-      const center = new THREE.Vector3();
-      box.getCenter(center);
-      model.position.sub(center);
-      const sphere = new THREE.Sphere();
-      box.getBoundingSphere(sphere);
-      modelRadius = sphere.radius;
-      scene.add(model);
-      fitCamera();
-    });
+    function loadModel() {
+      const dracoLoader = new DRACOLoader();
+      dracoLoader.setDecoderPath('/draco/');
+      const loader = new GLTFLoader();
+      loader.setDRACOLoader(dracoLoader);
+      loader.load('/models/fortuna.glb', (gltf) => {
+        model = gltf.scene;
+        const box = new THREE.Box3().setFromObject(model);
+        const center = new THREE.Vector3();
+        box.getCenter(center);
+        model.position.sub(center);
+        const sphere = new THREE.Sphere();
+        box.getBoundingSphere(sphere);
+        modelRadius = sphere.radius;
+        scene.add(model);
+        fitCamera();
+        requestRender();
+      });
+    }
 
     function resize() {
       const w = frame!.clientWidth;
@@ -217,17 +370,42 @@ const menuBlocks = [
       camera.aspect = w / h;
       camera.updateProjectionMatrix();
       fitCamera();
+      requestRender();
     }
+
+    // Spin only while on screen; under reduced motion, draw a still frame.
+    let visible = false;
+    let frameId = 0;
+
+    function tick() {
+      frameId = 0;
+      if (model && !reduceMotion.matches) model.rotation.y += 0.005;
+      renderer.render(scene, camera);
+      if (visible && !reduceMotion.matches) requestRender();
+    }
+
+    function requestRender() {
+      if (!frameId) frameId = requestAnimationFrame(tick);
+    }
+
+    // Fetch the scan only once the preview is about to scroll into view.
+    new IntersectionObserver(
+      ([entry], observer) => {
+        if (!entry.isIntersecting) return;
+        observer.disconnect();
+        loadModel();
+      },
+      { rootMargin: '600px 0px' },
+    ).observe(frame);
+
+    new IntersectionObserver(([entry]) => {
+      visible = entry.isIntersecting;
+      if (visible) requestRender();
+    }).observe(frame);
+    reduceMotion.addEventListener('change', requestRender);
 
     const resizeObserver = new ResizeObserver(resize);
     resizeObserver.observe(frame);
     resize();
-
-    function tick() {
-      requestAnimationFrame(tick);
-      if (model) model.rotation.y += 0.005;
-      renderer.render(scene, camera);
-    }
-    tick();
   }
 </script>

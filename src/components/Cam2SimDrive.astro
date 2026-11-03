@@ -1,0 +1,296 @@
+---
+// Cam2Sim, interactive: drive a simple simulator on the recorded street while the
+// Gaussian-splat reconstruction renders the car's camera view beside it.
+---
+
+<div class="demo-showcase c2s" id="cam2sim-drive">
+  <div class="c2s-stage" id="c2s-stage" tabindex="0" aria-describedby="c2s-hint">
+    <figure class="c2s-pane">
+      <canvas id="c2s-sim" aria-hidden="true"></canvas>
+      <figcaption>Simulator</figcaption>
+    </figure>
+    <figure class="c2s-pane" id="c2s-splat-pane">
+      <canvas id="c2s-splat" aria-hidden="true"></canvas>
+      <figcaption>Generated camera</figcaption>
+    </figure>
+
+    <div class="c2s-start" id="c2s-start">
+      <button type="button" class="c2s-load" id="c2s-load">Load the drive</button>
+      <p>About 8–16 MB per street segment, three segments.</p>
+    </div>
+
+    <div class="c2s-touch" aria-hidden="true">
+      <button type="button" tabindex="-1" data-control="left">
+        <svg viewBox="0 0 24 24" width="20" height="20"><path d="M15 5l-7 7 7 7" /></svg>
+      </button>
+      <button type="button" tabindex="-1" data-control="back">
+        <svg viewBox="0 0 24 24" width="20" height="20"><path d="M5 9l7 7 7-7" /></svg>
+      </button>
+      <button type="button" tabindex="-1" data-control="forward">
+        <svg viewBox="0 0 24 24" width="20" height="20"><path d="M5 15l7-7 7 7" /></svg>
+      </button>
+      <button type="button" tabindex="-1" data-control="right">
+        <svg viewBox="0 0 24 24" width="20" height="20"><path d="M9 5l7 7-7 7" /></svg>
+      </button>
+    </div>
+  </div>
+
+  <div class="demo-showcase-copy c2s-copy">
+    <div>
+      <slot />
+    </div>
+    <div class="c2s-controls">
+      <p class="c2s-status" id="c2s-status" aria-live="polite">Not loaded yet.</p>
+      <button type="button" class="c2s-auto" id="c2s-autopilot" aria-pressed="false" disabled>Autopilot</button>
+      <p class="c2s-hint" id="c2s-hint">
+        Click the scene, then drive with the arrow keys or WASD. On a phone, use the buttons.
+        The car stays near the recorded path, where the reconstruction has views to draw from.
+        The small inset is the nearest recorded camera frame.
+      </p>
+      <slot name="link" />
+    </div>
+  </div>
+</div>
+
+<style>
+  .c2s {
+    grid-template-columns: 1fr;
+    gap: clamp(1.5rem, 3vw, 2.5rem);
+  }
+
+  .c2s-stage {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+    background: var(--ink);
+    outline: none;
+  }
+
+  .c2s-stage:focus-visible {
+    outline: 3px solid var(--signal);
+    outline-offset: 4px;
+  }
+
+  .c2s-pane {
+    position: relative;
+    margin: 0;
+    aspect-ratio: 800 / 458;
+    overflow: hidden;
+    background: #1a1d1b;
+  }
+
+  .c2s-pane canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  .c2s-pane figcaption {
+    position: absolute;
+    top: 0.8rem;
+    left: 0.8rem;
+    padding: 0.35rem 0.55rem;
+    background: rgba(16, 19, 17, 0.82);
+    color: var(--paper-bright);
+    font-family: var(--mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .c2s-pane:last-of-type figcaption {
+    color: #ffd23f;
+  }
+
+  .c2s-pane :global(.c2s-recorded) {
+    position: absolute;
+    right: 0.8rem;
+    bottom: 0.8rem;
+    width: 26%;
+    height: auto;
+    border: 2px solid rgba(250, 248, 241, 0.7);
+  }
+
+  .c2s-start {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-content: center;
+    justify-items: center;
+    gap: 0.8rem;
+    background: rgba(16, 19, 17, 0.55);
+    color: var(--paper-bright);
+    text-align: center;
+  }
+
+  .c2s-start[hidden] {
+    display: none;
+  }
+
+  .c2s-start p {
+    color: #c7c7be;
+    font-size: 0.85rem;
+  }
+
+  .c2s-load,
+  .c2s-auto {
+    min-height: 2.75rem;
+    padding: 0 1.2rem;
+    border: 1px solid var(--ink);
+    border-radius: 0;
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .c2s-load {
+    border-color: #ffd23f;
+    background: #ffd23f;
+    color: var(--ink);
+  }
+
+  .c2s-auto {
+    background: var(--ink);
+    color: var(--paper-bright);
+  }
+
+  .c2s-auto[aria-pressed='true'] {
+    background: transparent;
+    color: var(--ink);
+  }
+
+  .c2s-auto:disabled {
+    opacity: 0.4;
+    cursor: default;
+  }
+
+  .c2s-load:focus-visible,
+  .c2s-auto:focus-visible {
+    outline: 3px solid var(--signal);
+    outline-offset: 3px;
+  }
+
+  .c2s-copy {
+    display: grid;
+    grid-template-columns: minmax(0, 1.2fr) minmax(16rem, 0.8fr);
+    gap: clamp(1.5rem, 4vw, 4rem);
+    align-items: start;
+  }
+
+  .c2s-controls {
+    display: grid;
+    gap: 0.9rem;
+    justify-items: start;
+  }
+
+  .c2s-status {
+    color: var(--ink) !important;
+    font-family: var(--mono);
+    font-size: 0.75rem !important;
+  }
+
+  .c2s-hint {
+    font-size: 0.8rem !important;
+  }
+
+  .c2s-touch {
+    display: none;
+  }
+
+  @media (hover: none) and (pointer: coarse) {
+    .c2s-touch {
+      position: absolute;
+      right: 0.6rem;
+      bottom: 0.6rem;
+      left: 0.6rem;
+      display: flex;
+      justify-content: space-between;
+      pointer-events: none;
+    }
+
+    .c2s-touch button {
+      display: grid;
+      width: 3rem;
+      height: 3rem;
+      place-items: center;
+      border: 1px solid rgba(250, 248, 241, 0.5);
+      border-radius: 50%;
+      background: rgba(16, 19, 17, 0.6);
+      color: var(--paper-bright);
+      pointer-events: auto;
+      touch-action: none;
+    }
+
+    .c2s-touch svg {
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+    }
+  }
+
+  @media (max-width: 54rem) {
+    .c2s-stage {
+      grid-template-columns: 1fr;
+    }
+
+    .c2s-copy {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+<script>
+  const root = document.getElementById('c2s-stage');
+  const load = document.getElementById('c2s-load') as HTMLButtonElement | null;
+  const status = document.getElementById('c2s-status');
+  const autopilot = document.getElementById('c2s-autopilot') as HTMLButtonElement | null;
+
+  function webglAvailable() {
+    try {
+      const probe = document.createElement('canvas');
+      return !!probe.getContext('webgl2');
+    } catch {
+      return false;
+    }
+  }
+
+  if (root && load && status && autopilot) {
+    if (!webglAvailable()) {
+      load.disabled = true;
+      status.textContent = 'This demo needs WebGL 2, which your browser has turned off.';
+    }
+    load.addEventListener('click', async () => {
+      load.disabled = true;
+      load.textContent = 'Loading…';
+      status.textContent = 'Loading the renderer…';
+      try {
+        const { startCam2SimDrive } = await import('./cam2sim-drive');
+        // The nearest recorded camera frame, shown as an inset for comparison.
+        const recorded = document.createElement('img');
+        recorded.className = 'c2s-recorded';
+        recorded.alt = '';
+        recorded.width = 800;
+        recorded.height = 458;
+        await startCam2SimDrive({
+          root,
+          simCanvas: document.getElementById('c2s-sim') as HTMLCanvasElement,
+          splatCanvas: document.getElementById('c2s-splat') as HTMLCanvasElement,
+          recorded,
+          status,
+          autopilot,
+        });
+        document.getElementById('c2s-splat-pane')!.append(recorded);
+        document.getElementById('c2s-start')!.hidden = true;
+        autopilot.disabled = false;
+        root.focus({ preventScroll: true });
+      } catch (error) {
+        console.error(error);
+        status.textContent = 'The drive could not be loaded. Try reloading the page.';
+        load.disabled = false;
+        load.textContent = 'Try again';
+      }
+    });
+  }
+</script>

@@ -1,0 +1,300 @@
+---
+// PerturbationDrive's image perturbations, applied live to a chase camera following the
+// 3D scan of Fortuna around a test track.
+import { PERTURBATIONS } from './perturbations';
+
+const groups = [...new Set(PERTURBATIONS.map((p) => p.group))].map((group) => ({
+  group,
+  items: PERTURBATIONS.filter((p) => p.group === group),
+}));
+---
+
+<div class="demo-showcase lab-showcase" id="perturbation-lab">
+  <div class="lab-stage">
+    <canvas id="lab-canvas" aria-hidden="true"></canvas>
+    <p class="lab-readout" id="lab-readout" aria-hidden="true">motion_blur(scale=2)</p>
+    <p class="lab-loading" id="lab-loading">Loading the scan…</p>
+    <p class="lab-fallback" id="lab-fallback" hidden>
+      This demo needs WebGL, which your browser has turned off.
+    </p>
+  </div>
+
+  <div class="demo-showcase-copy">
+    <slot />
+
+    <form class="lab-controls" id="lab-controls" aria-describedby="lab-note">
+      <div class="lab-group">
+        <label class="lab-label" for="lab-perturbation">
+          Perturbation <span>{PERTURBATIONS.length} from the library</span>
+        </label>
+        <div class="lab-picker">
+          <button type="button" class="lab-step" data-step="-1" aria-label="Previous perturbation">
+            <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg>
+          </button>
+          <select id="lab-perturbation" name="perturbation">
+            {groups.map(({ group, items }) => (
+              <optgroup label={group}>
+                {items.map((p) => (
+                  <option value={p.id} selected={p.id === 'dynamic_rain_filter'}>
+                    {p.label}{p.overlay ? ' *' : ''}
+                  </option>
+                ))}
+              </optgroup>
+            ))}
+          </select>
+          <button type="button" class="lab-step" data-step="1" aria-label="Next perturbation">
+            <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M9 5l7 7-7 7" /></svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="lab-row">
+        <fieldset class="lab-group">
+          <legend class="lab-label">Scale</legend>
+          <div class="lab-options lab-scale">
+            {[0, 1, 2, 3, 4].map((scale) => (
+              <label><input type="radio" name="scale" value={scale} checked={scale === 2} /> <span>{scale}</span></label>
+            ))}
+          </div>
+        </fieldset>
+        <button type="button" class="lab-play" id="lab-play" aria-pressed="true">Pause</button>
+      </div>
+
+      <p class="lab-note" id="lab-note">
+        Re-implemented as WebGL shaders from{' '}
+        <a href="https://github.com/ast-fortiss-tum/perturbation-drive" target="_blank" rel="noreferrer">perturbationfuncs.py</a>,
+        with its parameters for each scale. * Weather and light are rendered from the scene, with
+        its depth and motion, instead of the library's recorded masks. Perturbations that need a
+        trained model (attention regions, adversarial, generative) are not included.
+      </p>
+      <p class="sr-only" id="lab-status" aria-live="polite"></p>
+    </form>
+
+    <slot name="link" />
+  </div>
+</div>
+
+<style>
+  .lab-showcase {
+    align-items: start;
+  }
+
+  .lab-stage {
+    position: relative;
+    overflow: hidden;
+    aspect-ratio: 16 / 10;
+    background: var(--ink);
+  }
+
+  .lab-stage canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  .lab-readout,
+  .lab-loading {
+    position: absolute;
+    left: 1rem;
+    padding: 0.4rem 0.6rem;
+    background: rgba(16, 19, 17, 0.82);
+    color: #ffd23f;
+    font-family: var(--mono);
+    font-size: 0.75rem;
+  }
+
+  .lab-readout {
+    top: 1rem;
+  }
+
+  .lab-loading {
+    bottom: 1rem;
+    color: var(--paper-bright);
+  }
+
+  .lab-loading[hidden] {
+    display: none;
+  }
+
+  .lab-fallback {
+    position: absolute;
+    inset: auto 1rem 1rem;
+    color: var(--muted-dark);
+  }
+
+  .lab-controls {
+    display: grid;
+    gap: 1.3rem;
+    margin-top: 1.6rem;
+  }
+
+  .lab-group {
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+
+  .lab-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 6.5rem;
+    gap: 0.8rem;
+    align-items: end;
+  }
+
+  .lab-label {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    width: 100%;
+    margin-bottom: 0.6rem;
+    color: var(--muted);
+    font-size: 0.85rem;
+  }
+
+  .lab-picker {
+    display: grid;
+    grid-template-columns: 2.75rem minmax(0, 1fr) 2.75rem;
+    gap: 0.4rem;
+  }
+
+  .lab-picker select,
+  .lab-step,
+  .lab-play,
+  .lab-options span {
+    min-height: 2.75rem;
+    border: 1px solid var(--line);
+    border-radius: 0;
+    background: transparent;
+    color: var(--ink);
+    font: inherit;
+    font-size: 0.9rem;
+  }
+
+  .lab-picker select {
+    min-width: 0;
+    padding: 0 0.75rem;
+    background: var(--paper-bright);
+    cursor: pointer;
+  }
+
+  .lab-step {
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+  }
+
+  .lab-step svg {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .lab-play {
+    background: var(--ink);
+    border-color: var(--ink);
+    color: var(--paper-bright);
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .lab-play[aria-pressed='true'] {
+    background: transparent;
+    border-color: var(--line);
+    color: var(--ink);
+  }
+
+  .lab-options {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 0.3rem;
+  }
+
+  .lab-options label {
+    position: relative;
+    cursor: pointer;
+  }
+
+  .lab-options input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .lab-options span {
+    display: grid;
+    place-items: center;
+    font-family: var(--mono);
+    transition:
+      background-color 150ms ease,
+      border-color 150ms ease;
+  }
+
+  .lab-options input:checked + span {
+    border-color: var(--ink);
+    background: var(--ink);
+    color: #ffd23f;
+  }
+
+  .lab-step:hover,
+  .lab-picker select:hover,
+  .lab-options label:hover span,
+  .lab-play[aria-pressed='true']:hover {
+    border-color: var(--ink);
+  }
+
+  .lab-picker select:focus-visible,
+  .lab-step:focus-visible,
+  .lab-play:focus-visible,
+  .lab-options input:focus-visible + span {
+    outline: 3px solid var(--signal);
+    outline-offset: 3px;
+  }
+
+  .lab-note {
+    font-size: 0.8rem !important;
+  }
+
+  .lab-note a {
+    color: var(--ink);
+    text-underline-offset: 0.2em;
+  }
+</style>
+
+<script>
+  const lab = document.getElementById('perturbation-lab');
+  const stage = lab?.querySelector('.lab-stage') as HTMLElement | null;
+  const canvas = document.getElementById('lab-canvas') as HTMLCanvasElement | null;
+  const form = document.getElementById('lab-controls') as HTMLFormElement | null;
+
+  function webglAvailable() {
+    try {
+      const probe = document.createElement('canvas');
+      return !!(probe.getContext('webgl2') || probe.getContext('webgl'));
+    } catch {
+      return false;
+    }
+  }
+
+  if (lab && stage && canvas && form) {
+    if (!webglAvailable()) {
+      form.hidden = true;
+      document.getElementById('lab-loading')!.hidden = true;
+      document.getElementById('lab-fallback')!.hidden = false;
+    } else {
+      // Fetch three.js and the scan only as the lab nears the viewport.
+      new IntersectionObserver(
+        ([entry], observer) => {
+          if (!entry.isIntersecting) return;
+          observer.disconnect();
+          import('./concept-lab').then(({ startPerturbationLab }) =>
+            startPerturbationLab({ stage, canvas, form }),
+          );
+        },
+        { rootMargin: '400px 0px' },
+      ).observe(lab);
+    }
+  }
+</script>

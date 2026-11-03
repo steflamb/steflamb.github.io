@@ -301,6 +301,7 @@ const journeyStops = [
       lon: number;
     }>;
 
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
     const map = L.map(container, { scrollWheelZoom: false });
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -309,6 +310,11 @@ const journeyStops = [
       maxZoom: 19,
       className: 'journey-tiles',
     }).addTo(map);
+
+    const route = L.polyline(
+      stopsData.map((s) => [s.lat, s.lon] as [number, number]),
+      { color: '#ff6034', weight: 2, opacity: 0.9, interactive: false },
+    ).addTo(map);
 
     const markers = stopsData.map((stop, i) => {
       const icon = L.divIcon({
@@ -319,16 +325,65 @@ const journeyStops = [
       });
       const marker = L.marker([stop.lat, stop.lon], { icon }).addTo(map);
       marker.bindPopup(`<strong>${stop.name}</strong>${stop.note}`);
-      marker.on('click', () => map.flyTo([stop.lat, stop.lon], 11, { duration: 0.8 }));
+      marker.on('click', () => map.flyTo([stop.lat, stop.lon], 11, { duration: 0.8, animate: !reduceMotion.matches }));
       return marker;
     });
 
     const bounds = L.latLngBounds(stopsData.map((s) => [s.lat, s.lon] as [number, number]));
     map.fitBounds(bounds, { padding: [40, 40] });
 
+    // First time the map is seen, trace the journey in order: the route draws itself
+    // and each pin lands as the line reaches it.
+    function traceJourney() {
+      const path = route.getElement() as SVGPathElement | undefined;
+      if (!path) return;
+      const total = path.getTotalLength();
+      const points = stopsData.map((s) => map.latLngToLayerPoint([s.lat, s.lon]));
+      let travelled = 0;
+      const arrivals = points.map((p, i) => (i === 0 ? 0 : (travelled += p.distanceTo(points[i - 1]))));
+      const duration = 1800;
+      const ease = 'cubic-bezier(0.45, 0, 0.25, 1)';
+
+      path.style.strokeDasharray = `${total}`;
+      path
+        .animate([{ strokeDashoffset: total }, { strokeDashoffset: 0 }], { duration, easing: ease, fill: 'both' })
+        .finished.then(() => {
+          // Leaflet redraws the path on zoom; drop the dash so it never truncates.
+          path.style.strokeDasharray = '';
+          path.getAnimations().forEach((a) => a.cancel());
+        });
+
+      markers.forEach((marker, i) => {
+        const pin = marker.getElement()?.querySelector('.journey-pin');
+        pin?.animate(
+          [
+            { opacity: 0, transform: 'translateY(-10px) scale(0.6)' },
+            { opacity: 1, transform: 'none' },
+          ],
+          {
+            duration: 420,
+            delay: (arrivals[i] / (travelled || 1)) * duration * 0.85,
+            easing: 'cubic-bezier(0.16, 1, 0.3, 1)',
+            fill: 'backwards',
+          },
+        );
+      });
+    }
+
+    if (!reduceMotion.matches && 'animate' in Element.prototype) {
+      new IntersectionObserver(
+        ([entry], observer) => {
+          if (!entry.isIntersecting) return;
+          observer.disconnect();
+          traceJourney();
+        },
+        { threshold: 0.4 },
+      ).observe(container);
+    }
+
     document.getElementById('journey-reset')?.addEventListener('click', () => {
       map.closePopup();
-      map.flyToBounds(bounds, { padding: [40, 40], duration: 0.8 });
+      map.flyToBounds(bounds, { padding: [40, 40], duration: 0.8, animate: !reduceMotion.matches });
     });
   }
 </script>

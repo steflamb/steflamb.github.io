@@ -9,6 +9,7 @@
     "preview": "astro preview"
   },
   "dependencies": {
+    "@sparkjsdev/spark": "^2.4.0",
     "astro": "7.3.2",
     "leaflet": "^1.9.4",
     "three": "^0.186.0"

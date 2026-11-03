@@ -1,0 +1,99 @@
+---
+import '../styles/global.css';
+
+interface Props {
+  title?: string;
+  description?: string;
+  image?: string;
+  noindex?: boolean;
+}
+
+const {
+  title = 'Stefano Carlo Lambertenghi — Researcher at fortiss, PhD candidate at TUM',
+  description = 'Researcher at fortiss, PhD candidate at TUM, and technical lead for the Fortuna autonomous-driving research vehicle.',
+  image = '/social-card.svg',
+  noindex = false,
+} = Astro.props;
+
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const socialImage = new URL(image, Astro.site);
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="generator" content={Astro.generator} />
+    <meta name="description" content={description} />
+    <meta name="theme-color" content="#101311" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    {!noindex && <meta property="og:url" content={canonical} />}
+    <meta property="og:image" content={socialImage} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={socialImage} />
+    {!noindex && <link rel="canonical" href={canonical} />}
+    {noindex && <meta name="robots" content="noindex, nofollow" />}
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>{title}</title>
+    <script is:inline>document.documentElement.classList.add('has-js');</script>
+  </head>
+  <body class="bare-body">
+    <a class="skip-link" href="#main-content">Skip to content</a>
+    <a class="bare-mark" href="https://steflamb.github.io/" target="_blank" rel="noreferrer" aria-label="Stefano Carlo Lambertenghi, home">SL</a>
+    <main id="main-content">
+      <slot />
+    </main>
+  </body>
+</html>
+
+<style>
+  .bare-mark {
+    position: fixed;
+    top: 1.4rem;
+    left: 1.4rem;
+    z-index: 40;
+    display: grid;
+    place-items: center;
+    width: 2.4rem;
+    height: 2.4rem;
+    border-radius: 999px;
+    background: var(--paper-bright);
+    color: var(--ink);
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.02em;
+    border: 1px solid var(--line);
+    box-shadow: 0 6px 18px rgba(16, 19, 17, 0.16);
+    opacity: 0.55;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    text-decoration: none;
+  }
+
+  .bare-mark:hover {
+    opacity: 1;
+    transform: translateY(-1px);
+  }
+
+  @media print {
+    @page {
+      size: 1440px 2036px;
+      margin: 0;
+    }
+
+    .bare-mark,
+    .skip-link {
+      display: none !important;
+    }
+
+    html,
+    body {
+      background: var(--paper-bright) !important;
+      color: var(--ink) !important;
+    }
+  }
+</style>

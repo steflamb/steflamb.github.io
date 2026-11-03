@@ -8,7 +8,30 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       <p class="not-found-code">ERROR / 404 / OUTSIDE ODD</p>
       <h1>This route left the map.</h1>
       <p>The page may have moved, or this scenario was never part of the test plan.</p>
-      <a class="button" href="/">Return home</a>
+      <dl class="disengagement-report" aria-label="Disengagement report">
+        <div>
+          <dt>Event</dt>
+          <dd>Disengagement</dd>
+        </div>
+        <div>
+          <dt>Requested route</dt>
+          <dd id="disengagement-route">Unknown</dd>
+        </div>
+        <div>
+          <dt>Cause</dt>
+          <dd>Outside operational design domain</dd>
+        </div>
+        <div>
+          <dt>Takeover</dt>
+          <dd>Safety driver, no harm done</dd>
+        </div>
+      </dl>
+      <a class="button" href="/">Re-engage at home</a>
     </div>
   </section>
 </BaseLayout>
+
+<script>
+  const route = document.getElementById('disengagement-route');
+  if (route) route.textContent = window.location.pathname;
+</script>

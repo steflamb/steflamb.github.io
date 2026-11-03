@@ -61,6 +61,44 @@ const schema = {
     <script is:inline>document.documentElement.classList.add('has-js');</script>
     <script type="application/ld+json" set:html={JSON.stringify(schema)} />
   </head>
+
+<style is:global>
+  /* Page-to-page continuity: the header holds still while the page underneath crossfades. */
+  @view-transition {
+    navigation: auto;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    @view-transition {
+      navigation: none;
+    }
+  }
+
+  .site-header {
+    view-transition-name: site-header;
+  }
+
+  ::view-transition-old(root) {
+    animation: 140ms ease-in both page-out;
+  }
+
+  ::view-transition-new(root) {
+    animation: 380ms cubic-bezier(0.16, 1, 0.3, 1) both page-in;
+  }
+
+  @keyframes page-out {
+    to {
+      opacity: 0;
+    }
+  }
+
+  @keyframes page-in {
+    from {
+      opacity: 0;
+      transform: translateY(0.5rem);
+    }
+  }
+</style>
   <body>
     <a class="skip-link" href="#main-content">Skip to content</a>
     <SiteHeader />

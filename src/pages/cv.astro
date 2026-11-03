@@ -3,6 +3,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import { profileLinks, publications } from '../data/site';
 
 const nanodronePaper = publications.find((p) => p.title.startsWith('Ultra-Low Power'))!;
+// The five most recent papers, plus any award paper that falls outside them.
+const selectedPublications = publications.filter((p, i) => i < 5 || p.note);
 ---
 
 <BaseLayout
@@ -125,7 +127,7 @@ const nanodronePaper = publications.find((p) => p.title.startsWith('Ultra-Low Po
     <section class="cv-block">
       <h2>Selected publications</h2>
       <div>
-        {publications.slice(0, 5).map((publication) => (
+        {selectedPublications.map((publication) => (
           <article class="cv-entry">
             <h3><a href={publication.paper}>{publication.title}</a></h3>
             <p class="cv-entry-meta">{publication.venue} · {publication.year}</p>

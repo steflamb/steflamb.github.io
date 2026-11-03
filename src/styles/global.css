@@ -58,6 +58,7 @@
     --line-dark: rgba(250, 248, 241, 0.17);
     --signal: #ff6034;
     --signal-dark: #e7471e;
+    --signal-ink: #b03a0e;
     --acid: #d8ff57;
     --max-width: 86rem;
     --content-width: 72rem;
@@ -364,6 +365,7 @@
     position: relative;
     z-index: 2;
     display: flex;
+    pointer-events: none;
     align-items: center;
     min-height: calc(100svh - 7rem);
     padding-bottom: 3rem;
@@ -373,7 +375,9 @@
     position: relative;
     z-index: 2;
     min-width: 0;
-    max-width: 42rem;
+    pointer-events: auto;
+    /* Room left of the image panel (45vw), minus the centred container's inset. */
+    max-width: min(42rem, calc(45vw - max(0px, (100vw - var(--max-width)) / 2) - var(--gutter) - 4rem));
     padding-block: 3rem;
   }
 
@@ -384,7 +388,7 @@
 
   .hero-title {
     max-width: 12ch;
-    font-size: clamp(3.8rem, 7.7vw, 8rem);
+    font-size: clamp(3.4rem, 5.6vw, 6.5rem);
     font-weight: 540;
     letter-spacing: -0.072em;
     line-height: 0.87;
@@ -397,6 +401,41 @@
     font-weight: 400;
     font-size: 0.82em;
     white-space: nowrap;
+  }
+
+  /* Entrance: the name rises out of its own line box while the gap sweeps in beside it. */
+  .hero-title-line {
+    display: inline-block;
+    animation: hero-line 900ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .hero-title em.hero-title-line {
+    animation-delay: 110ms;
+  }
+
+  .hero .eyebrow,
+  .hero-intro {
+    animation: hero-fade 700ms cubic-bezier(0.16, 1, 0.3, 1) 260ms both;
+  }
+
+  .hero .eyebrow {
+    animation-delay: 0ms;
+  }
+
+  @keyframes hero-line {
+    from {
+      clip-path: inset(100% -0.3em -0.3em -0.3em);
+      transform: translateY(0.35em);
+    }
+    to {
+      clip-path: inset(-0.1em -0.3em -0.3em -0.3em);
+    }
+  }
+
+  @keyframes hero-fade {
+    from {
+      opacity: 0;
+    }
   }
 
   .hero-intro {
@@ -426,10 +465,10 @@
   .hero-visual {
     position: absolute;
     z-index: 1;
-    top: 0;
+    top: 5rem;
     right: 0;
     bottom: 0;
-    width: clamp(22rem, 46vw, 46rem);
+    width: 55vw;
     overflow: hidden;
     min-width: 0;
   }
@@ -440,6 +479,181 @@
     height: 100%;
     object-fit: cover;
     object-position: 24% 32%;
+  }
+
+  /* Sim ↔ real scrubber: the scanned car, registered over the photo of the real one. */
+  .gap-sim,
+  .gap-wire,
+  .gap-divider,
+  .gap-tag-real {
+    display: none;
+  }
+
+  .hero-visual.is-ready {
+    cursor: ew-resize;
+    touch-action: pan-y;
+    user-select: none;
+    -webkit-user-select: none;
+    --gap-left: 100%;
+    --gap-right: 100%;
+  }
+
+  .hero-visual.is-ready img {
+    -webkit-user-drag: none;
+  }
+
+  .hero-visual.is-ready .gap-sim {
+    position: absolute;
+    inset: 0;
+    display: block;
+    clip-path: inset(0 0 0 var(--gap-right));
+  }
+
+  .hero-visual.is-ready .gap-wire {
+    position: absolute;
+    inset: 0;
+    display: block;
+    clip-path: inset(0 calc(100% - var(--gap-right)) 0 var(--gap-left));
+  }
+
+  .gap-sim img,
+  .gap-wire img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 24% 32%;
+  }
+
+  .hero-visual.is-ready .gap-divider {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: var(--gap-left);
+    display: block;
+    width: calc(var(--gap-right) - var(--gap-left));
+    outline: none;
+  }
+
+  /* Dotted edges, as in the reality-gap figure: where the photo ends and the model begins. */
+  .gap-divider::before,
+  .gap-divider::after {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 0;
+    border-left: 2px dotted var(--paper-bright);
+    content: '';
+    filter: drop-shadow(0 0 2px rgba(16, 19, 17, 0.6));
+  }
+
+  .gap-divider::before {
+    left: 0;
+  }
+
+  .gap-divider::after {
+    right: 0;
+  }
+
+  .gap-knob {
+    position: absolute;
+    top: 64%;
+    left: var(--gap-knob, 50%);
+    display: grid;
+    width: 2.75rem;
+    height: 2.75rem;
+    place-items: center;
+    border-radius: 50%;
+    background: var(--paper-bright);
+    box-shadow: 0 4px 18px rgba(16, 19, 17, 0.35);
+    color: var(--ink);
+    transform: translate(-50%, -50%);
+    transition: transform 160ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .gap-knob svg,
+  .gap-label svg {
+    fill: none;
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 2;
+  }
+
+  .hero-visual.is-dragging .gap-knob,
+  .gap-divider:hover .gap-knob {
+    transform: translate(-50%, -50%) scale(1.08);
+  }
+
+  .gap-divider:focus-visible .gap-knob {
+    outline: 3px solid #ffd23f;
+    outline-offset: 4px;
+  }
+
+  .gap-label {
+    position: absolute;
+    top: clamp(1.25rem, 4vh, 2.5rem);
+    right: 0.5rem;
+    left: 0.5rem;
+    display: grid;
+    justify-items: center;
+    gap: 0.2rem;
+    color: #ffd23f;
+    font-size: 1.15rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    text-shadow: 0 1px 10px rgba(16, 19, 17, 0.55);
+    white-space: nowrap;
+  }
+
+  .gap-label svg {
+    width: 100%;
+    height: 0.75rem;
+    stroke-width: 2.5;
+    marker-start: none;
+  }
+
+  .gap-label::before,
+  .gap-label::after {
+    position: absolute;
+    bottom: 0.1rem;
+    width: 0.6rem;
+    height: 0.6rem;
+    border-bottom: 2.5px solid currentColor;
+    border-left: 2.5px solid currentColor;
+    content: '';
+  }
+
+  .gap-label::before {
+    left: 0.1rem;
+    transform: rotate(45deg);
+  }
+
+  .gap-label::after {
+    right: 0.1rem;
+    transform: rotate(-135deg);
+  }
+
+  .gap-tag {
+    position: absolute;
+    bottom: 1.25rem;
+    padding: 0.4rem 0.6rem;
+    background: rgba(16, 19, 17, 0.82);
+    color: var(--paper-bright);
+    font-family: var(--mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .gap-tag-sim {
+    right: 1.25rem;
+    color: #ffd23f;
+  }
+
+  .hero-visual.is-ready .gap-tag-real {
+    left: 1.25rem;
+    display: block;
   }
 
   .fortuna-photo {
@@ -499,9 +713,9 @@
 
   .video-frame-caption {
     margin-top: 1rem;
-    color: var(--muted-dark);
+    color: var(--muted);
     font-family: var(--mono);
-    font-size: 0.68rem;
+    font-size: 0.6875rem;
     letter-spacing: 0.05em;
     text-transform: uppercase;
   }
@@ -522,6 +736,24 @@
   .section-signal {
     background: var(--signal);
     color: var(--ink);
+  }
+
+  .section-signal .eyebrow {
+    color: var(--ink);
+  }
+
+  .section-signal .eyebrow::before {
+    background: var(--ink);
+  }
+
+  .section-dark .video-frame-caption,
+  .section-dark .demo-showcase-copy p,
+  .section-dark .architecture-copy > p:not(.eyebrow) {
+    color: var(--muted-dark);
+  }
+
+  .section-heading-flush {
+    margin-bottom: 0 !important;
   }
 
   .section-heading {
@@ -997,7 +1229,7 @@
   .publication-mini .pub-venue {
     display: inline-block;
     margin-bottom: 0.55rem;
-    color: var(--signal-dark);
+    color: var(--signal-ink);
   }
 
   .publication-mini h3 {
@@ -1053,7 +1285,7 @@
     color: var(--ink);
   }
 
-  .page-hero-light .eyebrow {
+  .page-hero.page-hero-light .eyebrow {
     color: var(--muted);
   }
 
@@ -1151,7 +1383,7 @@
     border: 1px solid var(--line-dark);
     color: var(--muted-dark);
     font-family: var(--mono);
-    font-size: 0.6rem;
+    font-size: 0.6875rem;
     letter-spacing: 0.05em;
     text-transform: uppercase;
   }
@@ -1319,7 +1551,7 @@
   }
 
   .architecture-copy h2 em {
-    color: var(--signal);
+    color: var(--signal-dark);
     font-family: Georgia, serif;
     font-weight: 400;
   }
@@ -1343,12 +1575,13 @@
   }
 
   .architecture-key span {
-    color: var(--signal);
+    color: var(--signal-ink);
     font-family: var(--mono);
-    font-size: 0.65rem;
+    font-size: 0.6875rem;
   }
 
   .timeline {
+    --timeline-x: calc(10rem + 5px);
     position: relative;
     margin-top: 1rem;
   }
@@ -1357,10 +1590,33 @@
     position: absolute;
     top: 0;
     bottom: 0;
-    left: calc(10rem + 5px);
+    left: var(--timeline-x);
     width: 1px;
     background: var(--line);
     content: '';
+  }
+
+  /* The spine fills as the recovery story is read. */
+  @supports (animation-timeline: view()) {
+    .timeline::after {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: calc(var(--timeline-x) - 0.5px);
+      width: 2px;
+      background: var(--signal);
+      content: '';
+      transform-origin: top;
+      animation: timeline-fill linear both;
+      animation-timeline: view();
+      animation-range: entry 30% exit 70%;
+    }
+  }
+
+  @keyframes timeline-fill {
+    from {
+      transform: scaleY(0);
+    }
   }
 
   .timeline-item {
@@ -1420,9 +1676,9 @@
   }
 
   .theme-number {
-    color: var(--signal);
+    color: var(--signal-ink);
     font-family: var(--mono);
-    font-size: 0.67rem;
+    font-size: 0.6875rem;
   }
 
   .theme-card h3 {
@@ -1453,7 +1709,7 @@
   }
 
   .theme-finding strong {
-    color: var(--signal);
+    color: var(--signal-ink);
   }
 
   .research-hero-mark {
@@ -1504,9 +1760,9 @@
   }
 
   .theme-paper-meta {
-    color: var(--signal);
+    color: var(--signal-ink);
     font-family: var(--mono);
-    font-size: 0.6rem;
+    font-size: 0.6875rem;
     letter-spacing: 0.05em;
     text-transform: uppercase;
   }
@@ -1557,9 +1813,9 @@
   }
 
   .person-role {
-    color: var(--signal-dark);
+    color: var(--signal-ink);
     font-family: var(--mono);
-    font-size: 0.63rem;
+    font-size: 0.6875rem;
     letter-spacing: 0.05em;
     text-transform: uppercase;
   }
@@ -1666,7 +1922,7 @@
   }
 
   .publication-row-venue {
-    color: var(--signal-dark);
+    color: var(--signal-ink);
   }
 
   .publication-row h2 {
@@ -1694,9 +1950,9 @@
     margin-top: 1.2rem;
     padding: 0.38rem 0.55rem;
     background: rgba(255, 96, 52, 0.13);
-    color: var(--signal-dark);
+    color: var(--signal-ink);
     font-family: var(--mono);
-    font-size: 0.59rem;
+    font-size: 0.6875rem;
     font-weight: 700;
     letter-spacing: 0.04em;
     text-transform: uppercase;
@@ -1906,9 +2162,9 @@
 
   .cv-entry-meta {
     margin-top: 0.4rem;
-    color: var(--signal-dark);
+    color: var(--signal-ink);
     font-family: var(--mono);
-    font-size: 0.65rem;
+    font-size: 0.6875rem;
     letter-spacing: 0.04em;
     text-transform: uppercase;
   }
@@ -1983,9 +2239,9 @@
     justify-content: space-between;
     padding-block: 1.3rem;
     border-top: 1px solid var(--line-dark);
-    color: #777a73;
+    color: #8f9289;
     font-family: var(--mono);
-    font-size: 0.59rem;
+    font-size: 0.6875rem;
     letter-spacing: 0.04em;
     text-transform: uppercase;
   }
@@ -2023,6 +2279,54 @@
   .not-found .button {
     margin-top: 2rem;
   }
+
+  .disengagement-report {
+    max-width: 30rem;
+    margin: 2.5rem auto 0;
+    border-top: 1px solid var(--line-dark);
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    text-align: left;
+  }
+
+  .disengagement-report div {
+    display: grid;
+    grid-template-columns: 9.5rem 1fr;
+    gap: 1rem;
+    padding-block: 0.7rem;
+    border-bottom: 1px solid var(--line-dark);
+    animation: report-line 320ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .disengagement-report div:nth-child(2) { animation-delay: 90ms; }
+  .disengagement-report div:nth-child(3) { animation-delay: 180ms; }
+  .disengagement-report div:nth-child(4) { animation-delay: 270ms; }
+
+  .disengagement-report dt {
+    color: var(--muted-dark);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .disengagement-report dd {
+    min-width: 0;
+    overflow-wrap: anywhere;
+    color: var(--paper-bright);
+  }
+
+  @keyframes report-line {
+    from {
+      opacity: 0;
+      transform: translateY(0.35rem);
+    }
+  }
+
+  @media (max-width: 38rem) {
+    .disengagement-report div {
+      grid-template-columns: 1fr;
+      gap: 0.25rem;
+    }
+  }
 }
 
 @layer utilities {
@@ -2051,19 +2355,29 @@
       animation-iteration-count: 1 !important;
       transition-duration: 0.01ms !important;
     }
+
+    .timeline::after {
+      display: none;
+    }
+
+    .hero-title-line,
+    .hero .eyebrow,
+    .hero-intro {
+      animation: none !important;
+    }
   }
 
   @media (max-width: 68rem) {
     .hero-visual {
-      width: clamp(18rem, 40vw, 32rem);
+      width: 50vw;
     }
 
     .hero-copy {
-      max-width: 30rem;
+      max-width: calc(50vw - var(--gutter) - 3rem);
     }
 
     .hero-title {
-      font-size: clamp(3.6rem, 7.5vw, 6rem);
+      font-size: clamp(3.2rem, 6.6vw, 6rem);
     }
 
     .fortuna-feature {
@@ -2121,7 +2435,7 @@
       gap: 0.8rem;
       cursor: pointer;
       font-family: var(--mono);
-      font-size: 0.65rem;
+      font-size: 0.6875rem;
       letter-spacing: 0.07em;
       text-transform: uppercase;
     }
@@ -2203,6 +2517,23 @@
       width: 100%;
       height: 16rem;
       margin-bottom: 1.5rem;
+    }
+
+    .gap-label {
+      top: 0.9rem;
+      font-size: 1.1rem;
+    }
+
+    .gap-tag {
+      bottom: 0.75rem;
+    }
+
+    .gap-tag-sim {
+      right: 0.75rem;
+    }
+
+    .hero-visual.is-ready .gap-tag-real {
+      left: 0.75rem;
     }
 
     .section-heading,
@@ -2388,8 +2719,8 @@
       display: none;
     }
 
-    .timeline::before {
-      left: 5px;
+    .timeline {
+      --timeline-x: 5px;
     }
 
     .timeline-item {
@@ -2480,4 +2811,23 @@
       break-inside: avoid;
     }
   }
+}
+
+/* The printable portfolio keeps the type and colour it was exported with. */
+@layer components {
+  .bare-body .video-frame-caption { color: var(--muted-dark); font-size: 0.68rem; }
+  .bare-body .section-signal .eyebrow { color: var(--muted); }
+  .bare-body .section-signal .eyebrow::before { background: var(--signal); }
+  .bare-body .section-dark .demo-showcase-copy p,
+  .bare-body .section-dark .architecture-copy > p:not(.eyebrow) { color: var(--muted); }
+  .bare-body .page-hero.page-hero-light .eyebrow { color: var(--muted-dark); }
+  .bare-body .tag { font-size: 0.6rem; }
+  .bare-body .architecture-copy h2 em { color: var(--signal); }
+  .bare-body .architecture-key span { color: var(--signal); font-size: 0.65rem; }
+  .bare-body .theme-number { color: var(--signal); font-size: 0.67rem; }
+  .bare-body .theme-finding strong { color: var(--signal); }
+  .bare-body .theme-paper-meta { color: var(--signal); font-size: 0.6rem; }
+  .bare-body .publication-row-venue { color: var(--signal-dark); }
+  .bare-body .publication-note { color: var(--signal-dark); font-size: 0.59rem; }
+  .bare-body .timeline::after { display: none; }
 }

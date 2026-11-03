@@ -27,7 +27,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       <p id="garage-cone-stat">18 standing · 0 knocked over</p>
       <p id="garage-lap-stat">Drive through the start line to begin a lap</p>
     </div>
-    <p class="garage-penalty-toast" id="garage-penalty-toast" hidden>Cone hit — +10s</p>
+    <p class="garage-penalty-toast" id="garage-penalty-toast" aria-live="polite" hidden>Cone hit — +10s</p>
 
     <div class="garage-touch" id="garage-touch" aria-hidden="true">
       <button type="button" class="garage-btn" data-control="left" aria-label="Steer left">
@@ -72,7 +72,9 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     position: relative;
     z-index: 1;
     max-width: 26rem;
-    padding: clamp(2rem, 5vw, 3.5rem);
+    margin: calc(5rem + clamp(1rem, 3vw, 2rem)) clamp(1rem, 3vw, 2rem) 0;
+    padding: clamp(1.25rem, 3vw, 2rem);
+    background: rgba(16, 19, 17, 0.82);
     color: var(--paper-bright);
   }
 
@@ -137,10 +139,12 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     flex-direction: column;
     align-items: flex-end;
     gap: 0.4rem;
+    padding: 0.6rem 0.75rem;
+    background: rgba(16, 19, 17, 0.82);
     text-align: right;
     color: var(--paper-bright);
     font-family: var(--mono);
-    font-size: 0.68rem;
+    font-size: 0.6875rem;
     letter-spacing: 0.06em;
     text-transform: uppercase;
     text-shadow: 0 1px 12px rgba(16, 19, 17, 0.6);
@@ -183,10 +187,14 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     transition: opacity 0.15s ease, transform 0.15s ease;
   }
 
+  .garage-toast-record {
+    color: #ffd23f;
+  }
+
   .garage-penalty-toast-show {
     opacity: 1;
     transform: translate(-50%, -50%) scale(1);
-    transition: opacity 0.15s ease, transform 0.25s cubic-bezier(0.2, 1.4, 0.4, 1);
+    transition: opacity 0.15s ease, transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   .garage-touch {
@@ -271,8 +279,9 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   }
 
   let penaltyToastTimeout: ReturnType<typeof setTimeout> | undefined;
-  function showPenaltyToast(text: string) {
+  function showPenaltyToast(text: string, tone: 'penalty' | 'record' = 'penalty') {
     penaltyToastEl.textContent = text;
+    penaltyToastEl.classList.toggle('garage-toast-record', tone === 'record');
     penaltyToastEl.hidden = false;
     penaltyToastEl.classList.remove('garage-penalty-toast-show');
     void penaltyToastEl.offsetWidth;
@@ -751,7 +760,24 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   let lapStarted = false;
   let lapNumber = 0;
   let lapElapsed = 0;
-  let bestLapTime: number | null = null;
+  // The best lap survives a reload, so a returning driver has something to beat.
+  const bestLapKey = 'garage-best-lap';
+  function readBestLap() {
+    try {
+      const stored = Number.parseFloat(localStorage.getItem(bestLapKey) ?? '');
+      return Number.isFinite(stored) ? stored : null;
+    } catch {
+      return null;
+    }
+  }
+  function saveBestLap(t: number) {
+    try {
+      localStorage.setItem(bestLapKey, String(t));
+    } catch {
+      // Storage unavailable (private mode, blocked site data): the record lasts this visit.
+    }
+  }
+  let bestLapTime: number | null = readBestLap();
   let lapCrossingCooldown = 0;
   let offRoad = false;
 
@@ -763,7 +789,10 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     if (offRoad) {
       lapStatEl.textContent = 'Out of road';
     } else if (!lapStarted) {
-      lapStatEl.textContent = 'Drive through the start line to begin a lap';
+      lapStatEl.textContent =
+        bestLapTime === null
+          ? 'Drive through the start line to begin a lap'
+          : `Your best: ${formatLapTime(bestLapTime)} · cross the start line to beat it`;
     } else if (bestLapTime === null) {
       lapStatEl.textContent = `Lap ${lapNumber} — ${formatLapTime(lapElapsed)}`;
     } else {
@@ -796,7 +825,12 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       const crossedFinish = lapPrevForward < 0 && forward >= 0;
       if (crossedFinish && lapCrossingCooldown <= 0) {
         if (lapStarted && (bestLapTime === null || lapElapsed < bestLapTime)) {
+          showPenaltyToast(
+            bestLapTime === null ? `Lap set — ${formatLapTime(lapElapsed)}` : `Personal best — ${formatLapTime(lapElapsed)}`,
+            'record',
+          );
           bestLapTime = lapElapsed;
+          saveBestLap(bestLapTime);
         }
         lapNumber += 1;
         lapStarted = true;

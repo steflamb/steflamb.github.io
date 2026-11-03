@@ -490,6 +490,7 @@ const realityGapPaper = publications.find((p) => p.title.startsWith('A Multi-Mod
       box.getCenter(center);
       model.position.sub(center);
       scene.add(model);
+      requestRender();
     });
 
     function resize() {
@@ -499,17 +500,33 @@ const realityGapPaper = publications.find((p) => p.title.startsWith('A Multi-Mod
       renderer.setSize(w, h, false);
       camera.aspect = w / h;
       camera.updateProjectionMatrix();
+      requestRender();
     }
+
+    // Spin only while on screen; under reduced motion, draw a still frame.
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    let visible = false;
+    let frameId = 0;
+
+    function tick() {
+      frameId = 0;
+      if (model && !reduceMotion.matches) model.rotation.y += 0.005;
+      renderer.render(scene, camera);
+      if (visible && !reduceMotion.matches) requestRender();
+    }
+
+    function requestRender() {
+      if (!frameId) frameId = requestAnimationFrame(tick);
+    }
+
+    new IntersectionObserver(([entry]) => {
+      visible = entry.isIntersecting;
+      if (visible) requestRender();
+    }).observe(frame);
+    reduceMotion.addEventListener('change', requestRender);
 
     const resizeObserver = new ResizeObserver(resize);
     resizeObserver.observe(frame);
     resize();
-
-    function tick() {
-      requestAnimationFrame(tick);
-      if (model) model.rotation.y += 0.005;
-      renderer.render(scene, camera);
-    }
-    tick();
   }
 </script>

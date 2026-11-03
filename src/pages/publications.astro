@@ -1,29 +1,89 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { profileLinks, publications } from '../data/site';
+
+const cam2simPaper = publications.find((p) => p.title.startsWith('Cam2Sim'))!;
+const realityGapPaper = publications.find((p) => p.title.startsWith('A Multi-Modality Evaluation'))!;
+const perturbationBenchmarkPaper = publications.find((p) => p.title.startsWith('Benchmarking Image Perturbations'))!;
+const perturbationDriveJournalPaper = publications.find((p) => p.title.startsWith('PerturbationDrive:'))!;
+const forecastingPaper = publications.find((p) => p.title.startsWith('Misbehavior Forecasting'))!;
+const qualityMetricsPaper = publications.find((p) => p.title.startsWith('Assessing Quality Metrics'))!;
+
+const paperLink = (p: (typeof publications)[number]) => ({
+  meta: `${p.venue} · ${p.year}`,
+  label: p.title,
+  href: p.paper,
+});
+
+const themes = [
+  {
+    number: '01',
+    title: 'Reality-gap measurement',
+    copy: 'Measure which actuation, perception, and behavioral differences matter when a test moves between virtual and physical environments.',
+    finding: 'Vehicle-in-the-loop testing reduced the actuation gap, and mixed-reality testing reduced the perception gap, compared with simulation alone.',
+    links: [paperLink(realityGapPaper)],
+  },
+  {
+    number: '02',
+    title: 'Robustness under perturbation',
+    copy: 'Stress camera and LiDAR pipelines, then follow the effect beyond model accuracy into timing, planning, control, and system behavior.',
+    finding: 'Offline robustness was only weakly predictive of closed-loop failures on the real vehicle; training on perturbed data improved robustness under adverse conditions.',
+    links: [paperLink(perturbationBenchmarkPaper), paperLink(perturbationDriveJournalPaper)],
+  },
+  {
+    number: '03',
+    title: 'Focused failure discovery',
+    copy: 'Use near misses and predicted future states to spend the testing budget where failures are more likely to surface.',
+    finding: 'Focusing the search around forecasted near misses found failures using a smaller testing budget than an unfocused search.',
+    links: [paperLink(forecastingPaper)],
+  },
+  {
+    number: '04',
+    title: 'Real-to-simulation reconstruction',
+    copy: 'Turn recorded road scenes into replayable simulations that preserve the geometry, trajectory, and visual character of the original drive.',
+    finding: "It's not a full replacement for the real environment, but it lets us reuse real drives for closed-loop testing.",
+    links: [paperLink(cam2simPaper), paperLink(qualityMetricsPaper)],
+  },
+  {
+    number: '05',
+    title: 'Execution environments',
+    copy: 'The interfaces and tooling that let the same test run in simulation, hardware-in-the-loop, or on a physical vehicle, without rewriting it each time.',
+    links: [paperLink(realityGapPaper)],
+  },
+  {
+    number: '06',
+    title: 'Research platforms',
+    copy: 'Fortuna, the small-scale platform, and the tools around them are maintained so other students and researchers can keep using them, not just demo them once.',
+    links: [
+      { meta: 'Vehicle', label: 'Fortuna, the research platform', href: '/fortuna/' },
+      { meta: 'Students', label: 'Teaching and student projects', href: '/teaching/' },
+    ],
+  },
+];
 ---
 
 <BaseLayout
-  title="Publications — Stefano Carlo Lambertenghi"
-  description="Selected publications on autonomous-driving testing, the simulation-to-reality gap, robustness, and failure discovery."
+  title="Research and publications — Stefano Carlo Lambertenghi"
+  description="Research on the reality gap, autonomous-driving robustness, failure forecasting, and real-to-simulation reconstruction, with selected publications."
 >
   <section class="page-hero page-hero-light publications-hero">
     <div class="page-hero-inner research-hero-stacked container-wide">
       <div class="publications-hero-top">
         <div>
-          <p class="eyebrow">2023–2026</p>
-          <h1 class="page-title">Selected publications.</h1>
+          <p class="eyebrow">Research / simulation ↔ reality</p>
+          <h1 class="page-title">Research.</h1>
         </div>
         <div class="page-hero-copy-col">
           <p class="page-hero-copy">
-            Peer-reviewed papers, executable tools, and replication packages on the reality gap,
-            robustness under perturbation, and reusing real driving data for simulation. A complete
-            list is available on DBLP.
+            I study how well results transfer between simulation and the real world, how to make an
+            autonomous-driving system more robust once that gap is measured, and how to reuse real
+            driving data to make simulation more realistic.
           </p>
           <div class="hero-actions">
             <a class="button-secondary" href={profileLinks.dblp} target="_blank" rel="noreferrer">
               DBLP profile
             </a>
+            <a class="button-secondary" href="/demos/">See the demos</a>
           </div>
         </div>
       </div>
@@ -39,7 +99,54 @@ import { profileLinks, publications } from '../data/site';
     </div>
   </section>
 
-  <section class="section" aria-label="Selected publications">
+  <section class="section" aria-labelledby="themes-heading">
+    <div class="container-wide">
+      <div class="section-heading theme-heading-centered" data-reveal>
+        <p class="eyebrow">Research themes</p>
+        <div>
+          <h2 id="themes-heading" class="display-title">Six research themes.</h2>
+        </div>
+      </div>
+
+      <div class="theme-grid">
+        {themes.map((theme) => (
+          <article class="theme-card" data-reveal>
+            <span class="theme-number">{theme.number}</span>
+            <h3>{theme.title}</h3>
+            <p>{theme.copy}</p>
+            {theme.finding && (
+              <p class="theme-finding"><strong>Found:</strong> {theme.finding}</p>
+            )}
+            <div class="theme-papers" aria-label={`Related work on ${theme.title}`}>
+              {theme.links.map((link) => (
+                <a class="theme-paper" href={link.href} target={link.href.startsWith('/') ? undefined : '_blank'} rel={link.href.startsWith('/') ? undefined : 'noreferrer'}>
+                  <span class="theme-paper-meta">{link.meta}</span>
+                  <span class="theme-paper-title">{link.label} <span aria-hidden="true">↗︎</span></span>
+                </a>
+              ))}
+            </div>
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="section section-tight-top" aria-labelledby="publications-heading">
+    <div class="container-wide">
+      <div class="section-heading section-heading-flush" data-reveal>
+        <p class="eyebrow">2023–2026</p>
+        <div>
+          <h2 id="publications-heading" class="display-title">Selected publications.</h2>
+          <p class="section-lede">
+            Peer-reviewed papers, executable tools, and replication packages. A complete list is
+            available on DBLP.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section-tight-top" aria-label="Selected publications">
     <div class="container-wide">
       <ol class="publications-list">
         {publications.map((publication) => (
@@ -61,6 +168,27 @@ import { profileLinks, publications } from '../data/site';
           </li>
         ))}
       </ol>
+    </div>
+  </section>
+  <section class="section section-signal" aria-labelledby="open-heading">
+    <div class="container-wide two-column-story">
+      <aside class="story-aside" data-reveal>
+        <p class="eyebrow">Research in the open</p>
+      </aside>
+      <div class="story-copy" data-reveal>
+        <h2 id="open-heading" class="sr-only">Open research</h2>
+        <p>
+          A result is more valuable when someone else can interrogate it. The work is accompanied
+          wherever possible by <strong>code, datasets, replication packages, and executable
+          examples</strong>—from PerturbationDrive to Cam2Sim and vehicle-level artifacts.
+        </p>
+        <div class="hero-actions">
+          <a class="button button-dark" href={profileLinks.researchGroup} target="_blank" rel="noreferrer">
+            Browse open-source work
+          </a>
+          <a class="button button-dark" href="/demos/">See the demos</a>
+        </div>
+      </div>
     </div>
   </section>
 </BaseLayout>
