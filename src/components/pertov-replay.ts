@@ -21,7 +21,6 @@ type ReplayElements = {
   root: HTMLElement;
   mapSvg: SVGSVGElement;
   canvas: HTMLCanvasElement;
-  steeringSvg: SVGSVGElement;
   form: HTMLFormElement;
   playButton: HTMLButtonElement;
   card: HTMLElement;
@@ -177,23 +176,6 @@ export async function startPertovReplay(el: ReplayElements) {
     }
   }
 
-  // --- Steering: the recorded steering signal of the run against the nominal run ---
-
-  const steerRange = 4; // recorded steering spans about ±4
-  const fitSteering = (r: Run) => {
-    const span = Math.max(r.duration, nominal.duration);
-    el.steeringSvg.setAttribute('viewBox', `0 -${steerRange} ${span} ${steerRange * 2}`);
-    axis.setAttribute('x2', String(span));
-  };
-  el.steeringSvg.setAttribute('preserveAspectRatio', 'none');
-  const steerNode = (cls: string) => node('polyline', { class: cls, 'vector-effect': 'non-scaling-stroke' }, el.steeringSvg);
-  const axis = node('line', { x1: 0, y1: 0, x2: 1, y2: 0, class: 'pv-axis', 'vector-effect': 'non-scaling-stroke' }, el.steeringSvg);
-  const steerNominal = steerNode('pv-steer-nominal');
-  const steerRun = steerNode('pv-steer-run');
-  const playhead = node('line', { y1: -steerRange, y2: steerRange, class: 'pv-playhead', 'vector-effect': 'non-scaling-stroke' }, el.steeringSvg);
-  const steerPoints = (run: Run) => run.pts.map((p) => `${p[0].toFixed(2)},${(-THREE.MathUtils.clamp(p[3], -steerRange, steerRange)).toFixed(3)}`).join(' ');
-  steerNominal.setAttribute('points', steerPoints(nominal));
-
   // --- Bird's-eye replay in the simulator: Fortuna on the OSM street, camera following ---
 
   const renderer = new THREE.WebGLRenderer({ canvas: el.canvas, antialias: true });
@@ -319,8 +301,6 @@ export async function startPertovReplay(el: ReplayElements) {
 
     carMarker.setAttribute('cx', String(pose.x));
     carMarker.setAttribute('cy', String(-pose.y));
-    playhead.setAttribute('x1', String(time));
-    playhead.setAttribute('x2', String(time));
     el.readout.textContent = `${run.fn}(scale=${run.scale}) · ${Math.min(time, end).toFixed(1)} s`;
 
     if (playing && visible && !document.hidden) frameId = requestAnimationFrame(draw);
@@ -384,8 +364,6 @@ export async function startPertovReplay(el: ReplayElements) {
       other.position.set(hit.x, 0, -hit.y);
       other.rotation.y = hit.heading - Math.PI / 2;
     }
-    steerRun.setAttribute('points', steerPoints(run));
-    fitSteering(run);
     showCard(run);
     requestDraw();
   }
