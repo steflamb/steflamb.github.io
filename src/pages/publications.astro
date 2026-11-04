@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import ResearchIcon from '../components/ResearchIcon.astro';
 import { profileLinks, publications } from '../data/site';
 
 const cam2simPaper = publications.find((p) => p.title.startsWith('Cam2Sim'))!;
@@ -18,79 +19,84 @@ const paperLink = (p: (typeof publications)[number]) => ({
 const realWorldPerturbationPaper = publications.find((p) => p.title.startsWith('Real-World Perturbation'))!;
 
 // The research questions, in the order they build on each other. A paper can
-// answer more than one; its "Found:" line sits under the question it answers.
+// answer more than one. Demos and media live on /demos/.
 const questions = [
   {
-    number: 'A',
+    icon: 'measure' as const,
     title: 'Measuring the gap',
     question:
-      'How much does a system’s behavior change when the same test moves from simulation toward a real vehicle, and how much of that change comes from actuation and how much from perception?',
-    copy: 'Run the same test in simulation, vehicle-in-the-loop, mixed reality, and real driving, on a small-scale vehicle and on Fortuna, and compare where the results diverge.',
+      'How much does a system’s behavior change between simulation and a real vehicle, and how much of that is actuation and how much perception?',
     findings: [
-      'On the small-scale vehicle, vehicle-in-the-loop testing reduced the actuation gap and mixed-reality testing reduced the perception gap, compared with simulation alone.',
+      'Vehicle-in-the-loop testing reduced the actuation gap; mixed-reality testing reduced the perception gap.',
     ],
-    links: [paperLink(realityGapPaper), paperLink(realWorldPerturbationPaper)],
+    links: [paperLink(realityGapPaper), paperLink(realWorldPerturbationPaper), paperLink(qualityMetricsPaper)],
   },
   {
-    number: 'B',
+    icon: 'understand' as const,
     title: 'Understanding failures',
-    question:
-      'Which failures does a system have, and which of them only appear under conditions that offline or simulated testing doesn’t reproduce?',
-    copy: 'Stress camera and LiDAR pipelines with controlled perturbations, then follow the effect past model accuracy into timing, planning, control, and vehicle behavior. When failures are rare, spend the testing budget where they are more likely.',
+    question: 'Which failures does a system have, and which ones does offline or simulated testing miss?',
     findings: [
-      'Offline robustness was only weakly predictive of closed-loop failures on the real vehicle, across more than 740 experiments.',
-      'In simulation, focusing the search around forecasted near misses found failures with a smaller testing budget than an unfocused search.',
+      'Offline robustness was only weakly predictive of closed-loop failures on the real vehicle.',
+      'Focusing the search around forecasted near misses found failures with a smaller testing budget.',
     ],
-    links: [paperLink(perturbationBenchmarkPaper), paperLink(realWorldPerturbationPaper), paperLink(forecastingPaper)],
+    links: [paperLink(perturbationBenchmarkPaper), paperLink(realWorldPerturbationPaper), paperLink(forecastingPaper), paperLink(qualityMetricsPaper)],
   },
   {
-    number: 'C',
-    title: 'Reducing the gap',
-    question:
-      'Which techniques improve transfer from simulation to a physical vehicle, and under what conditions do they stop working?',
-    copy: 'Some techniques change the test setup, replacing parts of the simulation with real hardware or real camera input. Others change the system, by training on perturbed data, or its inputs, by translating simulated images to look real. Whether they worked is judged against A and B, not by how the output looks.',
+    icon: 'mitigate' as const,
+    title: 'Mitigating the gap',
+    question: 'Which techniques mitigate the gap, and when do they stop working?',
     findings: [
+      'With Cam2Sim’s reconstructed camera view, the driving model completed every closed-loop run; with standard CARLA rendering it failed all three.',
       'Training on perturbed images improved robustness under adverse conditions.',
-      'Standard image-quality metrics did not consistently track how image translation affected downstream driving tasks, so they should be used carefully as a proxy.',
+      'Standard image-quality metrics did not consistently track driving performance.',
     ],
-    links: [paperLink(perturbationBenchmarkPaper), paperLink(qualityMetricsPaper), paperLink(realityGapPaper)],
+    links: [paperLink(cam2simPaper), paperLink(perturbationBenchmarkPaper), paperLink(qualityMetricsPaper), paperLink(realityGapPaper)],
   },
 ];
 
-// Infrastructure that makes the questions above testable. Kept separate so it
-// doesn't read as a fourth question, but its own results stay attached.
+// The tools the experiments run on, released for reuse.
 const infrastructure = [
   {
     number: '01',
-    title: 'Real-to-simulation reconstruction',
-    copy: 'Turn recorded drives into replayable CARLA scenarios that keep the road geometry, trajectory, and visual character of the original, with Gaussian Splatting for the camera view.',
-    finding: 'It’s not a full replacement for the real environment, but it lets us reuse real drives for closed-loop testing instead of only replaying recorded sensor data.',
-    links: [paperLink(cam2simPaper), { meta: 'Demo', label: 'Drive a reconstructed Munich street', href: '/demos/' }],
+    title: 'Cam2Sim',
+    copy: 'Turns recorded drives into closed-loop CARLA scenarios, with Gaussian Splatting for the camera view.',
+    links: [paperLink(cam2simPaper), { meta: 'Code', label: 'ast-fortiss-tum/cam2sim', href: 'https://github.com/ast-fortiss-tum/cam2sim' }],
   },
   {
     number: '02',
-    title: 'Execution environments and test tooling',
-    copy: 'The interfaces that let the same test, and the same perturbation, run in simulation, hardware-in-the-loop, or on a physical vehicle without rewriting it each time.',
-    links: [
-      paperLink(perturbationDriveJournalPaper),
-      { meta: 'Code', label: 'ROS small-scale vehicle and mixed-reality setup', href: 'https://github.com/ast-fortiss-tum/ROS-small-scale-vehicle' },
-    ],
+    title: 'PerturbationDrive',
+    copy: 'More than 30 image perturbations, applied offline or in closed loop across several simulators.',
+    links: [paperLink(perturbationDriveJournalPaper), { meta: 'Code', label: 'ast-fortiss-tum/perturbation-drive', href: 'https://github.com/ast-fortiss-tum/perturbation-drive' }],
   },
   {
     number: '03',
-    title: 'Research platforms',
-    copy: 'Fortuna, the small-scale Donkey Car, and the tools around them, maintained so other students and researchers can keep using them rather than demo them once.',
-    links: [
-      { meta: 'Vehicle', label: 'Fortuna, the research platform', href: '/fortuna/' },
-      { meta: 'Students', label: 'Teaching and student projects', href: '/teaching/' },
-    ],
+    title: 'Small-scale mixed-reality framework',
+    copy: 'A small-scale vehicle and its digital twin, so the same test runs in simulation, vehicle-in-the-loop, mixed reality, and real driving.',
+    links: [paperLink(realityGapPaper), { meta: 'Code', label: 'ast-fortiss-tum/ROS-small-scale-vehicle', href: 'https://github.com/ast-fortiss-tum/ROS-small-scale-vehicle' }],
   },
+];
+
+// Which question each paper answers. Read down a column for a question, across for a paper.
+const columns = [
+  { key: 'measure', label: 'Measure', title: 'Measuring the gap' },
+  { key: 'understand', label: 'Understand', title: 'Understanding failures' },
+  { key: 'mitigate', label: 'Mitigate', title: 'Mitigating the gap' },
+  { key: 'infrastructure', label: 'Infrastructure', title: 'Infrastructure' },
+] as const;
+const paperMap = [
+  { paper: realWorldPerturbationPaper, short: 'Real-world perturbation testing', answers: ['measure', 'understand', 'mitigate'] },
+  { paper: forecastingPaper, short: 'Foresee: misbehavior forecasting', answers: ['understand'] },
+  { paper: cam2simPaper, short: 'Cam2Sim', answers: ['mitigate', 'infrastructure'] },
+  { paper: perturbationDriveJournalPaper, short: 'PerturbationDrive framework', answers: ['understand', 'infrastructure'] },
+  { paper: realityGapPaper, short: 'Multi-modality reality gap', answers: ['measure', 'mitigate', 'infrastructure'] },
+  { paper: perturbationBenchmarkPaper, short: 'Image perturbation benchmark', answers: ['understand', 'mitigate'] },
+  { paper: qualityMetricsPaper, short: 'Quality metrics for image translation', answers: ['measure', 'understand', 'mitigate'] },
 ];
 ---
 
 <BaseLayout
   title="Research and publications — Stefano Carlo Lambertenghi"
-  description="Research on the sim-to-real gap in autonomous driving: measuring it, understanding the failures it hides, and reducing it, with selected publications."
+  description="Research on the sim-to-real gap in autonomous driving: measuring it, understanding the failures it hides, and mitigating it, with selected publications."
 >
   <section class="page-hero page-hero-light publications-hero">
     <div class="page-hero-inner research-hero-stacked container-wide">
@@ -130,10 +136,8 @@ const infrastructure = [
         <div>
           <h2 id="questions-heading" class="display-title">Three questions.</h2>
           <p class="section-lede">
-            Most of the work comes back to one gap: a system that behaves one way in simulation
-            and another on a real road. The papers ask three questions about it, roughly in
-            order. You need a measurement before you can say where things break, and you need
-            both before you can tell whether a fix helped.
+            One gap: a system that behaves one way in simulation and another on a real road.
+            Measure it, find where it breaks things, then mitigate it.
           </p>
         </div>
       </div>
@@ -141,10 +145,9 @@ const infrastructure = [
       <div class="theme-grid">
         {questions.map((q) => (
           <article class="theme-card" data-reveal>
-            <span class="theme-number">{q.number}</span>
+            <ResearchIcon name={q.icon} class="theme-icon" />
             <h3>{q.title}</h3>
             <p class="theme-question">{q.question}</p>
-            <p>{q.copy}</p>
             {q.findings.map((finding) => (
               <p class="theme-finding"><strong>Found:</strong> {finding}</p>
             ))}
@@ -168,9 +171,8 @@ const infrastructure = [
         <div>
           <h2 id="infrastructure-heading" class="display-title">What the experiments run on.</h2>
           <p class="section-lede">
-            Answering those questions means running the same test in more than one place, which
-            takes infrastructure that didn’t exist off the shelf. It isn’t a separate line of
-            research, but some of it produced results of its own.
+            Three open-source tools built along the way, so the same test can run in more than
+            one place.
           </p>
         </div>
       </div>
@@ -181,9 +183,6 @@ const infrastructure = [
             <span class="theme-number">{item.number}</span>
             <h3>{item.title}</h3>
             <p>{item.copy}</p>
-            {item.finding && (
-              <p class="theme-finding"><strong>Found:</strong> {item.finding}</p>
-            )}
             <div class="theme-papers" aria-label={`Related work on ${item.title}`}>
               {item.links.map((link) => (
                 <a class="theme-paper" href={link.href} target={link.href.startsWith('/') ? undefined : '_blank'} rel={link.href.startsWith('/') ? undefined : 'noreferrer'}>
@@ -194,6 +193,54 @@ const infrastructure = [
             </div>
           </article>
         ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="section section-tight-top" aria-labelledby="map-heading">
+    <div class="container-wide">
+      <div class="section-heading section-heading-flush" data-reveal>
+        <div>
+          <h2 id="map-heading" class="display-title">Which paper answers what.</h2>
+          <p class="section-lede">
+            Most papers answer more than one question. Read down a column for a question, or
+            across a row for a paper. The last column marks papers that also built tooling others reuse.
+          </p>
+        </div>
+      </div>
+      <div class="paper-map-wrap" data-reveal>
+        <table class="paper-map">
+          <thead>
+            <tr>
+              <th scope="col">Paper</th>
+              {columns.map((col) => (
+                <th scope="col" title={col.title}>
+                  <ResearchIcon name={col.key} class="paper-map-icon" />
+                  <span class="paper-map-label">{col.label}</span>
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {paperMap.map((row) => (
+              <tr>
+                <th scope="row">
+                  <a href={row.paper.paper} target="_blank" rel="noreferrer">
+                    <span class="paper-map-meta">{row.paper.venue.split(' · ')[0]} · {row.paper.year}</span>
+                    <span class="paper-map-title">{row.short}</span>
+                  </a>
+                </th>
+                {columns.map((col) => (
+                  <td>
+                    {(row.answers as readonly string[]).includes(col.key)
+                      ? <span class="paper-map-dot" role="img" aria-label="Yes"></span>
+                      : <span class="sr-only">No</span>}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </div>
   </section>
@@ -257,3 +304,4 @@ const infrastructure = [
     </div>
   </section>
 </BaseLayout>
+

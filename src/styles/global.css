@@ -1608,6 +1608,115 @@
     font-size: 0.9rem;
   }
 
+  /* Paper-by-question map. */
+  .paper-map-wrap {
+    margin-top: 3rem;
+    overflow-x: auto;
+  }
+
+  .paper-map {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .paper-map th,
+  .paper-map td {
+    padding: 0.85rem 0.5rem;
+    border-bottom: 1px solid var(--line);
+    text-align: center;
+    vertical-align: middle;
+  }
+
+  .paper-map thead th {
+    color: var(--signal-ink);
+    font-family: var(--mono);
+    font-size: 0.6875rem;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+  }
+
+  .paper-map td,
+  .paper-map thead th:not(:first-child) {
+    width: 10%;
+  }
+
+  .research-icon {
+    display: block;
+    width: 2.4rem;
+    height: 2.4rem;
+  }
+
+  .theme-icon {
+    color: var(--ink);
+  }
+
+  .paper-map thead th:not(:first-child) {
+    vertical-align: bottom;
+  }
+
+  .paper-map-icon {
+    width: 1.7rem;
+    height: 1.7rem;
+    margin: 0 auto 0.45rem;
+    color: var(--ink);
+  }
+
+  .paper-map-label {
+    display: block;
+    color: var(--muted);
+    font-size: 0.625rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  @media (max-width: 38rem) {
+    .paper-map-label {
+      font-size: 0.5rem;
+      letter-spacing: 0;
+    }
+  }
+
+  .paper-map th[scope='row'],
+  .paper-map thead th:first-child {
+    width: 60%;
+    text-align: left;
+    padding-left: 0;
+  }
+
+  .paper-map th[scope='row'] a {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .paper-map-meta {
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 0.625rem;
+    font-weight: 400;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .paper-map-title {
+    font-size: 0.95rem;
+    font-weight: 500;
+  }
+
+  .paper-map th[scope='row'] a:hover .paper-map-title {
+    text-decoration: underline;
+  }
+
+  .paper-map-dot {
+    display: inline-block;
+    width: 0.8rem;
+    height: 0.8rem;
+    border-radius: 50%;
+    background: var(--signal-ink);
+  }
+
   .theme-card .theme-question {
     color: var(--ink);
     font-size: 1rem;
