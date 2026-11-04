@@ -1,9 +1,16 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 
-const menuBlocks = [
+// The same scene, further from reality at each step: a photoreal render, a low-poly one, the
+// wireframe. Scroll wipes from the photo through each in turn.
+const gapLayers = [
+  { src: '/images/me-and-fortuna-sim.jpg', label: 'Simulation' },
+  { src: '/images/me-and-fortuna-lowpoly.jpg', label: 'Low poly' },
+  { src: '/images/me-and-fortuna-wireframe.jpg', label: 'Wireframe' },
+];
+
+const stops = [
   {
-    kicker: 'The reality gap',
     title: 'Research.',
     description:
       'How well results transfer between simulation and the real world, how to make a system more robust once that gap is measured, and how to reuse real driving data to make simulation more realistic.',
@@ -14,10 +21,8 @@ const menuBlocks = [
     imageHeight: 2662,
     imageAlt: "Diagram showing the gap between an autonomous driving system's simulated behavior and its real behavior on the same road",
     contain: true,
-    transparent: true,
   },
   {
-    kicker: 'The research platform',
     title: 'Fortuna.',
     description:
       'A full-size, street-legal Volkswagen Passat used for camera- and LiDAR-based autonomous-driving research, which I brought back into operation after a period of inactivity.',
@@ -29,7 +34,6 @@ const menuBlocks = [
     imageAlt: "Fortuna, fortiss's modified Passat GTE, with its roof-mounted camera and LiDAR sensor rack",
   },
   {
-    kicker: 'Students and courses',
     title: 'Teaching.',
     description:
       'A practicum course on testing autonomous-driving systems, and the student projects I have supervised or co-supervised around it.',
@@ -41,7 +45,6 @@ const menuBlocks = [
     imageAlt: 'Matthias Weil, Andrea Stocco, and Stefano Carlo Lambertenghi next to Fortuna',
   },
   {
-    kicker: 'Seeing it work',
     title: 'Demos.',
     description: 'Perturb a driving camera feed, drive a reconstructed Munich street, and see the reality gap across four execution levels.',
     href: '/demos/',
@@ -51,10 +54,8 @@ const menuBlocks = [
     imageHeight: 1104,
     imageAlt: 'Diagram of the sim-to-real testing approach: a scenario runs through both physics and perception, is measured against real behavior, and mitigations feed back into the system',
     contain: true,
-    transparent: true,
   },
   {
-    kicker: 'The longer version',
     title: 'About.',
     description: 'Where I grew up, how I ended up here, and what I do outside research.',
     href: '/about/',
@@ -64,12 +65,10 @@ const menuBlocks = [
     imageHeight: 601,
     imageAlt: 'Stefano Carlo Lambertenghi',
     contain: true,
-    transparent: true,
     inset: true,
     secondaryLink: { label: 'Open the CV', href: '/cv/' },
   },
   {
-    kicker: 'Just for fun',
     title: 'Take a spin.',
     description: 'I scanned Fortuna and my motorcycle into 3D models. Take either for a spin, no research question required.',
     href: '/garage/',
@@ -80,6 +79,7 @@ const menuBlocks = [
 ---
 
 <BaseLayout>
+  <div class="hero-track" id="hero-track">
   <section class="hero">
     <div class="hero-visual" id="gap-scrubber">
       <img
@@ -89,37 +89,22 @@ const menuBlocks = [
         height="1050"
         loading="eager"
       />
-      <div class="gap-sim" aria-hidden="true">
-        <img id="gap-sim-image" src="/images/me-and-fortuna-sim.jpg" alt="" width="1400" height="1050" loading="eager" decoding="async" draggable="false" />
-        <span class="gap-tag gap-tag-sim">Simulation</span>
-      </div>
-      <div class="gap-wire" aria-hidden="true">
-        <img id="gap-wire-image" src="/images/me-and-fortuna-wireframe.jpg" alt="" width="1400" height="1050" loading="eager" decoding="async" draggable="false" />
-      </div>
-      <span class="gap-tag gap-tag-real" aria-hidden="true">Reality</span>
-      <div
-        class="gap-divider"
-        id="gap-divider"
-        role="slider"
-        tabindex="0"
-        aria-label="Compare the 3D scan of Fortuna with the photo"
-        aria-valuemin="0"
-        aria-valuemax="100"
-        aria-valuenow="100"
-        aria-valuetext="Photo only"
-      >
-        <span class="gap-label" aria-hidden="true">
+      {gapLayers.map((layer) => (
+        <div class="gap-layer" aria-hidden="true">
+          <img src={layer.src} alt="" width="1400" height="1050" loading="eager" decoding="async" draggable="false" />
+        </div>
+      ))}
+      <div class="gap-edge" id="gap-edge" aria-hidden="true">
+        <span class="gap-label">
           Gap
           <svg viewBox="0 0 100 12" preserveAspectRatio="none"><path d="M2 6h96" /></svg>
         </span>
-        <span class="gap-knob" aria-hidden="true">
-          <svg viewBox="0 0 24 24" width="18" height="18"><path d="M9 6 3 12l6 6M15 6l6 6-6 6" /></svg>
-        </span>
       </div>
+      <span class="gap-tag gap-tag-real" aria-hidden="true">Reality</span>
+      <span class="gap-tag gap-tag-sim" id="gap-stage" aria-hidden="true">{gapLayers[0].label}</span>
     </div>
     <div class="hero-layout container-wide">
       <div class="hero-copy">
-        <p class="eyebrow">fortiss · Technical University of Munich</p>
         <h1 class="hero-title">
           <span class="hero-title-line">Stefano Carlo</span> <em class="hero-title-line">Lambertenghi.</em>
         </h1>
@@ -133,42 +118,64 @@ const menuBlocks = [
           autonomous-driving research vehicle.
         </p>
       </div>
+      <p class="hero-cue" aria-hidden="true">
+        <span>Scroll to cross the gap</span>
+        <i><b id="hero-cue-fill"></b></i>
+      </p>
     </div>
   </section>
+  <div class="hero-runway" id="hero-runway" aria-hidden="true"></div>
+  </div>
 
-  <section class="mini-feature-list" aria-label="Explore the site">
-    <div class="container-wide">
-      {menuBlocks.map((block) => (
-        <article class="mini-feature" data-reveal>
+  <section class="route" id="route" aria-label="Explore the site">
+    <svg class="route-road" id="route-road" aria-hidden="true">
+      <defs>
+        <mask id="route-travelled" maskUnits="userSpaceOnUse">
+          <path id="route-mask-path" />
+        </mask>
+      </defs>
+      <path class="route-kerb" id="route-kerb" />
+      <path class="route-asphalt" id="route-asphalt" />
+      <path class="route-lane" id="route-lane" />
+      <path class="route-lane-lit" id="route-lane-lit" mask="url(#route-travelled)" />
+      <path class="route-finish" id="route-finish" />
+    </svg>
+    <div class="route-car" id="route-car" aria-hidden="true">
+      <svg viewBox="0 0 24 48" width="24" height="48">
+        <rect class="route-car-body" x="2" y="1" width="20" height="46" rx="6" />
+        <path class="route-car-glass" d="M5 31h14l-2 7H7z" />
+        <path class="route-car-glass" d="M6 12h12l1-6H5z" />
+        <path class="route-car-rack" d="M5 16h14M5 26h14" />
+        <circle class="route-car-lidar" cx="12" cy="21" r="3" />
+      </svg>
+    </div>
+
+    <div class="container-wide route-stops">
+      {stops.map((stop) => (
+        <article class="route-stop" data-stop>
+          <span class="route-sign" aria-hidden="true"></span>
           <div
-            class:list={['mini-feature-visual', { 'mini-feature-visual-3d': block.is3D, 'mini-feature-visual-contain': block.contain, 'mini-feature-visual-transparent': block.transparent, 'mini-feature-visual-inset': block.inset }]}
-            style={block.is3D ? undefined : `--visual-ratio: ${block.imageWidth} / ${block.imageHeight};`}
+            class:list={['route-visual', { 'route-visual-3d': stop.is3D, 'route-visual-contain': stop.contain, 'route-visual-inset': stop.inset }]}
+            style={stop.is3D ? undefined : `--visual-ratio: ${stop.imageWidth} / ${stop.imageHeight};`}
           >
-            {block.is3D ? (
-              <div class="video-frame" id="home-3d-frame">
+            {stop.is3D ? (
+              <div class="route-3d" id="home-3d-frame">
                 <canvas id="home-3d-preview" aria-label="Rotating 3D models of Fortuna and a motorcycle"></canvas>
               </div>
             ) : (
-              <img
-                src={block.image}
-                alt={block.imageAlt}
-                width={block.imageWidth}
-                height={block.imageHeight}
-                loading="lazy"
-              />
+              <img src={stop.image} alt={stop.imageAlt} width={stop.imageWidth} height={stop.imageHeight} loading="lazy" />
             )}
           </div>
-          <div class="mini-feature-copy">
-            <p class="feature-kicker">{block.kicker}</p>
-            <h2>{block.title}</h2>
-            <p>{block.description}</p>
-            <div class="mini-feature-links">
-              <a class="text-link" href={block.href}>
-                {block.linkLabel} <span aria-hidden="true">↗︎</span>
+          <div class="route-copy">
+            <h2>{stop.title}</h2>
+            <p>{stop.description}</p>
+            <div class="route-links">
+              <a class="text-link" href={stop.href}>
+                {stop.linkLabel} <span aria-hidden="true">↗︎</span>
               </a>
-              {block.secondaryLink && (
-                <a class="text-link" href={block.secondaryLink.href}>
-                  {block.secondaryLink.label} <span aria-hidden="true">↗︎</span>
+              {stop.secondaryLink && (
+                <a class="text-link" href={stop.secondaryLink.href}>
+                  {stop.secondaryLink.label} <span aria-hidden="true">↗︎</span>
                 </a>
               )}
             </div>
@@ -186,123 +193,169 @@ const menuBlocks = [
 
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
-  // --- Hero: the same scene, simulated and real ---
+  // --- Hero: from the photo to the simulator, one wipe per step, carried by the scroll ---
 
-  // #gap-sim-image and #gap-wire-image are renders of the simulated scene, framed identically
-  // to the photo; the wireframe shows only inside the gap band that rides the divider.
-  const REST_SPLIT = 50;
-  const PHOTO = { width: 1400, height: 1050, focusX: 0.24 };
-  // Right edge of the person in the frame (px in the 1400px photo). The photoreal render
-  // stops there; dragging further stretches the wireframe band over him instead.
-  const FIGURE_RIGHT = 420;
-  const BAND = { min: 52, share: 0.09, max: 88 };
+  const scrubber = document.getElementById('gap-scrubber');
+  const track = document.getElementById('hero-track');
+  const runway = document.getElementById('hero-runway');
+  const hero = track?.querySelector('.hero') as HTMLElement | null;
+  if (scrubber && track && runway && hero) {
+    const layers = [...scrubber.querySelectorAll<HTMLElement>('.gap-layer')];
+    const edge = document.getElementById('gap-edge') as HTMLElement;
+    const stage = document.getElementById('gap-stage') as HTMLElement;
+    const cueFill = document.getElementById('hero-cue-fill');
+    const labels = layers.map((_, i) => ['Simulation', 'Low poly', 'Wireframe'][i]);
+    // Where in the runway each wipe runs, with a pause on every image between them.
+    const WIPES = [
+      [0.06, 0.3],
+      [0.38, 0.62],
+      [0.7, 0.94],
+    ];
+    const clamp01 = (v: number) => Math.max(0, Math.min(1, v));
+    const ease = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+    let stickyTop = 0;
 
-  const scrubber = document.getElementById('gap-scrubber') as HTMLElement | null;
-  const simImage = document.getElementById('gap-sim-image') as HTMLImageElement | null;
-  const wireImage = document.getElementById('gap-wire-image') as HTMLImageElement | null;
-  const divider = document.getElementById('gap-divider') as HTMLElement | null;
-
-  if (scrubber && simImage && divider) {
-    let split = 100;
-    let halfBand = 3;
-    let figureEdge = 0;
-    let tween = 0;
-
-    // Mirror the img's object-fit: cover crop to find the figure's edge in the panel.
+    // Pinned with its bottom on the viewport's bottom when the hero is taller than the screen.
     function measure() {
-      const w = scrubber!.clientWidth;
-      const h = scrubber!.clientHeight;
-      if (!w || !h) return;
-      const scale = Math.max(w / PHOTO.width, h / PHOTO.height);
-      const cropX = (PHOTO.width * scale - w) * PHOTO.focusX;
-      figureEdge = ((FIGURE_RIGHT * scale - cropX) / w) * 100;
-      halfBand = (Math.max(BAND.min, Math.min(BAND.max, w * BAND.share)) / 2 / w) * 100;
-      divider!.setAttribute('aria-valuemin', String(Math.round(halfBand)));
-      setSplit(split);
+      stickyTop = Math.min(0, window.innerHeight - hero!.offsetHeight);
+      hero!.style.top = `${stickyTop}px`;
+      render();
     }
 
-    // `split` is the centre of the gap band. The band's right edge, where the photoreal
-    // render begins, never passes the figure; past that point the band only widens.
-    function setSplit(value: number) {
-      split = Math.max(halfBand, Math.min(100, value));
-      const left = split - halfBand;
-      const right = Math.max(split + halfBand, figureEdge);
-      scrubber!.style.setProperty('--gap-left', `${left}%`);
-      scrubber!.style.setProperty('--gap-right', `${right}%`);
-      scrubber!.style.setProperty('--gap-knob', `${((split - left) / (right - left)) * 100}%`);
-      divider!.setAttribute('aria-valuenow', String(Math.round(split)));
-      divider!.setAttribute('aria-valuetext', left >= 100 ? 'Photo only' : `${Math.round(Math.max(0, 100 - right))}% simulation`);
+    function render() {
+      const p = clamp01((stickyTop - track!.getBoundingClientRect().top) / Math.max(1, runway!.offsetHeight));
+      if (cueFill) cueFill.style.width = `${p * 100}%`;
+      let wiping = -1;
+      let shown = 0;
+      WIPES.forEach(([a, b], k) => {
+        const t = ease(clamp01((p - a) / (b - a)));
+        layers[k]?.style.setProperty('--x', `${(1 - t) * 100}%`);
+        if (t > 0 && t < 1) wiping = k;
+        if (t >= 0.5) shown = k;
+        if (k === 0 && t === 0) shown = -1;
+        if (t > 0 && t < 1) edge.style.setProperty('--x', `${(1 - t) * 100}%`);
+      });
+      edge.classList.toggle('is-wiping', wiping !== -1);
+      stage.textContent = labels[Math.max(0, shown)];
+      scrubber!.classList.toggle('is-simulated', shown >= 0);
     }
 
-    function stopTween() {
-      cancelAnimationFrame(tween);
-      tween = 0;
-    }
-
-    function sweepTo(target: number, duration: number) {
-      stopTween();
-      const from = split;
-      const start = performance.now();
-      const step = (now: number) => {
-        const t = Math.min(1, (now - start) / duration);
-        setSplit(from + (target - from) * (1 - Math.pow(2, -10 * t)));
-        tween = t < 1 ? requestAnimationFrame(step) : 0;
-      };
-      tween = requestAnimationFrame(step);
-    }
-
-    function splitFromPointer(event: PointerEvent) {
-      const rect = scrubber!.getBoundingClientRect();
-      setSplit(((event.clientX - rect.left) / rect.width) * 100);
-    }
-
-    let dragging = false;
-    scrubber.addEventListener('pointerdown', (event) => {
-      if (!scrubber!.classList.contains('is-ready') || event.button !== 0) return;
-      event.preventDefault();
-      dragging = true;
-      stopTween();
-      scrubber!.setPointerCapture(event.pointerId);
-      scrubber!.classList.add('is-dragging');
-      splitFromPointer(event);
-    });
-    scrubber.addEventListener('pointermove', (event) => {
-      if (dragging) splitFromPointer(event);
-    });
-    const endDrag = () => {
-      dragging = false;
-      scrubber!.classList.remove('is-dragging');
+    let frame = 0;
+    const request = () => {
+      if (!frame) frame = requestAnimationFrame(() => ((frame = 0), render()));
     };
-    scrubber.addEventListener('pointerup', endDrag);
-    scrubber.addEventListener('pointercancel', endDrag);
 
-    divider.addEventListener('keydown', (event) => {
-      const steps: Record<string, number> = {
-        ArrowLeft: -5,
-        ArrowDown: -5,
-        ArrowRight: 5,
-        ArrowUp: 5,
-        PageDown: -20,
-        PageUp: 20,
-      };
-      if (event.key in steps) setSplit(split + steps[event.key]);
-      else if (event.key === 'Home') setSplit(0);
-      else if (event.key === 'End') setSplit(100);
-      else return;
-      stopTween();
-      event.preventDefault();
-    });
-
-    // Without the render, the hero stays a plain photo.
-    Promise.all([simImage.decode(), wireImage?.decode()])
+    // Without the renders, the hero stays a plain photo.
+    Promise.all(layers.map((layer) => (layer.querySelector('img') as HTMLImageElement).decode()))
       .then(() => {
-        scrubber!.classList.add('is-ready');
+        scrubber.classList.add('is-ready');
         measure();
-        new ResizeObserver(measure).observe(scrubber!);
-        if (reduceMotion.matches) setSplit(REST_SPLIT);
-        else sweepTo(REST_SPLIT, 1400);
+        new ResizeObserver(measure).observe(hero);
+        window.addEventListener('resize', measure);
+        window.addEventListener('scroll', request, { passive: true });
       })
       .catch(() => {});
+  }
+
+  // --- The route: a road through the stops, and Fortuna driving it with the scroll ---
+
+  const route = document.getElementById('route');
+  if (route && !reduceMotion.matches) {
+    const paths = ['route-kerb', 'route-asphalt', 'route-lane', 'route-lane-lit', 'route-mask-path'].map(
+      (id) => document.getElementById(id) as unknown as SVGPathElement,
+    );
+    const road = document.getElementById('route-road') as unknown as SVGSVGElement;
+    const asphalt = paths[1];
+    const maskPath = paths[4];
+    const finish = document.getElementById('route-finish') as unknown as SVGPathElement;
+    const car = document.getElementById('route-car') as HTMLElement;
+    const stopEls = [...route.querySelectorAll<HTMLElement>('[data-stop]')];
+    const signs = stopEls.map((el) => el.querySelector('.route-sign') as HTMLElement);
+
+    let total = 0;
+    let endY = 0;
+    let signY: number[] = [];
+    let lut: { len: number; y: number }[] = [];
+    let carLen = -1;
+    let frame = 0;
+    let last = 0;
+
+    // A smooth road through the stop markers, wherever the layout put them.
+    function build() {
+      const box = route!.getBoundingClientRect();
+      const w = route!.clientWidth;
+      const h = route!.clientHeight;
+      if (!w || !h) return;
+      road.setAttribute('viewBox', `0 0 ${w} ${h}`);
+      const pts = signs.map((sign) => {
+        const r = sign.getBoundingClientRect();
+        return [r.left + r.width / 2 - box.left, r.top + r.height / 2 - box.top];
+      });
+      signY = pts.map((p) => p[1]);
+      endY = h - 48;
+      const all = [[pts[0][0], 0], ...pts, [pts[pts.length - 1][0], endY]];
+      let d = `M${all[0][0]},${all[0][1]}`;
+      for (let i = 1; i < all.length; i++) {
+        const [x0, y0] = all[i - 1];
+        const [x1, y1] = all[i];
+        const mid = (y0 + y1) / 2;
+        d += `C${x0},${mid} ${x1},${mid} ${x1},${y1}`;
+      }
+      for (const path of paths) path.setAttribute('d', d);
+      const [fx] = all[all.length - 1];
+      const half = w < 700 ? 8 : 13;
+      finish.setAttribute('d', `M${fx - half},${endY}H${fx + half}`);
+      total = asphalt.getTotalLength();
+      maskPath.style.strokeDasharray = `${total}`;
+      lut = [];
+      for (let len = 0; len <= total; len += 6) lut.push({ len, y: asphalt.getPointAtLength(len).y });
+      lut.push({ len: total, y: endY });
+      if (carLen > total) carLen = total;
+      request();
+    }
+
+    function lengthAtY(y: number) {
+      if (y <= 0) return 0;
+      if (y >= endY) return total;
+      let lo = 0;
+      let hi = lut.length - 1;
+      while (hi - lo > 1) {
+        const mid = (lo + hi) >> 1;
+        if (lut[mid].y < y) lo = mid;
+        else hi = mid;
+      }
+      const a = lut[lo];
+      const b = lut[hi];
+      return a.len + ((y - a.y) / Math.max(1e-6, b.y - a.y)) * (b.len - a.len);
+    }
+
+    function tick(now: number) {
+      frame = 0;
+      if (!total) return;
+      const dt = Math.min(0.05, (now - (last || now)) / 1000);
+      last = now;
+      const box = route!.getBoundingClientRect();
+      const target = lengthAtY(window.innerHeight * 0.6 - box.top);
+      carLen = carLen < 0 ? target : carLen + (target - carLen) * (1 - Math.exp(-dt * 7));
+      const p = asphalt.getPointAtLength(carLen);
+      const q = asphalt.getPointAtLength(Math.min(total, carLen + 4));
+      const angle = q.x === p.x && q.y === p.y ? 0 : (Math.atan2(q.y - p.y, q.x - p.x) * 180) / Math.PI - 90;
+      car.style.transform = `translate(${p.x}px, ${p.y}px) rotate(${angle}deg)`;
+      maskPath.style.strokeDashoffset = `${total - carLen}`;
+      stopEls.forEach((el, i) => {
+        if (p.y >= signY[i] - 6) el.classList.add('is-reached');
+      });
+      if (Math.abs(target - carLen) > 0.5) request();
+      else last = 0;
+    }
+
+    function request() {
+      if (!frame) frame = requestAnimationFrame(tick);
+    }
+
+    route.classList.add('is-live');
+    new ResizeObserver(build).observe(route);
+    window.addEventListener('scroll', request, { passive: true });
   }
 
   // --- "Take a spin" preview: the scanned vehicles, turning ---
