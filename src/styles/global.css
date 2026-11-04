@@ -1608,6 +1608,189 @@
     font-size: 0.9rem;
   }
 
+  /* Foresee step player on the demos page. */
+  .foresee-steps {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 1px;
+    margin-top: 0.75rem;
+    background: var(--line);
+    border: 1px solid var(--line);
+  }
+
+  .foresee-step {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.2rem;
+    padding: 0.65rem 0.7rem 0.75rem;
+    border: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    transition: background 150ms ease;
+  }
+
+  .foresee-step-wide {
+    grid-column: 1 / -1;
+  }
+
+  .foresee-step:hover,
+  .foresee-step:focus-visible {
+    background: var(--paper-bright);
+  }
+
+  .foresee-step[aria-pressed='true'] {
+    background: var(--ink);
+    color: var(--paper);
+  }
+
+  .foresee-step-num {
+    color: var(--signal-ink);
+    font-family: var(--mono);
+    font-size: 0.625rem;
+  }
+
+  .foresee-step-label {
+    font-size: 0.95rem;
+    font-weight: 560;
+  }
+
+  .foresee-step-bar {
+    width: 100%;
+    height: 2px;
+    margin-top: 0.35rem;
+    background: rgba(127, 127, 127, 0.25);
+  }
+
+  .foresee-step-bar i {
+    display: block;
+    width: calc(var(--progress, 0) * 100%);
+    height: 100%;
+    background: var(--signal);
+  }
+
+  .foresee-note {
+    min-height: 2.8em;
+    margin-top: 0.75rem;
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
+
+  @media (max-width: 38rem) {
+    .foresee-step {
+      padding: 0.55rem 0.45rem 0.6rem;
+    }
+
+    .foresee-step-label {
+      font-size: 0.8rem;
+    }
+  }
+
+  /* Mini demos in the infrastructure cards. */
+  .tool-demo {
+    margin-top: 1.2rem;
+  }
+
+  .tool-demo figcaption {
+    margin-top: 0.5rem;
+    color: var(--muted);
+    font-size: 0.75rem;
+    line-height: 1.4;
+  }
+
+  .tool-frame {
+    position: relative;
+    overflow: hidden;
+    aspect-ratio: var(--tool-aspect, 16 / 9);
+    background: var(--ink);
+  }
+
+  .tool-frame img,
+  .tool-frame video,
+  .tool-frame canvas,
+  .tool-frame iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+    object-fit: cover;
+  }
+
+  .tool-frame canvas {
+    opacity: 0;
+    transition: opacity 300ms ease;
+  }
+
+  [data-ready] .tool-frame canvas {
+    opacity: 1;
+  }
+
+  .tool-tag {
+    position: absolute;
+    top: 0.5rem;
+    padding: 0.2rem 0.45rem;
+    background: rgba(15, 23, 32, 0.72);
+    color: #fff;
+    font-family: var(--mono);
+    font-size: 0.625rem;
+    pointer-events: none;
+  }
+
+  .tool-tag-left {
+    left: 0.5rem;
+  }
+
+  .tool-tag-right {
+    right: 0.5rem;
+  }
+
+  .tool-play {
+    position: absolute;
+    left: 0.6rem;
+    bottom: 0.6rem;
+    padding: 0.5rem 0.75rem;
+    border: 0;
+    background: var(--ink);
+    color: var(--paper);
+    font-family: var(--mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+
+  .tool-play:hover,
+  .tool-play:focus-visible {
+    background: var(--signal-ink);
+  }
+
+  .tool-controls {
+    display: grid;
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+    align-items: center;
+    gap: 0.75rem;
+    margin-top: 0.6rem;
+  }
+
+  .tool-controls select {
+    width: 100%;
+    padding: 0.35rem 0.4rem;
+    border: 1px solid var(--line);
+    background: var(--paper);
+    color: var(--ink);
+    font: inherit;
+    font-size: 0.8rem;
+  }
+
+  .tool-controls input[type='range'] {
+    width: 100%;
+    accent-color: var(--signal-ink);
+  }
+
   /* Paper-by-question map. */
   .paper-map-wrap {
     margin-top: 3rem;

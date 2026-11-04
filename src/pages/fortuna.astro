@@ -78,8 +78,8 @@ const realityGapPaper = publications.find((p) => p.title.startsWith('A Multi-Mod
               a project on connected, automated driving along the A9 digital motorway test bed
               near Munich. That included the drive-by-wire retrofit, the cameras and LiDARs, the
               onboard compute, and an Apollo integration handling GPS/IMU, the CAN bus, and
-              real-time control through a dSpace MicroAutoBox II. It ran on Apollo alone, for one
-              project, and when Providentia ended in 2021, so did the car’s job.
+              real-time control through a dSpace MicroAutoBox II. It was built for one project, and
+              when Providentia ended in 2021, so did the car’s job.
             </p>
           </div>
         </li>
@@ -91,8 +91,11 @@ const realityGapPaper = publications.find((p) => p.title.startsWith('A Multi-Mod
           </div>
           <div class="ledger-body">
             <p>
-              The car had been inactive for more than a year. Before anyone could drive it again,
-              parts of the architecture and the operating procedures had to be reconstructed.
+              The car had been inactive for more than a year, and it could only run Apollo: version
+              6.5, which was hard to upgrade. Everything on the car had to speak Apollo’s Cyber RT
+              messages, so a driving system or tool not built for Apollo couldn’t run on it. Before
+              anyone could drive it again, parts of the architecture and the operating procedures
+              had to be reconstructed.
             </p>
             <figure class="ledger-photo">
               <img
@@ -116,11 +119,12 @@ const realityGapPaper = publications.find((p) => p.title.startsWith('A Multi-Mod
             <p>
               Reassessed every subsystem, restored the communication paths between them, and made
               the vehicle inspectable and operable again. Then, rather than restore the
-              single-purpose setup, rebuilt it as a modular ROS platform: a bridge machine runs the
-              ROS master and an Apollo/ROS adapter, so the system under test can read sensor data
-              and send control commands without touching Apollo. Both the driving stack and the
-              computer running it can be swapped; any laptop or PC up to 1000 W connects over
-              Ethernet.
+              Apollo-only setup, rebuilt it as a modular ROS platform: a bridge machine runs the
+              ROS master and an Apollo/ROS adapter, so any system under test can read sensor data
+              and send control commands over ROS, without touching Apollo or Cyber RT. A new
+              driving stack, or a testing technique such as online perturbation injection, connects
+              like any other ROS node. The computer can be swapped too; any laptop or PC up to
+              1000 W connects over Ethernet.
             </p>
           </div>
         </li>
@@ -368,6 +372,7 @@ const realityGapPaper = publications.find((p) => p.title.startsWith('A Multi-Mod
               Cam2Sim was later built on.
             </p>
           </div>
+          <a class="text-link" href="https://arxiv.org/abs/2607.04770" target="_blank" rel="noreferrer">Cam2Sim <span aria-hidden="true">↗︎</span></a>
         </li>
         <li class="contributor-row" data-reveal>
           <div>

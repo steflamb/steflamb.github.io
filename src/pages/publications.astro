@@ -59,18 +59,21 @@ const infrastructure = [
   {
     number: '01',
     title: 'Cam2Sim',
+    demo: 'compare' as const,
     copy: 'Turns recorded drives into closed-loop CARLA scenarios, with Gaussian Splatting for the camera view.',
     links: [paperLink(cam2simPaper), { meta: 'Code', label: 'ast-fortiss-tum/cam2sim', href: 'https://github.com/ast-fortiss-tum/cam2sim' }],
   },
   {
     number: '02',
     title: 'PerturbationDrive',
+    demo: 'perturb' as const,
     copy: 'More than 30 image perturbations, applied offline or in closed loop across several simulators.',
     links: [paperLink(perturbationDriveJournalPaper), { meta: 'Code', label: 'ast-fortiss-tum/perturbation-drive', href: 'https://github.com/ast-fortiss-tum/perturbation-drive' }],
   },
   {
     number: '03',
     title: 'Small-scale mixed-reality framework',
+    demo: 'twin' as const,
     copy: 'A small-scale vehicle and its digital twin, so the same test runs in simulation, vehicle-in-the-loop, mixed reality, and real driving.',
     links: [paperLink(realityGapPaper), { meta: 'Code', label: 'ast-fortiss-tum/ROS-small-scale-vehicle', href: 'https://github.com/ast-fortiss-tum/ROS-small-scale-vehicle' }],
   },
@@ -102,7 +105,7 @@ const paperMap = [
     <div class="page-hero-inner research-hero-stacked container-wide">
       <div class="publications-hero-top">
         <div>
-          <h1 class="page-title">Research.</h1>
+          <h1 class="page-title">Research and publications.</h1>
         </div>
         <div class="page-hero-copy-col">
           <p class="page-hero-copy">
@@ -182,6 +185,51 @@ const paperMap = [
           <article class="theme-card breakdown-card" data-reveal>
             <span class="theme-number">{item.number}</span>
             <h3>{item.title}</h3>
+            {item.demo === 'compare' && (
+              <figure class="tool-demo">
+                <div class="tool-frame" style="--tool-aspect: 960 / 302;">
+                  <video src="/videos/cam2sim-loop.mp4" poster="/images/cam2sim-loop-poster.jpg" muted loop playsinline autoplay preload="metadata" aria-label="The same drive side by side: CARLA's standard rendering on the left, Cam2Sim's reconstruction of the recorded street on the right" data-autoloop></video>
+                  <span class="tool-tag tool-tag-left" aria-hidden="true">CARLA</span>
+                  <span class="tool-tag tool-tag-right" aria-hidden="true">Cam2Sim</span>
+                </div>
+                <figcaption>The same drive in CARLA’s standard rendering and in Cam2Sim’s reconstruction.</figcaption>
+              </figure>
+            )}
+            {item.demo === 'perturb' && (
+              <figure class="tool-demo" data-perturb-still data-src="/cam2sim/split_3/frames/frame_002798.jpg">
+                <div class="tool-frame" style="--tool-aspect: 800 / 458;">
+                  <img src="/cam2sim/split_3/frames/frame_002798.jpg" alt="A recorded camera frame from a test drive on a residential Munich street" width="800" height="458" loading="lazy" />
+                  <canvas aria-label="The same frame with the selected perturbation applied"></canvas>
+                  <span class="tool-tag tool-tag-left" data-readout aria-live="polite">loading…</span>
+                </div>
+                <div class="tool-controls">
+                  <select aria-label="Perturbation">
+                    <option value="none">None</option>
+                    <option value="dynamic_raindrop_filter" selected>Raindrops on lens</option>
+                    <option value="dynamic_sun_filter">Sun glare</option>
+                    <option value="frost_filter">Frost</option>
+                    <option value="dynamic_smoke_filter">Smoke</option>
+                    <option value="motion_blur">Motion blur</option>
+                    <option value="gaussian_noise">Gaussian noise</option>
+                    <option value="pixelate">Pixelate</option>
+                    <option value="jpeg_filter">JPEG compression</option>
+                  </select>
+                  <input type="range" min="0" max="4" step="1" value="2" aria-label="Scale" />
+                </div>
+                <figcaption>A real recorded frame, perturbed live in your browser.</figcaption>
+              </figure>
+            )}
+            {item.demo === 'twin' && (
+              <figure class="tool-demo">
+                <div class="tool-frame" style="--tool-aspect: 16 / 10;" data-youtube="-YGdyNXgKb8">
+                  <img src="/images/reality-gap-split.jpg" alt="The small-scale lab with its track and Donkey Car, split diagonally with the same view in its digital twin" width="1200" height="750" loading="lazy" />
+                  <span class="tool-tag tool-tag-left" aria-hidden="true">Real</span>
+                  <span class="tool-tag tool-tag-right" aria-hidden="true">Digital twin</span>
+                  <button class="tool-play" type="button"><span aria-hidden="true">▶</span> Play video</button>
+                </div>
+                <figcaption>The small-scale lab and the same view in its digital twin.</figcaption>
+              </figure>
+            )}
             <p>{item.copy}</p>
             <div class="theme-papers" aria-label={`Related work on ${item.title}`}>
               {item.links.map((link) => (
@@ -305,3 +353,49 @@ const paperMap = [
   </section>
 </BaseLayout>
 
+<script>
+  // The Cam2Sim loop plays only on screen, and not at all under reduced motion.
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  document.querySelectorAll<HTMLVideoElement>('video[data-autoloop]').forEach((video) => {
+    if (reduceMotion.matches) {
+      video.removeAttribute('autoplay');
+      video.pause();
+      video.controls = true;
+      return;
+    }
+    new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) video.play().catch(() => {});
+      else video.pause();
+    }).observe(video);
+  });
+
+  // Load the YouTube player only when asked, so the page makes no third-party request until then.
+  document.querySelectorAll<HTMLElement>('[data-youtube]').forEach((frame) => {
+    frame.querySelector('button')?.addEventListener('click', () => {
+      const iframe = document.createElement('iframe');
+      iframe.src = `https://www.youtube-nocookie.com/embed/${frame.dataset.youtube}?autoplay=1`;
+      iframe.title = 'Small-scale mixed-reality framework demo video';
+      iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
+      iframe.allowFullscreen = true;
+      frame.replaceChildren(iframe);
+    });
+  });
+
+  // The perturbation demo pulls in three.js only once it is close to the viewport.
+  const still = document.querySelector<HTMLElement>('[data-perturb-still]');
+  if (still) {
+    new IntersectionObserver(
+      ([entry], observer) => {
+        if (!entry.isIntersecting) return;
+        observer.disconnect();
+        import('../components/perturb-still')
+          .then(({ startPerturbStill }) => startPerturbStill(still))
+          .catch(() => {
+            const readout = still.querySelector('[data-readout]');
+            if (readout) readout.textContent = 'needs WebGL';
+          });
+      },
+      { rootMargin: '400px 0px' },
+    ).observe(still);
+  }
+</script>

@@ -14,6 +14,16 @@ const perturbationDriveJournalPaper = publications.find((p) => p.title.startsWit
 const forecastingPaper = publications.find((p) => p.title.startsWith('Misbehavior Forecasting'))!;
 const nanodronePaper = publications.find((p) => p.title.startsWith('Ultra-Low Power'))!;
 const qualityMetricsPaper = publications.find((p) => p.title.startsWith('Assessing Quality Metrics'))!;
+
+// Foresee's pipeline, mapped onto the talk animation (seconds into foresee-demo.mp4).
+const foreseeSteps = [
+  { label: 'Monitor', start: 3.5, end: 5, rate: 1, note: 'Track the agents around the ego vehicle and forecast where each one is heading.' },
+  { label: 'Classify', start: 9.5, end: 29.25, rate: 2, note: 'Label every agent by risk, from minimal to high, from how close its forecast comes to the ego vehicle.' },
+  { label: 'Rank', start: 30.25, end: 31.25, rate: 1, note: 'Order the risky agents, so the most promising near miss comes first.' },
+  { label: 'Clip', start: 36.25, end: 37.25, rate: 1, note: 'Cut the scenario down to the window around that near miss.' },
+  { label: 'Fuzz', start: 41, end: 62.05, rate: 2, note: 'Mutate the clipped scenario, swapping an NPC or changing its path, to push the near miss toward a failure.' },
+  { label: 'Empirical study', start: 62.25, end: 64.5, rate: 1, hold: 5, wide: true, note: 'Evaluated in the CARLA simulator on 5 scenarios and 120 routes, with two driving systems, InterFuser and TransFuser, and 12 Foresee configurations over 3 parameters.' },
+];
 ---
 
 <BaseLayout
@@ -109,16 +119,27 @@ const qualityMetricsPaper = publications.find((p) => p.title.startsWith('Assessi
         </PertovReplay>
 
         <div class="demo-showcase" data-reveal>
-          <div class="video-frame">
-            <video
-              src="/videos/foresee-demo.mp4"
-              poster="/images/foresee-poster.jpg"
-              controls
-              muted
-              playsinline
-              preload="none"
-              aria-label="Talk recording explaining Foresee, a misbehavior-forecasting pipeline that monitors, classifies, ranks, clips, and fuzzes near-miss scenarios"
-            ></video>
+          <div class="foresee-player" data-foresee>
+            <div class="video-frame" style="aspect-ratio: 1600 / 864;">
+              <video
+                src="/videos/foresee-steps.mp4"
+                poster="/images/foresee-steps-poster.jpg"
+                muted
+                playsinline
+                preload="metadata"
+                aria-label="Animation of Foresee's pipeline. Pick a step below to play that part."
+              ></video>
+            </div>
+            <div class="foresee-steps" role="group" aria-label="Foresee pipeline steps">
+              {foreseeSteps.map((step, i) => (
+                <button type="button" class:list={['foresee-step', { 'foresee-step-wide': step.wide }]} data-start={step.start} data-end={step.end} data-rate={step.rate} data-hold={step.hold} data-note={step.note} aria-pressed="false">
+                  <span class="foresee-step-num">{String(i + 1).padStart(2, '0')}</span>
+                  <span class="foresee-step-label">{step.label}</span>
+                  <span class="foresee-step-bar" aria-hidden="true"><i></i></span>
+                </button>
+              ))}
+            </div>
+            <p class="foresee-note" aria-live="polite">Pick a step to see what Foresee does there.</p>
           </div>
           <div class="demo-showcase-copy">
             <h3>Forecasting near misses to focus fuzzing.</h3>
@@ -181,3 +202,73 @@ const qualityMetricsPaper = publications.find((p) => p.title.startsWith('Assessi
     </div>
   </section>
 </BaseLayout>
+
+<script>
+  // Foresee: each step button plays its own part of the animation, then holds the last frame.
+  document.querySelectorAll<HTMLElement>('[data-foresee]').forEach((root) => {
+    const video = root.querySelector('video')!;
+    const note = root.querySelector('.foresee-note')!;
+    const buttons = [...root.querySelectorAll<HTMLButtonElement>('.foresee-step')];
+    let start = 0;
+    let end = 0;
+    let rate = 1;
+    let playTime = 0; // seconds of real time the segment takes at its rate
+    let total = 0; // playTime, or longer if the step holds its last frame
+    let heldAt = 0; // when the video stopped on its last frame
+    let active: HTMLButtonElement | null = null;
+    let frame = 0;
+    let token = 0;
+
+    // The bar follows the video itself while it plays, then the clock while a step holds its
+    // last frame, so the two can't drift apart. The loop keeps running until the video has
+    // been stopped at the segment's end.
+    function tick() {
+      frame = 0;
+      if (!active) return;
+      if (!heldAt && (video.currentTime >= end || video.ended)) {
+        video.pause();
+        video.currentTime = Math.min(end, video.duration || end);
+        heldAt = performance.now();
+      }
+      const played = heldAt
+        ? playTime + (performance.now() - heldAt) / 1000
+        : Math.max(0, video.currentTime - start) / rate;
+      const progress = Math.min(1, played / total);
+      active.style.setProperty('--progress', String(progress));
+      if (!heldAt || progress < 1) frame = requestAnimationFrame(tick);
+    }
+
+    // Backstop for when the tab is in the background and animation frames are throttled.
+    video.addEventListener('timeupdate', () => {
+      if (active && !heldAt && video.currentTime >= end) tick();
+    });
+
+    function play(button: HTMLButtonElement) {
+      buttons.forEach((b) => {
+        b.setAttribute('aria-pressed', String(b === button));
+        b.style.setProperty('--progress', '0');
+      });
+      cancelAnimationFrame(frame);
+      frame = 0;
+      const current = ++token;
+      active = button;
+      start = Number(button.dataset.start);
+      end = Number(button.dataset.end);
+      rate = Number(button.dataset.rate) || 1;
+      playTime = (end - start) / rate;
+      total = Math.max(playTime, Number(button.dataset.hold) || 0);
+      heldAt = 0;
+      note.textContent = button.dataset.note ?? '';
+      video.preload = 'auto';
+      video.pause();
+      video.currentTime = start;
+      video.playbackRate = rate;
+      video.play().then(() => {
+        if (current !== token) return;
+        frame = requestAnimationFrame(tick);
+      }).catch(() => {});
+    }
+
+    buttons.forEach((button) => button.addEventListener('click', () => play(button)));
+  });
+</script>
