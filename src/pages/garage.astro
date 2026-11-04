@@ -1008,8 +1008,40 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       left: 0;
       width: auto;
       max-height: 62%;
-      padding: 1.25rem 1rem 1rem;
+      padding: 1.25rem 1rem calc(1rem + env(safe-area-inset-bottom));
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      touch-action: pan-y;
       background: linear-gradient(to bottom, rgba(15, 23, 32, 0), rgba(15, 23, 32, 0.92) 18%);
+    }
+
+    /* When a step is taller than the panel, the panel scrolls and the step's main button stays
+       pinned to the bottom, so "Start driving" is never cut off by the browser's toolbars. */
+    .garage-showroom #garage-to-track,
+    .garage-showroom .garage-actions {
+      position: sticky;
+      z-index: 1;
+      bottom: 0;
+    }
+
+    /* The panel's bottom padding would otherwise show content scrolling past under the
+       pinned buttons; a solid band below them covers it. */
+    .garage-showroom .garage-actions {
+      padding-top: 0.6rem;
+      background: rgb(15, 23, 32);
+      box-shadow:
+        0 -0.8rem 1rem rgb(15, 23, 32),
+        0 calc(1rem + env(safe-area-inset-bottom)) 0 0 rgb(15, 23, 32);
+    }
+
+    .garage-showroom #garage-to-track {
+      box-shadow:
+        0 -0.8rem 1rem rgb(15, 23, 32),
+        0 calc(1rem + env(safe-area-inset-bottom)) 0 0 rgb(15, 23, 32);
+    }
+
+    .garage-touch {
+      bottom: calc(1.25rem + env(safe-area-inset-bottom));
     }
 
     .garage-showroom h2 {
