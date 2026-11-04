@@ -145,7 +145,12 @@ export async function startPertovReplay(el: ReplayElements) {
     const turning = dir.dot(nominalLeft);
     const towardsLeft = Math.abs(drift) > 0.15 ? drift > 0 : turning > 0;
     const side = towardsLeft === nominalLeft.dot(left) > 0 ? 1 : -1;
-    const spot = best.q.clone().addScaledVector(t, 3.5).addScaledVector(left, side * (best.w / 2 - 1.1));
+    // Just ahead of where the recording stops, overlapping Fortuna's front corner on that side,
+    // and never past the kerb.
+    const egoOffset = p.clone().sub(best.q).dot(left);
+    const kerb = best.w / 2 - 0.95;
+    const offset = THREE.MathUtils.clamp(egoOffset + side * 1.1, -kerb, kerb);
+    const spot = best.q.clone().addScaledVector(t, 4.1).addScaledVector(left, offset);
     return { x: spot.x, y: spot.y, heading: Math.atan2(t.y, t.x) };
   }
 
