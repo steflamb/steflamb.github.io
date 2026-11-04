@@ -8,7 +8,7 @@
     <div class="c2s-panes">
       <figure class="c2s-pane">
         <canvas id="c2s-sim" aria-hidden="true"></canvas>
-        <figcaption><b>01</b> Simulator</figcaption>
+        <figcaption>Simulator</figcaption>
         <small class="c2s-attribution">
           Map data ©
           <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">OpenStreetMap contributors</a>
@@ -16,7 +16,7 @@
       </figure>
       <figure class="c2s-pane" id="c2s-splat-pane">
         <canvas id="c2s-splat" aria-hidden="true"></canvas>
-        <figcaption><b>02</b> Generated camera</figcaption>
+        <figcaption>Generated camera</figcaption>
       </figure>
       <div class="c2s-touch" aria-hidden="true">
         <button type="button" tabindex="-1" data-control="left">
@@ -123,11 +123,6 @@
     font-size: 0.6875rem;
     letter-spacing: 0.06em;
     text-transform: uppercase;
-  }
-
-  .c2s-pane figcaption b {
-    color: var(--muted-dark);
-    font-weight: 500;
   }
 
   #c2s-splat-pane figcaption {
@@ -279,13 +274,10 @@
     font-size: 0.85rem;
   }
 
-  .c2s-start .c2s-start-kicker {
-    color: #ffcf33;
-    font-family: var(--mono);
-    font-size: 0.6875rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+  .c2s-stage:has(.c2s-start:not([hidden])) .c2s-link {
+    display: none;
   }
+
 
   .c2s-start .c2s-start-title {
     margin-bottom: 0.4rem;

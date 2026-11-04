@@ -35,8 +35,24 @@ const qualityMetricsPaper = publications.find((p) => p.title.startsWith('Assessi
   <section class="section section-tight-top" aria-label="Demos">
     <div class="container-wide">
       <div class="demo-showcase-list">
-        <div class="demo-showcase" data-reveal>
-          <div class="video-frame">
+        <Cam2SimDrive>
+          <h3>Real drives, replayed in simulation.</h3>
+          <p>
+            Cam2Sim started from a practical problem. We had many hours of real driving
+            recordings, but once an experiment was finished we could only replay the recorded
+            sensor data. We wanted to turn these recordings into environments in which the
+            driving system could interact again. Cam2Sim reconstructs the recorded environment
+            in CARLA and uses Gaussian Splatting for the camera view. The reconstruction is not
+            a complete replacement for the real environment, but it allows us to reuse real
+            experiments for closed-loop simulation.
+          </p>
+          <p>
+            Drive one of those recordings above: a simple simulator on Guerickestraße in Munich,
+            with the road traced from the recorded drive, and beside it the camera view for the
+            car's current pose, generated from a Gaussian-splat reconstruction trained on that
+            drive's camera frames, in three segments. Below it is the Cam2Sim demo video.
+          </p>
+          <div class="video-frame demo-inline-video">
             <iframe
               src="https://www.youtube-nocookie.com/embed/KmZ74l1__lI"
               title="Cam2Sim demo video"
@@ -45,29 +61,6 @@ const qualityMetricsPaper = publications.find((p) => p.title.startsWith('Assessi
               loading="lazy"
             ></iframe>
           </div>
-          <div class="demo-showcase-copy">
-            <h3>Real drives, replayed in simulation.</h3>
-            <p>
-              Cam2Sim started from a practical problem. We had many hours of real driving
-              recordings, but once an experiment was finished we could only replay the recorded
-              sensor data. We wanted to turn these recordings into environments in which the
-              driving system could interact again. Cam2Sim reconstructs the recorded environment
-              in CARLA and uses Gaussian Splatting for the camera view. The reconstruction is not
-              a complete replacement for the real environment, but it allows us to reuse real
-              experiments for closed-loop simulation.
-            </p>
-            <PaperSource papers={[cam2simPaper]} />
-          </div>
-        </div>
-
-        <Cam2SimDrive>
-          <h3>Drive the reconstructed street.</h3>
-          <p>
-            On the left, a simple simulator on Guerickestraße in Munich, with the road traced from
-            the recorded drive. On the right, the camera view for the car's current pose,
-            generated from a Gaussian-splat reconstruction trained on that drive's camera
-            frames, in three segments.
-          </p>
           <div slot="link"><PaperSource papers={[cam2simPaper]} /></div>
         </Cam2SimDrive>
 

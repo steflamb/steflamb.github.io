@@ -7,31 +7,35 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   description="I also scanned Fortuna into a 3D model. Take it for a lap around the track, no research question required."
   noindex={true}
 >
-  <section class="garage">
+  <section class="garage" data-phase="showroom">
     <canvas id="garage-canvas"></canvas>
 
-    <div class="garage-hud" data-reveal>
+    <div class="garage-showroom" id="garage-showroom" data-step="vehicle">
       <h1>Just for fun.</h1>
       <p class="garage-instructions">
-        I scanned Fortuna and my motorcycle into 3D models. Take either for a lap around the
-        track, no research question required.
+        I scanned Fortuna and my motorcycle into 3D models. Pick one, pick a track, and take it
+        for a lap. No research question required.
       </p>
-      <details class="garage-settings" id="garage-settings" open>
-        <summary>Race settings</summary>
-        <fieldset class="garage-vehicle">
+
+      <div class="garage-step" id="garage-step-vehicle">
+        <fieldset class="garage-choice">
           <legend>Vehicle</legend>
-          <label><input type="radio" name="vehicle" value="fortuna" checked /><span>Fortuna</span></label>
-          <label><input type="radio" name="vehicle" value="gs" /><span>GS motorcycle</span></label>
+          <label><input type="radio" name="vehicle" value="fortuna" checked /><span><b>Fortuna</b><small>Research vehicle</small></span></label>
+          <label><input type="radio" name="vehicle" value="gs" /><span><b>GS</b><small>My motorcycle</small></span></label>
+        </fieldset>
+        <p class="garage-hint garage-desktop-only">Drag the turntable to look around.</p>
+        <button type="button" class="garage-go" id="garage-to-track">Choose a track</button>
+      </div>
+
+      <div class="garage-step" id="garage-step-track" hidden>
+        <fieldset class="garage-choice garage-circuits">
+          <legend>Track</legend>
+          <label><input type="radio" name="circuit" value="cones" checked /><span><svg data-preview="cones" aria-hidden="true"></svg><b>Cone course</b></span></label>
+          <label><input type="radio" name="circuit" value="monza" /><span><svg data-preview="monza" aria-hidden="true"></svg><b>Monza</b><small>Simplified</small></span></label>
+          <label><input type="radio" name="circuit" value="spa" /><span><svg data-preview="spa" aria-hidden="true"></svg><b>Spa</b><small>Simplified</small></span></label>
+          <label><input type="radio" name="circuit" value="guericke" disabled /><span><svg data-preview="guericke" aria-hidden="true"></svg><b>Guerickestraße</b><small>Munich, from the Cam2Sim drive</small></span></label>
         </fieldset>
         <div class="garage-options">
-          <label>
-            <span>Circuit</span>
-            <select id="garage-circuit">
-              <option value="cones">Cone course</option>
-              <option value="monza">Monza, simplified</option>
-              <option value="spa">Spa, simplified</option>
-            </select>
-          </label>
           <label>
             <span>Weather</span>
             <select id="garage-weather">
@@ -42,15 +46,26 @@ import BaseLayout from '../layouts/BaseLayout.astro';
               <option value="snow">Snow</option>
             </select>
           </label>
+          <div class="garage-toggles">
+            <label><input type="checkbox" id="garage-traffic" /> <span>Traffic</span></label>
+            <label><input type="checkbox" id="garage-ghost" checked /> <span>Ghost of best lap</span></label>
+          </div>
         </div>
-        <div class="garage-toggles">
-          <label><input type="checkbox" id="garage-traffic" /> <span>Traffic</span></label>
-          <label><input type="checkbox" id="garage-ghost" checked /> <span>Ghost of best lap</span></label>
+        <div class="garage-actions">
+          <button type="button" class="garage-back" id="garage-to-vehicle">Back</button>
+          <button type="button" class="garage-go" id="garage-start">Start driving</button>
         </div>
-      </details>
+      </div>
+    </div>
+
+    <div class="garage-race-hud" id="garage-race-hud">
+      <button type="button" class="garage-back" id="garage-exit">Back to the garage</button>
       <p class="garage-controls garage-desktop-only">Arrow keys or WASD to drive.</p>
-      <p class="garage-controls garage-mobile-only">Use the on-screen controls to drive.</p>
-      <a class="text-link text-link-light" href="/fortuna/">← Back to Fortuna</a>
+    </div>
+
+    <div class="garage-offtrack" id="garage-offtrack" aria-live="assertive" hidden>
+      <p>Off track.</p>
+      <small id="garage-offtrack-note">Back to the start</small>
     </div>
 
     <p class="garage-loading" id="garage-loading">Loading Fortuna…</p>
@@ -82,7 +97,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 <style>
   .garage {
     position: relative;
-    min-height: calc(100svh - 5rem);
+    min-height: 100svh;
     overflow: hidden;
     background: #bfe3f2;
     -webkit-user-select: none;
@@ -99,58 +114,68 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     touch-action: none;
   }
 
-  .garage-hud {
-    position: relative;
+  /* The garage: the chosen vehicle on a turntable, then the track, then the drive. */
+  .garage-showroom {
+    position: absolute;
     z-index: 1;
-    max-width: 26rem;
-    margin: calc(5rem + clamp(1rem, 3vw, 2rem)) clamp(1rem, 3vw, 2rem) 0;
-    padding: clamp(1.25rem, 3vw, 2rem);
-    background: rgba(15, 23, 32, 0.82);
+    top: calc(5rem + clamp(1rem, 3vw, 2.5rem));
+    bottom: clamp(1rem, 3vw, 2.5rem);
+    left: clamp(1rem, 4vw, 4rem);
+    display: flex;
+    width: min(25rem, calc(100% - 2rem));
+    flex-direction: column;
     color: var(--paper-bright);
   }
 
-  .garage-hud h1 {
-    margin-top: 1rem;
-    max-width: 10ch;
-    font-size: clamp(2.4rem, 6vw, 4rem);
-    font-weight: 540;
-    letter-spacing: -0.06em;
-    line-height: 0.95;
+  .garage[data-phase='race'] .garage-showroom {
+    display: none;
+  }
+
+  .garage-showroom h1 {
+    font-size: clamp(2.8rem, 6vw, 5rem);
+    font-weight: 560;
+    letter-spacing: -0.02em;
+    line-height: 0.9;
   }
 
   .garage-instructions {
-    margin-top: 1.2rem;
     max-width: 22rem;
-    font-size: 0.95rem;
-    text-shadow: 0 1px 12px rgba(15, 23, 32, 0.5);
-  }
-
-  .garage-hud .text-link {
-    margin-top: 1.5rem;
-  }
-
-  .garage-mobile-only {
-    display: none;
-  }
-
-  .garage-settings {
     margin-top: 1rem;
+    color: #c9ced3;
+    font-size: 0.95rem;
+    line-height: 1.5;
   }
 
-  .garage-settings summary {
+  .garage-step {
+    display: grid;
+    gap: 1.1rem;
+    margin-top: auto;
+    animation: garage-step-in 500ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .garage-step[hidden] {
     display: none;
   }
 
-  .garage-options {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0.5rem;
-    margin-top: 0.9rem;
+  @keyframes garage-step-in {
+    from {
+      opacity: 0;
+      transform: translateY(0.75rem);
+    }
   }
 
-  .garage-options label {
+  .garage-choice {
     display: grid;
-    gap: 0.35rem;
+    grid-template-columns: repeat(auto-fit, minmax(7rem, 1fr));
+    gap: 0.4rem;
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+
+  .garage-choice legend,
+  .garage-options > label > span {
+    margin-bottom: 0.5rem;
     color: var(--muted-dark);
     font-family: var(--mono);
     font-size: 0.6875rem;
@@ -158,35 +183,134 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     text-transform: uppercase;
   }
 
+  .garage-choice label {
+    position: relative;
+    cursor: pointer;
+  }
+
+  .garage-choice input {
+    position: absolute;
+    opacity: 0;
+  }
+
+  .garage-choice span {
+    display: grid;
+    gap: 0.15rem;
+    height: 100%;
+    padding: 0.75rem 0.85rem;
+    border: 1px solid rgba(250, 250, 248, 0.22);
+    background: rgba(15, 23, 32, 0.55);
+    transition:
+      border-color 180ms ease,
+      background-color 180ms ease;
+  }
+
+  .garage-choice b {
+    font-family: var(--display);
+    font-size: 1.35rem;
+    font-weight: 600;
+    line-height: 1;
+  }
+
+  .garage-choice small {
+    color: var(--muted-dark);
+    font-size: 0.78rem;
+  }
+
+  .garage-choice label:hover span {
+    border-color: rgba(250, 250, 248, 0.6);
+  }
+
+  .garage-choice input:checked + span {
+    border-color: var(--lane);
+    background: rgba(255, 207, 51, 0.12);
+  }
+
+  .garage-choice input:checked + span b {
+    color: var(--lane);
+  }
+
+  .garage-choice input:focus-visible + span {
+    outline: 3px solid var(--signal);
+    outline-offset: 3px;
+  }
+
+  /* The street gets a full row: its name is long and its shape is a line, not a loop. */
+  .garage-circuits label:has(input[value='guericke']) {
+    grid-column: 1 / -1;
+  }
+
+  .garage-circuits label:has(input[value='guericke']) span {
+    grid-template-columns: 4.5rem minmax(0, 1fr);
+    column-gap: 0.8rem;
+    align-items: center;
+  }
+
+  .garage-circuits label:has(input[value='guericke']) svg {
+    grid-row: span 2;
+    margin-bottom: 0;
+  }
+
+  .garage-choice b,
+  .garage-choice small {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .garage-circuits svg {
+    width: 100%;
+    height: 3.2rem;
+    margin-bottom: 0.4rem;
+    overflow: visible;
+  }
+
+  .garage-circuits svg :global(path) {
+    fill: none;
+    stroke: rgba(250, 250, 248, 0.55);
+    stroke-width: 2.5;
+    stroke-linejoin: round;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .garage-circuits input:checked + span svg :global(path) {
+    stroke: var(--lane);
+  }
+
+  .garage-options {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+    gap: 0.8rem 1.2rem;
+  }
+
+  .garage-options label {
+    display: grid;
+  }
+
   .garage-options select {
-    min-height: 2.5rem;
+    width: 100%;
+    min-width: 0;
+    min-height: 2.75rem;
     padding: 0 0.6rem;
     border: 1px solid rgba(250, 250, 248, 0.35);
     border-radius: 0;
-    background: rgba(15, 23, 32, 0.6);
+    background: rgba(15, 23, 32, 0.7);
     color: var(--paper-bright);
     font: inherit;
-    font-family: var(--sans);
-    font-size: 0.85rem;
-    letter-spacing: 0;
-    text-transform: none;
+    font-size: 0.9rem;
   }
 
   .garage-toggles {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.4rem 1.1rem;
-    margin-top: 0.8rem;
+    display: grid;
+    gap: 0.35rem;
     font-size: 0.85rem;
   }
 
   .garage-toggles label {
     display: inline-flex;
     align-items: center;
-    gap: 0.4rem;
+    gap: 0.45rem;
     cursor: pointer;
-    -webkit-user-select: none;
-    user-select: none;
   }
 
   .garage-toggles input {
@@ -195,69 +319,154 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     accent-color: var(--lane);
   }
 
+  .garage-hint {
+    color: var(--muted-dark);
+    font-size: 0.8rem;
+  }
+
+  .garage-actions {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.5rem;
+  }
+
+  .garage-go,
+  .garage-back {
+    min-height: 3rem;
+    padding: 0 1.2rem;
+    border: 1px solid var(--lane);
+    border-radius: 0;
+    background: var(--lane);
+    color: var(--ink);
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+    transition:
+      background-color 160ms ease,
+      transform 160ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .garage-go:hover {
+    background: #ffd95c;
+  }
+
+  .garage-go:active,
+  .garage-back:active {
+    transform: scale(0.98);
+  }
+
+  .garage-back {
+    border-color: rgba(250, 250, 248, 0.45);
+    background: rgba(15, 23, 32, 0.6);
+    color: var(--paper-bright);
+  }
+
+  .garage-back:hover {
+    border-color: var(--paper-bright);
+  }
+
+  .garage-go:focus-visible,
+  .garage-back:focus-visible,
   .garage-options select:focus-visible,
-  .garage-toggles input:focus-visible,
-  .garage-settings summary:focus-visible {
+  .garage-toggles input:focus-visible {
     outline: 3px solid var(--signal);
     outline-offset: 3px;
   }
 
-  .garage-vehicle {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.35rem;
-    margin: 1.1rem 0 0;
-    padding: 0;
-    border: 0;
+  /* Leaving the road: the world drains to grey in slow motion and the verdict lands. */
+  #garage-canvas {
+    transition: filter 600ms ease;
   }
 
-  .garage-vehicle legend {
-    width: 100%;
-    margin-bottom: 0.45rem;
-    color: var(--muted-dark);
+  .garage.is-offtrack #garage-canvas {
+    filter: grayscale(1) contrast(1.15) brightness(0.8);
+  }
+
+  .garage-offtrack {
+    position: absolute;
+    z-index: 3;
+    top: 50%;
+    right: 0;
+    left: 0;
+    display: grid;
+    justify-items: center;
+    gap: 0.4rem;
+    padding: 1.4rem 1rem 1.6rem;
+    background: linear-gradient(90deg, transparent, rgba(15, 23, 32, 0.78) 20%, rgba(15, 23, 32, 0.78) 80%, transparent);
+    color: var(--signal);
+    text-align: center;
+    transform: translateY(-50%);
+    pointer-events: none;
+  }
+
+  .garage-offtrack[hidden] {
+    display: none;
+  }
+
+  .garage-offtrack p {
+    font-family: var(--display);
+    font-size: clamp(3.5rem, 11vw, 8rem);
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    line-height: 0.9;
+    animation: garage-offtrack-in 900ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .garage-offtrack small {
+    color: var(--paper-bright);
     font-family: var(--mono);
-    font-size: 0.6875rem;
+    font-size: 0.75rem;
     letter-spacing: 0.08em;
     text-transform: uppercase;
+    animation: hero-fade 600ms ease 300ms both;
   }
 
-  .garage-vehicle label {
-    position: relative;
-    cursor: pointer;
-    -webkit-user-select: none;
-    user-select: none;
+  @keyframes garage-offtrack-in {
+    from {
+      opacity: 0;
+      transform: scale(1.35);
+      filter: blur(6px);
+    }
   }
 
-  .garage-vehicle input {
+  @media (prefers-reduced-motion: reduce) {
+    .garage-offtrack p,
+    .garage-offtrack small {
+      animation: none;
+    }
+  }
+
+  .garage-choice input:disabled + span {
+    opacity: 0.45;
+    cursor: wait;
+  }
+
+  .garage-race-hud {
     position: absolute;
-    opacity: 0;
+    z-index: 1;
+    top: calc(5rem + 1.5rem);
+    left: 1.5rem;
+    display: grid;
+    justify-items: start;
+    gap: 0.6rem;
   }
 
-  .garage-vehicle span {
-    display: inline-flex;
+  .garage[data-phase='showroom'] .garage-race-hud,
+  .garage[data-phase='showroom'] .garage-stats,
+  .garage[data-phase='showroom'] .garage-touch,
+  .garage[data-phase='showroom'] .garage-penalty-toast {
+    display: none !important;
+  }
+
+  .garage-race-hud .garage-back {
     min-height: 2.5rem;
-    align-items: center;
-    padding: 0 0.85rem;
-    border: 1px solid rgba(250, 250, 248, 0.35);
     font-size: 0.85rem;
-  }
-
-  .garage-vehicle input:checked + span {
-    border-color: #ffcf33;
-    background: #ffcf33;
-    color: var(--ink);
-  }
-
-  .garage-vehicle input:focus-visible + span {
-    outline: 3px solid var(--signal);
-    outline-offset: 3px;
   }
 
   .garage-controls {
-    margin-top: 0.6rem;
+    color: var(--paper-bright);
     font-size: 0.85rem;
-    opacity: 0.85;
-    text-shadow: 0 1px 12px rgba(15, 23, 32, 0.5);
+    text-shadow: 0 1px 12px rgba(15, 23, 32, 0.7);
   }
 
   .garage-loading {
@@ -410,49 +619,52 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       right: 1.25rem;
     }
 
-    /* On phones the panel is a compact bar; settings open on demand over the track. */
-    .garage-hud {
-      max-width: none;
-      margin: 5.6rem 0.6rem 0;
-      padding: 0.7rem 0.9rem;
+    /* On phones the vehicle takes the top of the screen and the choices sit below it. */
+    .garage-showroom {
+      top: auto;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      width: auto;
+      max-height: 62%;
+      padding: 1.25rem 1rem 1rem;
+      background: linear-gradient(to bottom, rgba(15, 23, 32, 0), rgba(15, 23, 32, 0.92) 18%);
     }
 
-    .garage-hud .eyebrow,
-    .garage-instructions,
-    .garage-controls,
-    .garage-hud .text-link {
+    .garage-showroom h1 {
+      font-size: 2.4rem;
+    }
+
+    .garage-instructions {
       display: none;
     }
 
-    .garage-hud h1 {
-      display: none;
+    .garage-step {
+      gap: 0.8rem;
+      margin-top: 0.9rem;
     }
 
-    .garage-settings {
-      margin-top: 0;
+    .garage-circuits svg {
+      height: 2.2rem;
     }
 
-    .garage-settings summary {
-      display: flex;
-      min-height: 2.5rem;
-      align-items: center;
-      justify-content: space-between;
-      cursor: pointer;
-      font-weight: 600;
-      list-style: none;
+    .garage-choice span {
+      padding: 0.6rem 0.65rem;
     }
 
-    .garage-settings summary::-webkit-details-marker {
-      display: none;
+    .garage-choice b {
+      font-size: 1.1rem;
     }
 
-    .garage-settings summary::after {
-      content: '+';
-      font-family: var(--mono);
+    .garage-race-hud {
+      top: calc(4.5rem + 0.75rem);
+      left: 0.75rem;
     }
 
-    .garage-settings[open] summary::after {
-      content: '–';
+    .garage-stats {
+      top: calc(4.5rem + 4rem) !important;
+      right: 0.75rem !important;
+      bottom: auto !important;
     }
   }
 </style>
@@ -461,7 +673,9 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   import * as THREE from 'three';
   import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
   import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
+  import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
   import { createPerturbationPass } from '../components/perturbation-pass';
+  import { buildStreet, type OsmMap } from '../components/osm-world';
 
   const canvas = document.getElementById('garage-canvas') as HTMLCanvasElement;
   const loadingEl = document.getElementById('garage-loading') as HTMLElement;
@@ -629,10 +843,26 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     },
   };
 
+  // Guerickestraße, the street from the Cam2Sim drive: its OpenStreetMap centreline, run
+  // west to east as a sprint from a start line to a finish line rather than a loop.
+  let streetMap: OsmMap | null = null;
+  const streetReady = fetch('/cam2sim/drive.json')
+    .then((r) => r.json() as Promise<{ map: OsmMap }>)
+    .then((d) => (streetMap = d.map));
+  const OPEN_CIRCUITS = new Set(['guericke']);
+  const streetHalfWidth = 3.5;
+
   function circuitPath(key: string): PathPoint[] {
     let raw: { x: number; z: number }[];
+    const open = OPEN_CIRCUITS.has(key);
     if (key === 'cones') {
       raw = stadiumPoints();
+    } else if (key === 'guericke') {
+      const road = streetMap!.roads.find((r) => r.name === 'Guerickestraße')!;
+      const pts = [...road.pts];
+      if (pts[0][0] > pts[pts.length - 1][0]) pts.reverse();
+      const curve = new THREE.CatmullRomCurve3(pts.map(([e, n]) => new THREE.Vector3(e, 0, -n)), false, 'centripetal');
+      raw = curve.getSpacedPoints(Math.round(curve.getLength())).map((v) => ({ x: v.x, z: v.z }));
     } else {
       const layout = LAYOUTS[key];
       const curve = new THREE.CatmullRomCurve3(
@@ -644,8 +874,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     }
     const n = raw.length;
     return raw.map((p, i) => {
-      const next = raw[(i + 1) % n];
-      const prev = raw[(i - 1 + n) % n];
+      const next = open ? raw[Math.min(n - 1, i + 1)] : raw[(i + 1) % n];
+      const prev = open ? raw[Math.max(0, i - 1)] : raw[(i - 1 + n) % n];
       const dx = next.x - prev.x;
       const dz = next.z - prev.z;
       const len = Math.hypot(dx, dz) || 1;
@@ -657,6 +887,9 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   let trackAlong: number[] = []; // distance along the path at each point
   let trackLength = 1;
   let startPoint: PathPoint;
+  let finishPoint: PathPoint | null = null; // only on a sprint
+  let trackOpen = false;
+  let offRoadLimit = roadWidth / 2 + 0.5;
 
   // Signed perpendicular distance of (x, z) from the track's centerline: 0 = dead
   // center, positive = toward the outer edge. Used both to draw the road and to
@@ -664,21 +897,29 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   function trackOffset(x: number, z: number) {
     let best = Infinity;
     let bestOffset = 0;
-    for (const p of trackPath) {
+    let bestIndex = 0;
+    trackPath.forEach((p, i) => {
       const dx = x - p.x;
       const dz = z - p.z;
       const distSq = dx * dx + dz * dz;
       if (distSq < best) {
         best = distSq;
+        bestIndex = i;
         bestOffset = dx * p.tz - dz * p.tx; // dot with the outward normal (tz, -tx)
       }
+    });
+    // Past either end of a sprint counts as off the road too.
+    if (trackOpen && (bestIndex === 0 || bestIndex === trackPath.length - 1)) {
+      const p = trackPath[bestIndex];
+      const along = (x - p.x) * p.tx + (z - p.z) * p.tz;
+      if ((bestIndex === 0 && along < -2) || (bestIndex > 0 && along > 2)) return Infinity;
     }
     return bestOffset;
   }
 
   // A point at distance s along the path, interpolated, with its tangent.
   function pathAt(s: number) {
-    const d = ((s % trackLength) + trackLength) % trackLength;
+    const d = trackOpen ? THREE.MathUtils.clamp(s, 0, trackLength) : ((s % trackLength) + trackLength) % trackLength;
     let lo = 0;
     let hi = trackAlong.length - 1;
     while (hi - lo > 1) {
@@ -687,7 +928,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       else hi = mid;
     }
     const a = trackPath[lo];
-    const b = trackPath[(lo + 1) % trackPath.length];
+    const b = trackPath[trackOpen ? Math.min(lo + 1, trackPath.length - 1) : (lo + 1) % trackPath.length];
     const span = (lo + 1 < trackAlong.length ? trackAlong[lo + 1] : trackLength) - trackAlong[lo];
     const f = span > 0 ? (d - trackAlong[lo]) / span : 0;
     return { x: a.x + (b.x - a.x) * f, z: a.z + (b.z - a.z) * f, tx: a.tx, tz: a.tz };
@@ -748,6 +989,10 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   const finishLineGeo = new THREE.PlaneGeometry(1.6, roadWidth);
   finishLineGeo.rotateX(-Math.PI / 2);
   const finishLineMat = new THREE.MeshStandardMaterial({ map: makeCheckerTexture(), roughness: 0.9, side: THREE.DoubleSide });
+  const streetLineMat = finishLineMat.clone();
+  streetLineMat.polygonOffset = true;
+  streetLineMat.polygonOffsetFactor = -8;
+  streetLineMat.polygonOffsetUnits = -8;
 
   // --- Cones. Knock them over by driving into them.
   const coneHeight = 0.8;
@@ -817,14 +1062,39 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     circuitGroup.clear();
     cones = [];
 
+    trackOpen = OPEN_CIRCUITS.has(key);
     trackPath = circuitPath(key);
     trackAlong = [0];
     for (let i = 1; i < trackPath.length; i++) {
       trackAlong.push(trackAlong[i - 1] + Math.hypot(trackPath[i].x - trackPath[i - 1].x, trackPath[i].z - trackPath[i - 1].z));
     }
     const last = trackPath[trackPath.length - 1];
-    trackLength = trackAlong[trackAlong.length - 1] + Math.hypot(trackPath[0].x - last.x, trackPath[0].z - last.z);
-    startPoint = trackPath[0];
+    trackLength = trackAlong[trackAlong.length - 1] + (trackOpen ? 0 : Math.hypot(trackPath[0].x - last.x, trackPath[0].z - last.z));
+    startPoint = trackOpen ? pathAt(22) : trackPath[0];
+    finishPoint = trackOpen ? pathAt(trackLength - 14) : null;
+    offRoadLimit = trackOpen ? streetHalfWidth + 2 : roadWidth / 2 + 0.5;
+    ground.visible = !trackOpen;
+
+    if (key === 'guericke') {
+      // The real street: OSM roads, pavements, buildings and green, as in the Cam2Sim demo.
+      const street = buildStreet(streetMap!);
+      street.traverse((o) => {
+        if ((o as THREE.Mesh).isMesh) {
+          o.castShadow = true;
+          o.receiveShadow = true;
+        }
+      });
+      circuitGroup.add(street);
+      for (const point of [startPoint, finishPoint!]) {
+        // Pulled forward in depth past the street's own offset asphalt, so it shows from afar.
+        const line = new THREE.Mesh(finishLineGeo, streetLineMat);
+        line.position.set(point.x, 0.06, point.z);
+        line.quaternion.setFromUnitVectors(localXAxis, new THREE.Vector3(point.tx, 0, point.tz));
+        line.scale.z = (streetHalfWidth * 2) / roadWidth;
+        circuitGroup.add(line);
+      }
+      return;
+    }
 
     const kerbs = new THREE.Mesh(buildRoadGeometry(trackPath, roadWidth + 1.2, 0.04), kerbMat);
     kerbs.receiveShadow = true;
@@ -889,7 +1159,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   function updateStats() {
     const knocked = cones.filter((c) => c.knocked).length;
     const standing = cones.length - knocked;
-    coneStatEl.textContent = `${standing} standing · ${knocked} knocked over`;
+    coneStatEl.textContent = cones.length ? `${standing} standing · ${knocked} knocked over` : 'Sprint · start line to finish line';
   }
   updateStats();
 
@@ -1012,6 +1282,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         carLength = v.length;
         buildGhost(model);
         restartRace();
+        showOnTurntable(model);
       })
       .catch((err) => {
         console.error('Failed to load the vehicle', err);
@@ -1043,7 +1314,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     KeyD: 'right',
   };
 
-  const inForm = (e: KeyboardEvent) => e.target instanceof HTMLSelectElement || e.target instanceof HTMLInputElement;
+  const inForm = (e: KeyboardEvent) =>
+    section.dataset.phase !== 'race' || e.target instanceof HTMLSelectElement || e.target instanceof HTMLInputElement;
   window.addEventListener('keydown', (e) => {
     if (inForm(e)) return;
     const key = keyMap[e.code];
@@ -1081,17 +1353,18 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   // Spawn a few steps back along the path from the start line (still genuinely on the
   // road, mid-corner), facing the way the track actually points there, so driving
   // forward naturally brings the car up to, and then across, the start line.
-  const spawnBehind = 6;
+  // Far enough back on a sprint that the start line is in view over the car from the first frame.
+  const spawnBehind = () => (trackOpen ? 16 : 6);
   const car_state = {
-    x: startPoint.x - spawnBehind * startPoint.tx,
-    z: startPoint.z - spawnBehind * startPoint.tz,
+    x: startPoint.x - spawnBehind() * startPoint.tx,
+    z: startPoint.z - spawnBehind() * startPoint.tz,
     heading: Math.atan2(startPoint.tx, startPoint.tz),
     speed: 0,
   };
   const maxReverse = 7;
   const friction = 5;
   let lean = 0;
-  let showcase = true; // turn the vehicle slowly on the spot until the first input
+  let showcase = false; // the garage turntable does the showing now
   let showcaseAngle = 0;
 
   const timer = new THREE.Timer();
@@ -1144,6 +1417,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   }
   let bestLapTime: number | null = readBestLap();
   let lapCrossingCooldown = 0;
+  let sprintDone = false; // a sprint is over until the car is back on the grid
   let offRoad = false;
 
   // --- Ghost: the best lap, replayed as a see-through copy of the vehicle ---
@@ -1206,65 +1480,134 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   }
 
   // --- Traffic: slower cars on both lanes, following the road ---
-  type TrafficCar = { s: number; lane: number; v: number; target: number; mesh: THREE.Group; cooldown: number };
+  type TrafficCar = { s: number; lane: number; dir: number; v: number; target: number; mesh: THREE.Group; cooldown: number };
   let trafficCars: TrafficCar[] = [];
   const trafficEnabled = document.getElementById('garage-traffic') as HTMLInputElement;
-  const trafficColours = ['#56606a', '#8d2f23', '#2c4a6b', '#d9d6cc', '#3f5a35'];
-  function makeTrafficCar(colour: string) {
+  // Traffic is more Fortunas, tinted red, so they read as other cars at a glance.
+  const trafficReds = ['#e0402e', '#c2281c', '#f0614a', '#a91f17'];
+  const TRAFFIC = { halfLength: 2.35, halfWidth: 0.92 };
+  const tintCache = new Map<string, Map<THREE.Material, THREE.Material>>();
+  function makeTrafficCar(red: string) {
     const car = new THREE.Group();
-    const paint = new THREE.MeshStandardMaterial({ color: colour, roughness: 0.5, metalness: 0.2 });
-    const glass = new THREE.MeshStandardMaterial({ color: '#1b2229', roughness: 0.2 });
-    const body = new THREE.Mesh(new THREE.BoxGeometry(1.85, 0.7, 4.4), paint);
-    body.position.y = 0.6;
-    const cabin = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.55, 2.3), glass);
-    cabin.position.set(0, 1.2, 0.2);
-    for (const m of [body, cabin]) {
-      m.castShadow = true;
-      car.add(m);
-    }
+    const model = vehicles.fortuna.model;
+    if (!model) return car;
+    const copy = model.clone(true);
+    copy.rotation.y = carHeadingOffset; // nose along +Z, the way the traffic drives
+    let tints = tintCache.get(red);
+    if (!tints) tintCache.set(red, (tints = new Map()));
+    copy.traverse((o) => {
+      const mesh = o as THREE.Mesh;
+      if (!mesh.isMesh) return;
+      const swap = (m: THREE.Material) => {
+        if (!tints!.has(m)) {
+          const tinted = m.clone() as THREE.MeshStandardMaterial;
+          tinted.color?.multiply(new THREE.Color(red));
+          tints!.set(m, tinted);
+        }
+        return tints!.get(m)!;
+      };
+      mesh.material = Array.isArray(mesh.material) ? mesh.material.map(swap) : swap(mesh.material);
+    });
+    car.add(copy);
     return car;
   }
   function spawnTraffic() {
     for (const t of trafficCars) scene.remove(t.mesh);
     trafficCars = [];
     if (!trafficEnabled.checked) return;
-    const count = Math.max(3, Math.min(8, Math.round(trackLength / 90)));
+    if (!vehicles.fortuna.model) {
+      loadVehicle(vehicles.fortuna).then(spawnTraffic);
+      return;
+    }
+    const count = trackOpen ? 4 : Math.max(3, Math.min(8, Math.round(trackLength / 90)));
     for (let i = 0; i < count; i++) {
       const target = 7 + ((i * 37) % 5);
-      const mesh = makeTrafficCar(trafficColours[i % trafficColours.length]);
+      const mesh = makeTrafficCar(trafficReds[i % trafficReds.length]);
       scene.add(mesh);
-      trafficCars.push({ s: 40 + (i * trackLength) / count, lane: i % 2 ? 2.1 : -2.1, v: target, target, mesh, cooldown: 0 });
+      // On a street, every other car is oncoming in the left lane (lane > 0 is left of travel).
+      const oncoming = trackOpen && i % 2 === 1;
+      const lane = trackOpen ? (oncoming ? 1.75 : -1.75) : i % 2 ? 2.1 : -2.1;
+      trafficCars.push({ s: 40 + (i * trackLength) / count, lane, dir: oncoming ? -1 : 1, v: target, target, mesh, cooldown: 0 });
     }
     updateTraffic(0);
   }
+
+  // Overlap of two rectangles on the ground (centre, heading, half length, half width), by
+  // separating axes. Returns the shallowest push that separates them, along n from a to b.
+  function footprintOverlap(
+    ax: number, az: number, ah: number, ahl: number, ahw: number,
+    bx: number, bz: number, bh: number, bhl: number, bhw: number,
+  ) {
+    const axes = [
+      [Math.sin(ah), Math.cos(ah)],
+      [Math.cos(ah), -Math.sin(ah)],
+      [Math.sin(bh), Math.cos(bh)],
+      [Math.cos(bh), -Math.sin(bh)],
+    ];
+    let depth = Infinity;
+    let nx = 0;
+    let nz = 0;
+    for (const [x, z] of axes) {
+      const ra = ahl * Math.abs(Math.sin(ah) * x + Math.cos(ah) * z) + ahw * Math.abs(Math.cos(ah) * x - Math.sin(ah) * z);
+      const rb = bhl * Math.abs(Math.sin(bh) * x + Math.cos(bh) * z) + bhw * Math.abs(Math.cos(bh) * x - Math.sin(bh) * z);
+      const d = (bx - ax) * x + (bz - az) * z;
+      const overlap = ra + rb - Math.abs(d);
+      if (overlap <= 0) return null;
+      if (overlap < depth) {
+        depth = overlap;
+        nx = x * (Math.sign(d) || 1);
+        nz = z * (Math.sign(d) || 1);
+      }
+    }
+    return { depth, nx, nz };
+  }
+
   const contactPenaltySeconds = 5;
   function updateTraffic(dt: number) {
     for (const t of trafficCars) {
-      // Keep a gap to the car ahead in the same lane.
+      const heading = t.mesh.rotation.y;
+      const fx = Math.sin(heading);
+      const fz = Math.cos(heading);
+      // Keep a gap to the car ahead in the same lane, and to the player if they are in it.
       let target = t.target;
       for (const o of trafficCars) {
         if (o === t || o.lane !== t.lane) continue;
-        const gap = (((o.s - t.s) % trackLength) + trackLength) % trackLength;
+        if (o.dir !== t.dir) continue;
+        const gap = ((((o.s - t.s) * t.dir) % trackLength) + trackLength) % trackLength;
         if (gap < 14) target = Math.min(target, o.v * 0.9);
       }
-      t.v += THREE.MathUtils.clamp(target - t.v, -6 * dt, 2 * dt);
-      t.s += t.v * dt;
+      const px = car_state.x - t.mesh.position.x;
+      const pz = car_state.z - t.mesh.position.z;
+      const ahead = px * fx + pz * fz;
+      const beside = px * fz - pz * fx;
+      if (ahead > 0 && ahead < 16 && Math.abs(beside) < 1.9) {
+        const playerAlong = car_state.speed * (Math.sin(car_state.heading) * fx + Math.cos(car_state.heading) * fz);
+        target = Math.min(target, ahead < 7 ? 0 : Math.max(0, playerAlong * 0.9));
+      }
+      t.v += THREE.MathUtils.clamp(target - t.v, -9 * dt, 2 * dt);
+      t.v = Math.max(0, t.v);
+      t.s += t.v * t.dir * dt;
+      // On a sprint, cars leave at one end of the street and come back in at the other.
+      if (trackOpen && (t.s > trackLength || t.s < 0)) t.s = t.s > trackLength ? 0 : trackLength;
       const p = pathAt(t.s);
       t.mesh.position.set(p.x + p.tz * t.lane, 0, p.z - p.tx * t.lane);
-      t.mesh.rotation.y = Math.atan2(p.tx, p.tz);
+      t.mesh.rotation.y = Math.atan2(p.tx, p.tz) + (t.dir < 0 ? Math.PI : 0);
       t.cooldown -= dt;
 
-      // Contact with the player: the player's footprint against the traffic car's.
-      const dx = t.mesh.position.x - car_state.x;
-      const dz = t.mesh.position.z - car_state.z;
-      const along = dx * Math.sin(car_state.heading) + dz * Math.cos(car_state.heading);
-      const across = dx * Math.cos(car_state.heading) - dz * Math.sin(car_state.heading);
-      if (Math.abs(along) < vehicle.halfLength + 2.2 && Math.abs(across) < vehicle.halfWidth + 0.95 && t.cooldown <= 0) {
+      // Contact: the player's footprint against this car's, both at their own headings.
+      const hit = footprintOverlap(
+        car_state.x, car_state.z, car_state.heading, vehicle.halfLength, vehicle.halfWidth,
+        t.mesh.position.x, t.mesh.position.z, t.mesh.rotation.y, TRAFFIC.halfLength, TRAFFIC.halfWidth,
+      );
+      if (!hit) continue;
+      // Push the player clear along the shallowest axis, and lose the speed driven into it.
+      car_state.x -= hit.nx * (hit.depth + 0.02);
+      car_state.z -= hit.nz * (hit.depth + 0.02);
+      const into = car_state.speed * (Math.sin(car_state.heading) * hit.nx + Math.cos(car_state.heading) * hit.nz);
+      if (into > 0) car_state.speed *= 0.35;
+      t.v *= 0.6;
+      if (t.cooldown <= 0) {
         t.cooldown = 1.5;
-        car_state.speed *= 0.35;
-        const push = Math.sign(along) || 1;
-        car_state.x -= Math.sin(car_state.heading) * push * 0.6;
-        car_state.z -= Math.cos(car_state.heading) * push * 0.6;
         if (lapStarted && !offRoad) {
           lapElapsed += contactPenaltySeconds;
           flashStat(lapStatEl);
@@ -1280,8 +1623,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
   // Back to the grid: on a new circuit, a new vehicle, or traffic switched on.
   function restartRace() {
-    car_state.x = startPoint.x - spawnBehind * startPoint.tx;
-    car_state.z = startPoint.z - spawnBehind * startPoint.tz;
+    car_state.x = startPoint.x - spawnBehind() * startPoint.tx;
+    car_state.z = startPoint.z - spawnBehind() * startPoint.tz;
     car_state.heading = Math.atan2(startPoint.tx, startPoint.tz);
     car_state.speed = 0;
     camPos.set(
@@ -1292,6 +1635,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     camTarget.set(car_state.x + Math.sin(car_state.heading) * 3, 1.2, car_state.z + Math.cos(car_state.heading) * 3);
     lapPrevForward = forwardOffset(car_state.x, car_state.z);
     lapStarted = false;
+    sprintDone = false;
     lapNumber = 0;
     lapElapsed = 0;
     lapClock = 0;
@@ -1316,10 +1660,12 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         bestLapTime === null
           ? 'Drive through the start line to begin a lap'
           : `Your best: ${formatLapTime(bestLapTime)} · cross the start line to beat it`;
-    } else if (bestLapTime === null) {
-      lapStatEl.textContent = `Lap ${lapNumber} — ${formatLapTime(lapElapsed)}`;
     } else {
-      lapStatEl.textContent = `Lap ${lapNumber} — ${formatLapTime(lapElapsed)} · best ${formatLapTime(bestLapTime)}`;
+      const label = trackOpen ? 'Run' : `Lap ${lapNumber}`;
+      lapStatEl.textContent =
+        bestLapTime === null
+          ? `${label} — ${formatLapTime(lapElapsed)}`
+          : `${label} — ${formatLapTime(lapElapsed)} · best ${formatLapTime(bestLapTime)}`;
     }
   }
   updateLapDisplay();
@@ -1336,15 +1682,35 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   function updateLap(dt: number) {
     if (lapCrossingCooldown > 0) lapCrossingCooldown -= dt;
 
-    const nowOffRoad = Math.abs(trackOffset(car_state.x, car_state.z)) > roadWidth / 2 + 0.5;
+    const nowOffRoad = Math.abs(trackOffset(car_state.x, car_state.z)) > offRoadLimit;
+    if (nowOffRoad && !offRoad) offTrack(lapStarted);
     if (nowOffRoad && !offRoad && lapStarted) {
       lapStarted = false;
       lapElapsed = 0;
     }
     offRoad = nowOffRoad;
 
+    // A sprint ends at its own finish line, then the car goes back to the start.
+    if (finishPoint && lapStarted && !offRoad) {
+      const past = (car_state.x - finishPoint.x) * finishPoint.tx + (car_state.z - finishPoint.z) * finishPoint.tz;
+      if (past >= 0) {
+        const record = bestLapTime === null || lapElapsed < bestLapTime;
+        showPenaltyToast(record ? `${bestLapTime === null ? 'Time set' : 'Personal best'} — ${formatLapTime(lapElapsed)}` : `Finish — ${formatLapTime(lapElapsed)}`, record ? 'record' : 'penalty');
+        if (record) {
+          bestLapTime = lapElapsed;
+          saveBestLap(bestLapTime);
+          ghostLap = recording;
+          saveGhost(recording);
+        }
+        lapStarted = false;
+        lapElapsed = 0;
+        sprintDone = true;
+        setTimeout(() => section.dataset.phase === 'race' && trackOpen && restartRace(), 1800);
+      }
+    }
+
     const forward = forwardOffset(car_state.x, car_state.z);
-    if (!offRoad) {
+    if (!offRoad && !sprintDone) {
       const crossedFinish = lapPrevForward < 0 && forward >= 0;
       if (crossedFinish && lapCrossingCooldown <= 0) {
         if (lapStarted && (bestLapTime === null || lapElapsed < bestLapTime)) {
@@ -1380,10 +1746,38 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     updateLapDisplay();
   }
 
+  // --- Off track: a slow-motion beat in grey, the verdict, then back on the road ---
+  const offtrackEl = document.getElementById('garage-offtrack') as HTMLElement;
+  const offtrackNote = document.getElementById('garage-offtrack-note') as HTMLElement;
+  let offTrackTimer = 0;
+  function offTrack(duringLap: boolean) {
+    if (section.dataset.phase !== 'race' || sprintDone || offTrackTimer > 0 || Math.abs(car_state.speed) < 1.5) return;
+    offTrackTimer = 2.2;
+    offtrackNote.textContent = duringLap ? 'Lap cancelled · back to the start' : 'Back to the start';
+    offtrackEl.hidden = false;
+    section.classList.add('is-offtrack');
+  }
+  // Back to the start line, as at the beginning of the race.
+  function respawnAtStart() {
+    restartRace();
+    offtrackEl.hidden = true;
+    section.classList.remove('is-offtrack');
+  }
+
   function tick() {
     requestAnimationFrame(tick);
     timer.update();
-    const dt = Math.min(timer.getDelta(), 0.05);
+    const realDt = Math.min(timer.getDelta(), 0.05);
+    if (section.dataset.phase === 'showroom') {
+      renderStudio(realDt);
+      return;
+    }
+    let dt = realDt;
+    if (offTrackTimer > 0) {
+      offTrackTimer -= realDt;
+      dt = realDt * 0.3;
+      if (offTrackTimer <= 0) respawnAtStart();
+    }
 
     const grip = WEATHER[weather]?.grip ?? 1;
     const maxSpeed = vehicle.maxSpeed;
@@ -1448,24 +1842,205 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     else renderer.render(scene, camera);
   }
 
-  // --- Settings panel ---
-  const circuitSelect = document.getElementById('garage-circuit') as HTMLSelectElement;
-  circuitSelect.addEventListener('change', () => {
-    circuitKey = circuitSelect.value;
-    buildCircuitWorld(circuitKey);
-    restartRace();
-    updateStats();
-    circuitSelect.blur();
+  // --- The garage: a studio with the vehicle on a turntable, shown before the drive ---
+
+  const studio = new THREE.Scene();
+  const studioDark = new THREE.Color('#0b1016');
+  studio.background = studioDark;
+  studio.fog = new THREE.Fog(studioDark.getHex(), 16, 38);
+  const pmrem = new THREE.PMREMGenerator(renderer);
+  studio.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+  studio.environmentIntensity = 0.35;
+  const studioCamera = new THREE.PerspectiveCamera(30, 1, 0.1, 120);
+
+  const studioFloor = new THREE.Mesh(
+    new THREE.PlaneGeometry(80, 80),
+    new THREE.MeshStandardMaterial({ color: '#141a21', roughness: 0.42, metalness: 0.35 }),
+  );
+  studioFloor.rotation.x = -Math.PI / 2;
+  studioFloor.receiveShadow = true;
+  studio.add(studioFloor);
+
+  // Bay markings on the floor, and the back wall with its light strips.
+  const paint = new THREE.MeshBasicMaterial({ color: '#d9dde0' });
+  for (const x of [-5.2, 5.2]) {
+    const line = new THREE.Mesh(new THREE.PlaneGeometry(0.12, 16), paint);
+    line.rotation.x = -Math.PI / 2;
+    line.position.set(x, 0.005, -2);
+    studio.add(line);
+  }
+  const laneLine = new THREE.Mesh(new THREE.PlaneGeometry(10.52, 0.12), new THREE.MeshBasicMaterial({ color: '#ffcf33' }));
+  laneLine.rotation.x = -Math.PI / 2;
+  laneLine.position.set(0, 0.005, -9.94);
+  studio.add(laneLine);
+  const wall = new THREE.Mesh(new THREE.PlaneGeometry(60, 14), new THREE.MeshStandardMaterial({ color: '#10161d', roughness: 0.9 }));
+  wall.position.set(0, 7, -10);
+  studio.add(wall);
+  const stripMaterial = new THREE.MeshBasicMaterial({ color: '#eef2f4' });
+  for (let i = -3; i <= 3; i++) {
+    const strip = new THREE.Mesh(new THREE.BoxGeometry(0.14, 5.5, 0.05), stripMaterial);
+    strip.position.set(i * 3.4, 4.2, -9.95);
+    studio.add(strip);
+  }
+
+  // The turntable, edged in lane yellow.
+  const turntable = new THREE.Group();
+  const deck = new THREE.Mesh(
+    new THREE.CylinderGeometry(3.4, 3.5, 0.14, 96),
+    new THREE.MeshStandardMaterial({ color: '#1c232b', roughness: 0.32, metalness: 0.6 }),
+  );
+  deck.position.y = 0.07;
+  deck.receiveShadow = true;
+  const rim = new THREE.Mesh(new THREE.TorusGeometry(3.42, 0.03, 8, 192), new THREE.MeshBasicMaterial({ color: '#ffcf33' }));
+  rim.rotation.x = Math.PI / 2;
+  rim.position.y = 0.14;
+  turntable.add(deck, rim);
+  studio.add(turntable);
+  const onDeck = new THREE.Group();
+  onDeck.position.y = 0.14;
+  turntable.add(onDeck);
+
+  studio.add(new THREE.HemisphereLight('#c9d6e0', '#0b1016', 0.5));
+  const keyLight = new THREE.SpotLight('#fff3e4', 110, 40, 0.5, 0.6, 1.6);
+  keyLight.position.set(6, 9, 7);
+  keyLight.castShadow = true;
+  keyLight.shadow.mapSize.set(1024, 1024);
+  keyLight.shadow.bias = -0.0008;
+  studio.add(keyLight, keyLight.target);
+  const rimLight = new THREE.SpotLight('#cfe0ff', 70, 40, 0.35, 0.8, 1.6);
+  rimLight.position.set(-6, 7, -7);
+  rimLight.target.position.set(0, 1, 0);
+  studio.add(rimLight, rimLight.target);
+
+  let studioRadius = 3;
+  let studioSpin = 0.35;
+  let studioPop = 1;
+  function showOnTurntable(model: THREE.Object3D) {
+    onDeck.clear();
+    const copy = model.clone(true);
+    onDeck.add(copy);
+    const sphere = new THREE.Box3().setFromObject(copy).getBoundingSphere(new THREE.Sphere());
+    studioRadius = sphere.radius;
+    studioPop = 0;
+    studioSpin = 2.2; // a quick turn as the new vehicle arrives, easing back to a slow spin
+  }
+
+  // Drag to turn the table.
+  let dragX: number | null = null;
+  canvas.addEventListener('pointerdown', (e) => {
+    if (section.dataset.phase !== 'showroom') return;
+    dragX = e.clientX;
+    canvas.setPointerCapture(e.pointerId);
   });
+  canvas.addEventListener('pointermove', (e) => {
+    if (dragX === null) return;
+    studioSpin = ((e.clientX - dragX) / Math.max(1, canvas.clientWidth)) * 60;
+    turntable.rotation.y += ((e.clientX - dragX) / Math.max(1, canvas.clientWidth)) * Math.PI * 1.5;
+    dragX = e.clientX;
+  });
+  const endDrag = () => (dragX = null);
+  canvas.addEventListener('pointerup', endDrag);
+  canvas.addEventListener('pointercancel', endDrag);
+
+  const compactScreen = window.matchMedia('(max-width: 54rem)');
+  function renderStudio(dt: number) {
+    const w = section.clientWidth;
+    const h = section.clientHeight;
+    studioCamera.aspect = w / h;
+    // Frame the vehicle beside the panel: to the right on wide screens, above it on phones.
+    const fit = studioRadius / Math.sin(THREE.MathUtils.degToRad(studioCamera.fov) / 2);
+    const distance = fit * (compactScreen.matches ? 1.25 : 1.05) / Math.min(1, studioCamera.aspect * 0.9);
+    const dir = new THREE.Vector3(0.8, 0.36, 1).normalize();
+    studioCamera.position.copy(dir.multiplyScalar(Math.max(distance, 6)));
+    studioCamera.lookAt(0, studioRadius * 0.45, 0);
+    if (compactScreen.matches) studioCamera.setViewOffset(w, h, 0, h * 0.2, w, h);
+    else studioCamera.setViewOffset(w, h, -w * 0.17, 0, w, h);
+    studioCamera.updateProjectionMatrix();
+
+    if (dragX === null) {
+      const rest = reduceMotion.matches ? 0 : 0.35;
+      studioSpin += (rest - studioSpin) * Math.min(1, dt * 1.5);
+      turntable.rotation.y += studioSpin * dt;
+    }
+    studioPop += (1 - studioPop) * Math.min(1, dt * 6);
+    onDeck.scale.setScalar(0.94 + 0.06 * studioPop);
+    renderer.render(studio, studioCamera);
+  }
+
+  // --- Steps: vehicle, then track, then the drive ---
+  const showroomEl = document.getElementById('garage-showroom') as HTMLElement;
+  const stepVehicle = document.getElementById('garage-step-vehicle') as HTMLElement;
+  const stepTrack = document.getElementById('garage-step-track') as HTMLElement;
+  function showStep(step: 'vehicle' | 'track') {
+    stepVehicle.hidden = step !== 'vehicle';
+    stepTrack.hidden = step !== 'track';
+    showroomEl.dataset.step = step;
+    (step === 'vehicle' ? stepVehicle : stepTrack).querySelector<HTMLElement>('input:checked')?.focus({ preventScroll: true });
+  }
+  document.getElementById('garage-to-track')!.addEventListener('click', () => showStep('track'));
+  document.getElementById('garage-to-vehicle')!.addEventListener('click', () => showStep('vehicle'));
+  document.getElementById('garage-start')!.addEventListener('click', () => {
+    section.dataset.phase = 'race';
+    camera.clearViewOffset();
+    restartRace();
+    resize();
+    (document.activeElement as HTMLElement | null)?.blur();
+  });
+  document.getElementById('garage-exit')!.addEventListener('click', () => {
+    section.dataset.phase = 'showroom';
+    for (const k of Object.keys(input) as (keyof typeof input)[]) input[k] = false;
+    offTrackTimer = 0;
+    offtrackEl.hidden = true;
+    section.classList.remove('is-offtrack');
+    showStep('track');
+  });
+
+  // Track cards: each circuit's own centreline, drawn small.
+  function drawPreview(svg: SVGSVGElement) {
+    const key = svg.dataset.preview!;
+    const pts = circuitPath(key);
+    const xs = pts.map((p) => p.x);
+    const zs = pts.map((p) => p.z);
+    const minX = Math.min(...xs);
+    const minZ = Math.min(...zs);
+    const w = Math.max(...xs) - minX;
+    const h = Math.max(...zs) - minZ;
+    const pad = Math.max(w, h) * 0.06;
+    svg.setAttribute('viewBox', `${minX - pad} ${minZ - pad} ${w + pad * 2} ${h + pad * 2}`);
+    svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+    const d = pts.filter((_, i) => i % 3 === 0).map((p, i) => `${i ? 'L' : 'M'}${p.x.toFixed(1)},${p.z.toFixed(1)}`).join('') + (OPEN_CIRCUITS.has(key) ? '' : 'Z');
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('d', d);
+    svg.append(path);
+  }
+  document.querySelectorAll<SVGSVGElement>('svg[data-preview]').forEach((svg) => {
+    if (!OPEN_CIRCUITS.has(svg.dataset.preview!)) drawPreview(svg);
+  });
+  streetReady.then(() => {
+    drawPreview(document.querySelector<SVGSVGElement>('svg[data-preview="guericke"]')!);
+    document.querySelector<HTMLInputElement>('input[name="circuit"][value="guericke"]')!.disabled = false;
+  });
+
+  // --- Settings panel ---
+  document.querySelectorAll<HTMLInputElement>('input[name="circuit"]').forEach((radio) =>
+    radio.addEventListener('change', () => {
+      if (!radio.checked) return;
+      circuitKey = radio.value;
+      buildCircuitWorld(circuitKey);
+      restartRace();
+      updateStats();
+    }),
+  );
   const weatherSelect = document.getElementById('garage-weather') as HTMLSelectElement;
   weatherSelect.addEventListener('change', () => {
     weather = weatherSelect.value;
     weatherSelect.blur();
   });
   ghostEnabled.addEventListener('change', () => ghostEnabled.blur());
-  // On phones the settings start folded away so the track stays visible.
-  if (window.matchMedia('(max-width: 54rem)').matches) {
-    (document.getElementById('garage-settings') as HTMLDetailsElement).open = false;
+
+  if (import.meta.env.DEV) {
+    // Test hook: read and place the player, and see the traffic.
+    (window as unknown as Record<string, unknown>).__garage = { car_state, traffic: () => trafficCars, footprintOverlap, vehicle: () => vehicle, pathAt, trackOffset, circuitGroup, startPoint: () => startPoint, info: () => ({ trackLength, trackOpen, offRoadLimit, n: trackPath.length, first: trackPath[0], last: trackPath[trackPath.length - 1] }) };
   }
 
   resize();

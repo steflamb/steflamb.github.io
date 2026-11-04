@@ -7,7 +7,7 @@
   <div class="pv-stage">
     <figure class="pv-pane pv-map-pane">
       <svg class="pv-map" id="pv-map" role="img" aria-label="Map of Guerickestraße with the nominal run and the selected perturbed run"></svg>
-      <figcaption><b>A</b> Recorded trajectory</figcaption>
+      <figcaption>Recorded trajectory</figcaption>
       <ul class="pv-legend" aria-label="Distance from the nominal run">
         <li><i style="background:#2f6f4f"></i>&lt; 0.5 m</li>
         <li><i style="background:#e0a800"></i>&lt; 1.2 m</li>
@@ -21,7 +21,7 @@
     </figure>
     <figure class="pv-pane">
       <canvas id="pv-canvas" aria-hidden="true"></canvas>
-      <figcaption><b>B</b> Simulator replay</figcaption>
+      <figcaption>Simulator replay</figcaption>
       <p class="pv-stamp" id="pv-stamp" aria-hidden="true" hidden></p>
       <p class="pv-readout" id="pv-readout" aria-hidden="true">Loading the runs…</p>
       <div class="pv-timeline" aria-hidden="true"><i id="pv-progress"></i></div>
@@ -113,11 +113,6 @@
     gap: 0.5rem;
     letter-spacing: 0.06em;
     text-transform: uppercase;
-  }
-
-  .pv-pane figcaption b {
-    color: var(--muted-dark);
-    font-weight: 500;
   }
 
   .pv-readout {
@@ -470,12 +465,12 @@
   }
 
   @media (max-width: 54rem) {
-    .pv-stage,
     .pv-copy {
       grid-template-columns: 1fr;
     }
 
     .pv-stage {
+      grid-template-columns: 1fr;
       width: min(100%, 28svh * 16 / 10);
       margin-inline: auto;
     }
@@ -487,18 +482,19 @@
     .pv-legend {
       top: auto;
       right: auto;
-      bottom: 0.6rem;
-      left: 0.6rem;
-      display: flex;
-      gap: 0.6rem;
-      padding: 0.3rem 0.5rem;
-      font-size: 0.625rem;
+      bottom: 1.4rem;
+      left: 0.4rem;
+      display: grid;
+      grid-template-columns: auto auto;
+      gap: 0.1rem 0.5rem;
+      padding: 0.25rem 0.4rem;
+      font-size: 0.5625rem;
     }
 
     .pv-attribution {
-      top: 0;
-      bottom: auto;
-      font-size: 0.5625rem;
+      left: 0;
+      font-size: 0.5rem;
+      text-align: right;
     }
   }
 </style>

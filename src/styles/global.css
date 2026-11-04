@@ -1029,20 +1029,7 @@
     margin-top: 1.5rem;
   }
 
-  /* Before the car arrives (script running, motion allowed), a stop waits half-drawn. */
-  .route.is-live .route-visual {
-    clip-path: inset(0 0 0 0);
-    transition: clip-path 1100ms cubic-bezier(0.16, 1, 0.3, 1);
-  }
-
-  .route.is-live .route-stop:not(.is-reached) .route-visual {
-    clip-path: inset(0 0 100% 0);
-  }
-
-  .route.is-live .route-stop:nth-child(even):not(.is-reached) .route-visual {
-    clip-path: inset(100% 0 0 0);
-  }
-
+  /* Before the car arrives (script running, motion allowed), a stop's text waits faded. */
   .route.is-live .route-copy > * {
     transition:
       opacity 700ms cubic-bezier(0.16, 1, 0.3, 1),
@@ -1392,6 +1379,10 @@
 
   .demo-showcase-copy p + p {
     margin-top: 1em;
+  }
+
+  .demo-inline-video {
+    margin-top: 1.6rem;
   }
 
   .demo-showcase-copy .text-link {
