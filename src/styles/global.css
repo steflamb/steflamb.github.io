@@ -481,6 +481,59 @@
     object-position: 24% 32%;
   }
 
+  /* Interactive demos: a clear start on phones, and controls that never select text. */
+  .demo-start {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    display: grid;
+    place-items: center;
+    border: 0;
+    background: rgba(16, 19, 17, 0.5);
+    font: inherit;
+    cursor: pointer;
+  }
+
+  .demo-start span {
+    padding: 0.85rem 1.4rem;
+    background: #ffd23f;
+    color: var(--ink);
+    font-weight: 600;
+  }
+
+  .demo-start:focus-visible span {
+    outline: 3px solid var(--signal);
+    outline-offset: 3px;
+  }
+
+  .demo-showcase button,
+  .demo-showcase canvas,
+  .demo-showcase svg,
+  .demo-showcase label {
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .demo-showcase button {
+    touch-action: manipulation;
+  }
+
+  .demo-showcase {
+    scroll-margin-top: 5.5rem;
+  }
+
+  @media (max-width: 54rem) {
+    html:has(.demo-showcase-list) {
+      scroll-snap-type: y proximity;
+    }
+
+    .demo-showcase {
+      scroll-snap-align: start;
+    }
+  }
+
   /* Sim ↔ real scrubber: the scanned car, registered over the photo of the real one. */
   .gap-sim,
   .gap-wire,

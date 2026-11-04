@@ -69,6 +69,7 @@
   }
 
   .pv-stage {
+    position: relative;
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 2px;
@@ -383,26 +384,22 @@
 </style>
 
 <script>
+  import { onDemoStart } from './demo-start';
   const root = document.getElementById('pertov-replay');
   if (root) {
-    new IntersectionObserver(
-      ([entry], observer) => {
-        if (!entry.isIntersecting) return;
-        observer.disconnect();
-        import('./pertov-replay').then(({ startPertovReplay }) =>
-          startPertovReplay({
-            root,
-            mapSvg: document.getElementById('pv-map') as unknown as SVGSVGElement,
-            canvas: document.getElementById('pv-canvas') as HTMLCanvasElement,
-            steeringSvg: document.getElementById('pv-steering') as unknown as SVGSVGElement,
-            form: document.getElementById('pv-controls') as HTMLFormElement,
-            playButton: document.getElementById('pv-play') as HTMLButtonElement,
-            card: document.getElementById('pv-card') as HTMLElement,
-            readout: document.getElementById('pv-readout') as HTMLElement,
-          }),
-        );
-      },
-      { rootMargin: '400px 0px' },
-    ).observe(root);
+    onDemoStart(root, root.querySelector('.pv-stage') as HTMLElement, () => {
+    import('./pertov-replay').then(({ startPertovReplay }) =>
+      startPertovReplay({
+        root,
+        mapSvg: document.getElementById('pv-map') as unknown as SVGSVGElement,
+        canvas: document.getElementById('pv-canvas') as HTMLCanvasElement,
+        steeringSvg: document.getElementById('pv-steering') as unknown as SVGSVGElement,
+        form: document.getElementById('pv-controls') as HTMLFormElement,
+        playButton: document.getElementById('pv-play') as HTMLButtonElement,
+        card: document.getElementById('pv-card') as HTMLElement,
+        readout: document.getElementById('pv-readout') as HTMLElement,
+      }),
+    );
+    });
   }
 </script>

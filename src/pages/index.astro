@@ -70,8 +70,8 @@ const menuBlocks = [
   },
   {
     kicker: 'Just for fun',
-    title: 'Drive Fortuna.',
-    description: 'I scanned Fortuna into a 3D model. Take it for a spin, no research question required.',
+    title: 'Take a spin.',
+    description: 'I scanned Fortuna and my motorcycle into 3D models. Take either for a spin, no research question required.',
     href: '/garage/',
     linkLabel: 'Open it up',
     is3D: true,
@@ -146,7 +146,7 @@ const menuBlocks = [
           >
             {block.is3D ? (
               <div class="video-frame" id="home-3d-frame">
-                <canvas id="home-3d-preview" aria-label="Rotating 3D model of Fortuna"></canvas>
+                <canvas id="home-3d-preview" aria-label="Rotating 3D models of Fortuna and a motorcycle"></canvas>
               </div>
             ) : (
               <img
@@ -305,7 +305,7 @@ const menuBlocks = [
       .catch(() => {});
   }
 
-  // --- "Drive Fortuna" preview: the solid model, turning ---
+  // --- "Take a spin" preview: the scanned vehicles, turning ---
 
   const canvas = document.getElementById('home-3d-preview') as HTMLCanvasElement | null;
   const frame = document.getElementById('home-3d-frame') as HTMLElement | null;
@@ -347,15 +347,24 @@ const menuBlocks = [
       dracoLoader.setDecoderPath('/draco/');
       const loader = new GLTFLoader();
       loader.setDRACOLoader(dracoLoader);
-      loader.load('/models/fortuna.glb', (gltf) => {
-        model = gltf.scene;
-        const box = new THREE.Box3().setFromObject(model);
-        const center = new THREE.Vector3();
-        box.getCenter(center);
-        model.position.sub(center);
+      // Fortuna and the GS side by side on one turntable, at their real sizes.
+      Promise.all([loader.loadAsync('/models/fortuna.glb'), loader.loadAsync('/models/gs.glb')]).then(([car, bike]) => {
+        const turntable = new THREE.Group();
+        const onGround = (o: THREE.Object3D, x: number) => {
+          const box = new THREE.Box3().setFromObject(o);
+          const centre = box.getCenter(new THREE.Vector3());
+          o.position.set(x - centre.x, -box.min.y, -centre.z);
+          turntable.add(o);
+        };
+        onGround(car.scene, -1.1);
+        onGround(bike.scene, 1.6);
+        const box = new THREE.Box3().setFromObject(turntable);
+        const centre = box.getCenter(new THREE.Vector3());
+        turntable.children.forEach((c) => c.position.sub(centre));
         const sphere = new THREE.Sphere();
-        box.getBoundingSphere(sphere);
+        new THREE.Box3().setFromObject(turntable).getBoundingSphere(sphere);
         modelRadius = sphere.radius;
+        model = turntable;
         scene.add(model);
         fitCamera();
         requestRender();

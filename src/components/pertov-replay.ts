@@ -130,9 +130,21 @@ export async function startPertovReplay(el: ReplayElements) {
     const dir = new THREE.Vector2(Math.cos(last[3]), Math.sin(last[3]));
     const t = best.t.dot(dir) < 0 ? best.t.clone().negate() : best.t.clone();
     const left = new THREE.Vector2(-t.y, t.x);
-    // Which kerb: where the car sits relative to the centreline, or failing that, where it points.
-    const offset = p.clone().sub(best.q).dot(left);
-    const side = Math.abs(offset) > 0.3 ? Math.sign(offset) : Math.sign(dir.dot(left)) || -1;
+    // Which kerb: the way the run drifted from the nominal run where it stopped, or failing
+    // that, the way it was turning relative to the nominal run's direction there.
+    let near = { dist: Infinity, q: p, t: t };
+    for (let i = 0; i < nominal.pts.length - 1; i++) {
+      const a = new THREE.Vector2(nominal.pts[i][1], nominal.pts[i][2]);
+      const ab = new THREE.Vector2(nominal.pts[i + 1][1], nominal.pts[i + 1][2]).sub(a);
+      const f = THREE.MathUtils.clamp(p.clone().sub(a).dot(ab) / Math.max(ab.lengthSq(), 1e-9), 0, 1);
+      const q = a.clone().addScaledVector(ab, f);
+      if (q.distanceTo(p) < near.dist) near = { dist: q.distanceTo(p), q, t: ab.clone().normalize() };
+    }
+    const nominalLeft = new THREE.Vector2(-near.t.y, near.t.x);
+    const drift = p.clone().sub(near.q).dot(nominalLeft);
+    const turning = dir.dot(nominalLeft);
+    const towardsLeft = Math.abs(drift) > 0.15 ? drift > 0 : turning > 0;
+    const side = towardsLeft === nominalLeft.dot(left) > 0 ? 1 : -1;
     const spot = best.q.clone().addScaledVector(t, 3.5).addScaledVector(left, side * (best.w / 2 - 1.1));
     return { x: spot.x, y: spot.y, heading: Math.atan2(t.y, t.x) };
   }

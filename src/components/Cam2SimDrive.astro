@@ -286,6 +286,10 @@
     load.addEventListener('click', async () => {
       load.disabled = true;
       load.textContent = 'Loading…';
+      if (window.matchMedia('(max-width: 54rem), (pointer: coarse)').matches) {
+        const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        root.closest('.demo-showcase')?.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+      }
       status.textContent = 'Loading the renderer…';
       try {
         const { startCam2SimDrive } = await import('./cam2sim-drive');

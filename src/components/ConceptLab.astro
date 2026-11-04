@@ -264,6 +264,7 @@ const groups = [...new Set(PERTURBATIONS.map((p) => p.group))].map((group) => ({
 </style>
 
 <script>
+  import { onDemoStart } from './demo-start';
   const lab = document.getElementById('perturbation-lab');
   const stage = lab?.querySelector('.lab-stage') as HTMLElement | null;
   const canvas = document.getElementById('lab-canvas') as HTMLCanvasElement | null;
@@ -284,17 +285,10 @@ const groups = [...new Set(PERTURBATIONS.map((p) => p.group))].map((group) => ({
       document.getElementById('lab-loading')!.hidden = true;
       document.getElementById('lab-fallback')!.hidden = false;
     } else {
-      // Fetch three.js and the scan only as the lab nears the viewport.
-      new IntersectionObserver(
-        ([entry], observer) => {
-          if (!entry.isIntersecting) return;
-          observer.disconnect();
-          import('./concept-lab').then(({ startPerturbationLab }) =>
-            startPerturbationLab({ stage, canvas, form }),
-          );
-        },
-        { rootMargin: '400px 0px' },
-      ).observe(lab);
+      // Fetch three.js and the scan only when the lab is about to be used.
+      onDemoStart(lab, stage, () => {
+        import('./concept-lab').then(({ startPerturbationLab }) => startPerturbationLab({ stage, canvas, form }));
+      });
     }
   }
 </script>

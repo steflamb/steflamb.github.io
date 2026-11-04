@@ -11,12 +11,17 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     <canvas id="garage-canvas"></canvas>
 
     <div class="garage-hud" data-reveal>
-      <p class="eyebrow eyebrow-light">Fortuna, in 3D</p>
+      <p class="eyebrow eyebrow-light">Scanned in 3D</p>
       <h1>Just for fun.</h1>
       <p class="garage-instructions">
-        I also scanned Fortuna into a 3D model. You can take it for a lap around the track,
-        no research question required.
+        I scanned Fortuna and my motorcycle into 3D models. Take either for a lap around the
+        track, no research question required.
       </p>
+      <fieldset class="garage-vehicle">
+        <legend>Vehicle</legend>
+        <label><input type="radio" name="vehicle" value="fortuna" checked /><span>Fortuna</span></label>
+        <label><input type="radio" name="vehicle" value="gs" /><span>GS motorcycle</span></label>
+      </fieldset>
       <p class="garage-controls garage-desktop-only">Arrow keys or WASD to drive.</p>
       <p class="garage-controls garage-mobile-only">Use the on-screen controls to drive.</p>
       <a class="text-link text-link-light" href="/fortuna/">← Back to Fortuna</a>
@@ -100,6 +105,57 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
   .garage-mobile-only {
     display: none;
+  }
+
+  .garage-vehicle {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    margin: 1.1rem 0 0;
+    padding: 0;
+    border: 0;
+  }
+
+  .garage-vehicle legend {
+    width: 100%;
+    margin-bottom: 0.45rem;
+    color: var(--muted-dark);
+    font-family: var(--mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .garage-vehicle label {
+    position: relative;
+    cursor: pointer;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  .garage-vehicle input {
+    position: absolute;
+    opacity: 0;
+  }
+
+  .garage-vehicle span {
+    display: inline-flex;
+    min-height: 2.5rem;
+    align-items: center;
+    padding: 0 0.85rem;
+    border: 1px solid rgba(250, 248, 241, 0.35);
+    font-size: 0.85rem;
+  }
+
+  .garage-vehicle input:checked + span {
+    border-color: #ffd23f;
+    background: #ffd23f;
+    color: var(--ink);
+  }
+
+  .garage-vehicle input:focus-visible + span {
+    outline: 3px solid var(--signal);
+    outline-offset: 3px;
   }
 
   .garage-controls {
@@ -522,24 +578,48 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   coneGeo.translate(0, coneHeight / 2, 0); // pivot at the base, so it topples instead of sinking
   const coneMat = new THREE.MeshStandardMaterial({ color: '#ff6034', roughness: 0.8 });
   const coneMargin = roadWidth / 2 + 1.3;
+  // Spacing for laying out the cones; hits use each vehicle's footprint instead.
   const carHitRadius = 1.5;
   const coneHitRadius = 0.5;
+  const coneBaseRadius = 0.22;
   const knockSpeedThreshold = 0.6;
   type Cone = {
-    mesh: THREE.Mesh;
+    mesh: THREE.Object3D;
     base: THREE.Vector3;
     knocked: boolean;
     progress: number;
     fallAxis: THREE.Vector3;
   };
   const cones: Cone[] = [];
+  // Each cone is a pivot at its base; it shows a simple cone until the scanned one loads.
   function spawnCone(x: number, z: number) {
-    const cone = new THREE.Mesh(coneGeo, coneMat);
+    const cone = new THREE.Group();
+    const placeholder = new THREE.Mesh(coneGeo, coneMat);
+    placeholder.castShadow = true;
+    cone.add(placeholder);
     const base = new THREE.Vector3(x, 0, z);
     cone.position.copy(base);
-    cone.castShadow = true;
     scene.add(cone);
     cones.push({ mesh: cone, base, knocked: false, progress: 0, fallAxis: new THREE.Vector3(1, 0, 0) });
+  }
+
+  {
+    const coneDraco = new DRACOLoader();
+    coneDraco.setDecoderPath('/draco/');
+    const coneLoader = new GLTFLoader();
+    coneLoader.setDRACOLoader(coneDraco);
+    coneLoader.loadAsync('/models/cone.glb').then((gltf) => {
+      // The scan is centred on its middle; scale it to the cone height and stand it on its base.
+      const model = gltf.scene;
+      const box = new THREE.Box3().setFromObject(model);
+      const scale = coneHeight / (box.max.y - box.min.y);
+      model.scale.setScalar(scale);
+      model.position.y = -box.min.y * scale;
+      model.traverse((o) => {
+        if ((o as THREE.Mesh).isMesh) o.castShadow = true;
+      });
+      for (const cone of cones) cone.mesh.clear().add(model.clone());
+    });
   }
 
   for (let i = 0; i < trackPath.length; i += 8) {
@@ -602,8 +682,12 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         const dx = cone.base.x - car_state.x;
         const dz = cone.base.z - car_state.z;
         const distSq = dx * dx + dz * dz;
-        const hitDist = carHitRadius + coneHitRadius;
-        if (distSq < hitDist * hitDist && Math.abs(car_state.speed) > knockSpeedThreshold) {
+        // The vehicle's own footprint, a rectangle along its heading, against the cone's base.
+        const along = dx * Math.sin(car_state.heading) + dz * Math.cos(car_state.heading);
+        const across = dx * Math.cos(car_state.heading) - dz * Math.sin(car_state.heading);
+        const touching =
+          Math.abs(along) < vehicle.halfLength + coneBaseRadius && Math.abs(across) < vehicle.halfWidth + coneBaseRadius;
+        if (touching && Math.abs(car_state.speed) > knockSpeedThreshold) {
           cone.knocked = true;
           const dist = Math.sqrt(distSq) || 1;
           // Tip over away from the car, perpendicular to the impact direction.
@@ -627,10 +711,35 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     }
   }
 
-  // --- Car ---
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+  // --- Vehicles: Fortuna and the GS, both scanned, both facing -Z, tyres on y = 0 ---
+  type Vehicle = {
+    url: string;
+    model: THREE.Object3D | null;
+    length: number;
+    halfLength: number; // footprint for cone hits
+    halfWidth: number;
+    maxSpeed: number;
+    accel: number;
+    turnRate: number;
+    leans: boolean;
+  };
+  const vehicles: Record<string, Vehicle> = {
+    // Fortuna's body is about 1.83 m wide without mirrors; the GS is narrow at cone height.
+    fortuna: { url: '/models/fortuna.glb', model: null, length: 4.6, halfLength: 2.35, halfWidth: 0.92, maxSpeed: 16, accel: 9, turnRate: 2.0, leans: false },
+    gs: { url: '/models/gs.glb', model: null, length: 2.2, halfLength: 1.08, halfWidth: 0.3, maxSpeed: 22, accel: 11, turnRate: 2.4, leans: true },
+  };
+  let vehicle = vehicles.fortuna;
+
+  // rig: position and heading; leanPivot: roll about the tyres' contact line on the ground.
+  const rig = new THREE.Group();
+  const leanPivot = new THREE.Group();
+  rig.add(leanPivot);
+  scene.add(rig);
   let car: THREE.Object3D | null = null;
-  let carLength = 4.6;
-  // The model's front faces -Z; add a half-turn so "forward" (+Z) drives nose-first.
+  let carLength = vehicle.length;
+  // The models' fronts face -Z; add a half-turn so "forward" (+Z) drives nose-first.
   const carHeadingOffset = Math.PI;
 
   const dracoLoader = new DRACOLoader();
@@ -638,35 +747,53 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   const loader = new GLTFLoader();
   loader.setDRACOLoader(dracoLoader);
 
-  loader.load(
-    '/models/fortuna.glb',
-    (gltf) => {
-      car = gltf.scene;
-      car.traverse((o) => {
+  function loadVehicle(v: Vehicle) {
+    if (v.model) return Promise.resolve(v.model);
+    loadingEl.hidden = false;
+    loadingEl.textContent = 'Loading…';
+    return loader.loadAsync(v.url).then((gltf) => {
+      const model = gltf.scene;
+      model.traverse((o) => {
         if ((o as THREE.Mesh).isMesh) {
           o.castShadow = true;
           o.receiveShadow = true;
         }
       });
-
-      const box = new THREE.Box3().setFromObject(car);
-      const size = new THREE.Vector3();
-      box.getSize(size);
-      carLength = Math.max(size.x, size.y, size.z);
-
-      // Sit the car on the ground.
-      const center = new THREE.Vector3();
-      box.getCenter(center);
-      car.position.y -= box.min.y;
-
-      scene.add(car);
+      // Sit it on the ground, centred over its contact line.
+      const box = new THREE.Box3().setFromObject(model);
+      const size = box.getSize(new THREE.Vector3());
+      v.length = Math.max(size.x, size.z);
+      model.position.y -= box.min.y;
+      v.model = model;
       loadingEl.hidden = true;
-    },
-    undefined,
-    (err) => {
-      console.error('Failed to load Fortuna model', err);
-      loadingEl.textContent = 'Could not load the model.';
-    },
+      return model;
+    });
+  }
+
+  function useVehicle(key: string) {
+    const v = vehicles[key];
+    loadVehicle(v)
+      .then((model) => {
+        vehicle = v;
+        leanPivot.clear();
+        leanPivot.add(model);
+        car = rig;
+        carLength = v.length;
+      })
+      .catch((err) => {
+        console.error('Failed to load the vehicle', err);
+        loadingEl.hidden = false;
+        loadingEl.textContent = 'Could not load the model.';
+      });
+  }
+  useVehicle('fortuna');
+  document.querySelectorAll<HTMLInputElement>('input[name="vehicle"]').forEach((radio) =>
+    radio.addEventListener('change', () => {
+      if (radio.checked) {
+        useVehicle(radio.value);
+        radio.blur();
+      }
+    }),
   );
 
   // --- Controls ---
@@ -725,11 +852,11 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     heading: Math.atan2(startPoint.tx, startPoint.tz),
     speed: 0,
   };
-  const maxSpeed = 16;
   const maxReverse = 7;
-  const accel = 9;
   const friction = 5;
-  const maxTurnRate = 2.0;
+  let lean = 0;
+  let showcase = true; // turn the vehicle slowly on the spot until the first input
+  let showcaseAngle = 0;
 
   const timer = new THREE.Timer();
   timer.connect(document);
@@ -850,6 +977,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     timer.update();
     const dt = Math.min(timer.getDelta(), 0.05);
 
+    const { maxSpeed, accel, turnRate: maxTurnRate } = vehicle;
+    if (showcase && (input.forward || input.back || input.left || input.right)) showcase = false;
     if (input.forward) car_state.speed += accel * dt;
     else if (input.back) car_state.speed -= accel * dt;
     else {
@@ -861,7 +990,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     const turnInput = (input.left ? 1 : 0) - (input.right ? 1 : 0);
     const speedFactor = Math.min(1, Math.abs(car_state.speed) / 4) * 0.85 + 0.15;
     const direction = car_state.speed >= 0 ? 1 : -1;
-    car_state.heading += turnInput * maxTurnRate * speedFactor * direction * dt;
+    const yawRate = turnInput * maxTurnRate * speedFactor * direction;
+    car_state.heading += yawRate * dt;
 
     car_state.x += Math.sin(car_state.heading) * car_state.speed * dt;
     car_state.z += Math.cos(car_state.heading) * car_state.speed * dt;
@@ -869,7 +999,13 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     if (car) {
       car.position.x = car_state.x;
       car.position.z = car_state.z;
-      car.rotation.y = car_state.heading + carHeadingOffset;
+      if (showcase && !reduceMotion.matches) showcaseAngle += dt * 0.6;
+      else showcaseAngle *= Math.max(0, 1 - dt * 6);
+      car.rotation.y = car_state.heading + carHeadingOffset + showcaseAngle;
+      // Lean into the turn from the lateral acceleration (v·ω/g), easing in and out.
+      const target = vehicle.leans ? THREE.MathUtils.clamp(Math.atan((car_state.speed * yawRate) / 9.81), -0.75, 0.75) : 0;
+      lean += (target - lean) * Math.min(1, dt * 5);
+      leanPivot.rotation.z = lean;
     }
 
     updateCones(dt);

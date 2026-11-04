@@ -3,7 +3,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import ConceptLab from '../components/ConceptLab.astro';
 import Cam2SimDrive from '../components/Cam2SimDrive.astro';
 import PertovReplay from '../components/PertovReplay.astro';
-import ForeseeDemo from '../components/ForeseeDemo.astro';
 import { publications } from '../data/site';
 
 const realWorldPerturbationPaper = publications.find((p) => p.title.startsWith('Real-World Perturbation Testing'))!;
@@ -209,20 +208,6 @@ const qualityMetricsPaper = publications.find((p) => p.title.startsWith('Assessi
           </div>
         </div>
       </div>
-
-        <ForeseeDemo>
-          <p class="feature-kicker">Foresee, interactive</p>
-          <h3>Spend the testing budget where failures are close.</h3>
-          <p>
-            A car laps a test track while a forecaster predicts the next 1.6 seconds. Forecasts
-            that come close to the edge, without the car leaving the road, are kept as near
-            misses and ranked. Fuzzing the seconds before a near miss tends to find failures
-            that random starting points miss.
-          </p>
-          <a slot="link" class="text-link" href={forecastingPaper.paper} target="_blank" rel="noreferrer">
-            Read the paper <span aria-hidden="true">↗︎</span>
-          </a>
-        </ForeseeDemo>
     </div>
   </section>
 </BaseLayout>
