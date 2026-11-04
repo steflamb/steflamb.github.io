@@ -165,6 +165,10 @@ function logoTexture() {
 export async function startPerturbationLab({ stage, canvas, form, autoplay }: LabElements) {
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   const readout = stage.querySelector('#lab-readout') as HTMLElement;
+  const hud = stage.querySelector('#lab-hud') as HTMLElement;
+  const meter = stage.querySelector('#lab-meter') as HTMLElement;
+  const rec = stage.querySelector('#lab-rec') as HTMLElement;
+  const timecode = stage.querySelector('#lab-tc') as HTMLElement;
   const loading = stage.querySelector('#lab-loading') as HTMLElement;
   const status = form.querySelector('#lab-status') as HTMLElement;
   const select = form.querySelector('#lab-perturbation') as HTMLSelectElement;
@@ -291,6 +295,11 @@ export async function startPerturbationLab({ stage, canvas, form, autoplay }: La
     renderer.setRenderTarget(null);
     renderer.render(postScene, postCamera);
 
+    // Timecode of the drive at 30 frames a second, and the frames rendered through the pass.
+    const f = Math.floor(clock * 30);
+    const pad = (n: number, w = 2) => String(n).padStart(w, '0');
+    timecode.textContent = `${pad(Math.floor(f / 1800))}:${pad(Math.floor(f / 30) % 60)}:${pad(f % 30)} · F ${pad(frames % 100000, 5)}`;
+
     if (running()) frameId = requestAnimationFrame(draw);
   }
 
@@ -322,6 +331,7 @@ export async function startPerturbationLab({ stage, canvas, form, autoplay }: La
     state.scale = Number(data.get('scale'));
     const label = select.selectedOptions[0]?.textContent ?? state.id;
     readout.textContent = `${state.id}(scale=${state.scale})`;
+    meter.dataset.scale = String(state.scale);
     clearTimeout(statusTimer);
     statusTimer = window.setTimeout(() => (status.textContent = `${label}, scale ${state.scale}`), 500);
     requestDraw();
@@ -331,6 +341,8 @@ export async function startPerturbationLab({ stage, canvas, form, autoplay }: La
     state.playing = playing;
     playButton.textContent = playing ? 'Pause' : 'Drive';
     playButton.setAttribute('aria-pressed', String(playing));
+    hud.dataset.playing = String(playing);
+    rec.textContent = playing ? 'REC' : 'HOLD';
     requestDraw();
   }
 

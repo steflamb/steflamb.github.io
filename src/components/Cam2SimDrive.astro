@@ -5,38 +5,54 @@
 
 <div class="demo-showcase c2s" id="cam2sim-drive">
   <div class="c2s-stage" id="c2s-stage" tabindex="0" aria-describedby="c2s-hint">
-    <figure class="c2s-pane">
-      <canvas id="c2s-sim" aria-hidden="true"></canvas>
-      <figcaption>Simulator</figcaption>
-      <small class="c2s-attribution">
-        Map data ©
-        <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">OpenStreetMap contributors</a>
-      </small>
-    </figure>
-    <figure class="c2s-pane" id="c2s-splat-pane">
-      <canvas id="c2s-splat" aria-hidden="true"></canvas>
-      <figcaption>Generated camera</figcaption>
-    </figure>
+    <div class="c2s-panes">
+      <figure class="c2s-pane">
+        <canvas id="c2s-sim" aria-hidden="true"></canvas>
+        <figcaption><b>01</b> Simulator</figcaption>
+        <small class="c2s-attribution">
+          Map data ©
+          <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">OpenStreetMap contributors</a>
+        </small>
+      </figure>
+      <figure class="c2s-pane" id="c2s-splat-pane">
+        <canvas id="c2s-splat" aria-hidden="true"></canvas>
+        <figcaption><b>02</b> Generated camera</figcaption>
+      </figure>
+      <div class="c2s-touch" aria-hidden="true">
+        <button type="button" tabindex="-1" data-control="left">
+          <svg viewBox="0 0 24 24" width="20" height="20"><path d="M15 5l-7 7 7 7" /></svg>
+        </button>
+        <button type="button" tabindex="-1" data-control="back">
+          <svg viewBox="0 0 24 24" width="20" height="20"><path d="M5 9l7 7 7-7" /></svg>
+        </button>
+        <button type="button" tabindex="-1" data-control="forward">
+          <svg viewBox="0 0 24 24" width="20" height="20"><path d="M5 15l7-7 7 7" /></svg>
+        </button>
+        <button type="button" tabindex="-1" data-control="right">
+          <svg viewBox="0 0 24 24" width="20" height="20"><path d="M9 5l7 7-7 7" /></svg>
+        </button>
+      </div>
+      <p class="c2s-link" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="14" height="14"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+        <span>Gaussian splats</span>
+      </p>
+    </div>
+
+    <div class="c2s-route" aria-hidden="true">
+      <span class="c2s-route-name">Guerickestraße</span>
+      <div class="c2s-route-track" id="c2s-route-track">
+        <i class="c2s-route-car" id="c2s-route-car"></i>
+      </div>
+      <span class="c2s-route-m" id="c2s-route-m">— m</span>
+    </div>
 
     <div class="c2s-start" id="c2s-start">
+      <p class="c2s-start-kicker">Munich · one recorded drive</p>
+      <p class="c2s-start-title">Guerickestraße, rebuilt in three splat segments</p>
       <button type="button" class="c2s-load" id="c2s-load">Load the drive</button>
-      <p>About 8–16 MB per street segment, three segments.</p>
+      <p>About 8–16 MB per segment, loaded one at a time as you drive.</p>
     </div>
 
-    <div class="c2s-touch" aria-hidden="true">
-      <button type="button" tabindex="-1" data-control="left">
-        <svg viewBox="0 0 24 24" width="20" height="20"><path d="M15 5l-7 7 7 7" /></svg>
-      </button>
-      <button type="button" tabindex="-1" data-control="back">
-        <svg viewBox="0 0 24 24" width="20" height="20"><path d="M5 9l7 7 7-7" /></svg>
-      </button>
-      <button type="button" tabindex="-1" data-control="forward">
-        <svg viewBox="0 0 24 24" width="20" height="20"><path d="M5 15l7-7 7 7" /></svg>
-      </button>
-      <button type="button" tabindex="-1" data-control="right">
-        <svg viewBox="0 0 24 24" width="20" height="20"><path d="M9 5l7 7-7 7" /></svg>
-      </button>
-    </div>
   </div>
 
   <div class="demo-showcase-copy c2s-copy">
@@ -59,14 +75,12 @@
 <style>
   .c2s {
     grid-template-columns: 1fr;
-    gap: clamp(1.5rem, 3vw, 2.5rem);
+    gap: clamp(1.25rem, 3vw, 2.5rem);
   }
 
   .c2s-stage {
     position: relative;
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 2px;
     background: var(--ink);
     outline: none;
   }
@@ -76,10 +90,17 @@
     outline-offset: 4px;
   }
 
+  .c2s-panes {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+  }
+
   .c2s-pane {
     position: relative;
     margin: 0;
-    aspect-ratio: 800 / 458;
+    aspect-ratio: 4 / 3;
     overflow: hidden;
     background: #1a1d1b;
   }
@@ -94,6 +115,8 @@
     position: absolute;
     top: 0.8rem;
     left: 0.8rem;
+    display: flex;
+    gap: 0.5rem;
     padding: 0.35rem 0.55rem;
     background: rgba(15, 23, 32, 0.82);
     color: var(--paper-bright);
@@ -101,6 +124,15 @@
     font-size: 0.6875rem;
     letter-spacing: 0.06em;
     text-transform: uppercase;
+  }
+
+  .c2s-pane figcaption b {
+    color: var(--muted-dark);
+    font-weight: 500;
+  }
+
+  #c2s-splat-pane figcaption {
+    color: #ffcf33;
   }
 
   .c2s-attribution {
@@ -117,27 +149,122 @@
     color: inherit;
   }
 
-  .c2s-pane:last-of-type figcaption {
-    color: #ffcf33;
-  }
-
   .c2s-pane :global(.c2s-recorded) {
     position: absolute;
     right: 0.8rem;
     bottom: 0.8rem;
-    width: 26%;
+    width: 30%;
     height: auto;
     border: 2px solid rgba(250, 250, 248, 0.7);
   }
 
+  /* The pipeline step between the two views: the simulator pose goes in, splats render it. */
+  .c2s-link {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin: 0;
+    padding: 0.4rem 0.65rem;
+    border: 1px solid #ffcf33;
+    background: var(--ink);
+    color: #ffcf33;
+    font-family: var(--mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    transform: translate(-50%, -50%);
+  }
+
+  .c2s-link svg {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  /* Where the car is along the recorded street, and which reconstruction segment draws it. */
+  .c2s-route {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) 4.5rem;
+    align-items: center;
+    gap: 0.9rem;
+    padding: 0.7rem 0.9rem;
+    color: var(--paper-bright);
+    font-family: var(--mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.04em;
+  }
+
+  .c2s-route-name {
+    text-transform: uppercase;
+  }
+
+  .c2s-route-m {
+    color: #ffcf33;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .c2s-route-track {
+    position: relative;
+    height: 1.25rem;
+    border-bottom: 1px solid rgba(250, 250, 248, 0.35);
+  }
+
+  .c2s-route-track :global(.c2s-seg) {
+    position: absolute;
+    height: 3px;
+    background: rgba(250, 250, 248, 0.18);
+    transition: background-color 200ms ease;
+  }
+
+  .c2s-route-track :global(.c2s-seg[data-state='loaded']) {
+    background: rgba(250, 250, 248, 0.6);
+  }
+
+  .c2s-route-track :global(.c2s-seg[data-state='active']) {
+    background: #ffcf33;
+  }
+
+  .c2s-route-track :global(.c2s-seg span) {
+    position: absolute;
+    bottom: 4px;
+    left: 0;
+    color: var(--muted-dark);
+    font-size: 0.5625rem;
+  }
+
+  .c2s-route-track :global(.c2s-seg[data-state='active'] span) {
+    color: #ffcf33;
+  }
+
+  .c2s-route-car {
+    position: absolute;
+    bottom: -4px;
+    left: 0;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--paper-bright);
+    box-shadow: 0 0 0 2px var(--ink);
+    transform: translateX(-50%);
+  }
+
   .c2s-start {
     position: absolute;
+    z-index: 3;
     inset: 0;
     display: grid;
     place-content: center;
     justify-items: center;
     gap: 0.8rem;
-    background: rgba(15, 23, 32, 0.55);
+    background: rgba(15, 23, 32, 0.72);
     color: var(--paper-bright);
     text-align: center;
   }
@@ -147,8 +274,27 @@
   }
 
   .c2s-start p {
+    max-width: 30rem;
+    padding-inline: 1rem;
     color: #c9ced3;
     font-size: 0.85rem;
+  }
+
+  .c2s-start .c2s-start-kicker {
+    color: #ffcf33;
+    font-family: var(--mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .c2s-start .c2s-start-title {
+    margin-bottom: 0.4rem;
+    color: var(--paper-bright);
+    font-family: var(--display);
+    font-size: clamp(1.4rem, 3vw, 2.1rem);
+    font-weight: 600;
+    line-height: 1.05;
   }
 
   .c2s-load,
@@ -253,8 +399,45 @@
   }
 
   @media (max-width: 54rem) {
-    .c2s-stage {
+    .c2s-panes {
       grid-template-columns: 1fr;
+    }
+
+    .c2s-panes {
+      width: min(100%, 27svh * 16 / 9);
+      margin-inline: auto;
+    }
+
+    .c2s-pane {
+      aspect-ratio: 16 / 9;
+    }
+
+    /* Stacked, the pipeline step gets its own strip between the two views. */
+    .c2s-panes {
+      gap: 2.2rem;
+    }
+
+    .c2s-link {
+      padding: 0.25rem 0.55rem;
+      font-size: 0.625rem;
+    }
+
+    .c2s-link svg {
+      transform: rotate(90deg);
+    }
+
+    .c2s-pane :global(.c2s-recorded) {
+      top: 0.8rem;
+      bottom: auto;
+      width: 28%;
+    }
+
+    .c2s-route {
+      grid-template-columns: minmax(0, 1fr) 4rem;
+    }
+
+    .c2s-route-name {
+      display: none;
     }
 
     .c2s-copy {

@@ -12,7 +12,19 @@ const groups = [...new Set(PERTURBATIONS.map((p) => p.group))].map((group) => ({
 <div class="demo-showcase lab-showcase" id="perturbation-lab">
   <div class="lab-stage">
     <canvas id="lab-canvas" aria-hidden="true"></canvas>
-    <p class="lab-readout" id="lab-readout" aria-hidden="true">motion_blur(scale=2)</p>
+    <div class="lab-hud" id="lab-hud" data-playing="true" aria-hidden="true">
+      <span class="lab-corner" data-corner="tl"></span>
+      <span class="lab-corner" data-corner="tr"></span>
+      <span class="lab-corner" data-corner="bl"></span>
+      <span class="lab-corner" data-corner="br"></span>
+      <p class="lab-readout" id="lab-readout">dynamic_rain_filter(scale=2)</p>
+      <p class="lab-rec"><i></i><span id="lab-rec">REC</span> · CHASE CAM</p>
+      <p class="lab-meter" id="lab-meter" data-scale="2">
+        <span>SCALE</span>
+        {[0, 1, 2, 3, 4].map((n) => <i data-n={n}></i>)}
+      </p>
+      <p class="lab-tc" id="lab-tc">00:00:00 · F 00000</p>
+    </div>
     <p class="lab-loading" id="lab-loading">Loading the scan…</p>
     <p class="lab-fallback" id="lab-fallback" hidden>
       This demo needs WebGL, which your browser has turned off.
@@ -53,7 +65,7 @@ const groups = [...new Set(PERTURBATIONS.map((p) => p.group))].map((group) => ({
           <legend class="lab-label">Scale</legend>
           <div class="lab-options lab-scale">
             {[0, 1, 2, 3, 4].map((scale) => (
-              <label><input type="radio" name="scale" value={scale} checked={scale === 2} /> <span>{scale}</span></label>
+              <label><input type="radio" name="scale" value={scale} checked={scale === 2} /> <span><b style={`--h: ${(scale + 1) * 18}%`}></b>{scale}</span></label>
             ))}
           </div>
         </fieldset>
@@ -82,7 +94,7 @@ const groups = [...new Set(PERTURBATIONS.map((p) => p.group))].map((group) => ({
   .lab-stage {
     position: relative;
     overflow: hidden;
-    aspect-ratio: 16 / 10;
+    aspect-ratio: 5 / 4;
     background: var(--ink);
   }
 
@@ -92,28 +104,154 @@ const groups = [...new Set(PERTURBATIONS.map((p) => p.group))].map((group) => ({
     height: 100%;
   }
 
-  .lab-readout,
-  .lab-loading {
+  /* The camera under test, framed like a monitor on a test bench. */
+  .lab-hud {
     position: absolute;
-    left: 1rem;
-    padding: 0.4rem 0.6rem;
-    background: rgba(15, 23, 32, 0.82);
+    inset: 0;
+    pointer-events: none;
     color: #ffcf33;
     font-family: var(--mono);
-    font-size: 0.75rem;
+    font-size: 0.6875rem;
+    letter-spacing: 0.04em;
   }
 
+  .lab-hud p {
+    position: absolute;
+    margin: 0;
+    padding: 0.35rem 0.55rem;
+    background: rgba(15, 23, 32, 0.78);
+  }
+
+  .lab-corner {
+    position: absolute;
+    width: 1.4rem;
+    height: 1.4rem;
+    border: 0 solid rgba(250, 250, 248, 0.85);
+  }
+
+  .lab-corner[data-corner='tl'] { top: 0.6rem; left: 0.6rem; border-width: 2px 0 0 2px; }
+  .lab-corner[data-corner='tr'] { top: 0.6rem; right: 0.6rem; border-width: 2px 2px 0 0; }
+  .lab-corner[data-corner='bl'] { bottom: 0.6rem; left: 0.6rem; border-width: 0 0 2px 2px; }
+  .lab-corner[data-corner='br'] { right: 0.6rem; bottom: 0.6rem; border-width: 0 2px 2px 0; }
+
   .lab-readout {
-    top: 1rem;
+    bottom: 1.2rem;
+    left: 1.2rem;
+    max-width: calc(100% - 12rem);
+    font-size: 0.75rem;
+    overflow-wrap: anywhere;
+  }
+
+  .lab-rec {
+    top: 1.2rem;
+    left: 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: var(--paper-bright);
+  }
+
+  .lab-rec i {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    background: #e5484d;
+  }
+
+  .lab-hud[data-playing='true'] .lab-rec i {
+    animation: lab-blink 1.2s steps(1, end) infinite;
+  }
+
+  .lab-hud[data-playing='false'] .lab-rec i {
+    background: var(--muted-dark);
+  }
+
+  @keyframes lab-blink {
+    50% { opacity: 0; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .lab-hud[data-playing='true'] .lab-rec i {
+      animation: none;
+    }
+  }
+
+  .lab-meter {
+    right: 1.2rem;
+    bottom: 1.2rem;
+    display: flex;
+    align-items: flex-end;
+    gap: 3px;
+    height: 1.9rem;
+  }
+
+  .lab-meter span {
+    margin-right: 0.35rem;
+    align-self: center;
+    color: var(--paper-bright);
+  }
+
+  .lab-meter i {
+    width: 0.4rem;
+    background: rgba(250, 250, 248, 0.25);
+  }
+
+  .lab-meter i[data-n='0'] { height: 20%; }
+  .lab-meter i[data-n='1'] { height: 40%; }
+  .lab-meter i[data-n='2'] { height: 60%; }
+  .lab-meter i[data-n='3'] { height: 80%; }
+  .lab-meter i[data-n='4'] { height: 100%; }
+
+  .lab-meter[data-scale='0'] i[data-n='0'],
+  .lab-meter[data-scale='1'] i:is([data-n='0'], [data-n='1']),
+  .lab-meter[data-scale='2'] i:is([data-n='0'], [data-n='1'], [data-n='2']),
+  .lab-meter[data-scale='3'] i:not([data-n='4']),
+  .lab-meter[data-scale='4'] i {
+    background: #ffcf33;
+  }
+
+  .lab-tc {
+    top: 1.2rem;
+    right: 1.2rem;
+    color: var(--paper-bright);
+    font-variant-numeric: tabular-nums;
   }
 
   .lab-loading {
-    bottom: 1rem;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    padding: 0.4rem 0.6rem;
+    background: rgba(15, 23, 32, 0.82);
     color: var(--paper-bright);
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    transform: translate(-50%, -50%);
   }
 
   .lab-loading[hidden] {
     display: none;
+  }
+
+  @media (max-width: 54rem) {
+    .lab-stage {
+      aspect-ratio: 1;
+      width: min(100%, 58svh);
+      margin-inline: auto;
+    }
+
+    .lab-controls {
+      margin-top: 0;
+    }
+
+    /* The scale control right below says the same; the call gets the full width. */
+    .lab-meter {
+      display: none;
+    }
+
+    .lab-readout {
+      max-width: calc(100% - 2.4rem);
+    }
   }
 
   .lab-fallback {
@@ -236,6 +374,33 @@ const groups = [...new Set(PERTURBATIONS.map((p) => p.group))].map((group) => ({
     border-color: var(--ink);
     background: var(--ink);
     color: #ffcf33;
+  }
+
+  /* Scale as a level meter: each step a taller bar, lit up to the chosen one. */
+  .lab-scale span {
+    position: relative;
+    align-content: end;
+    min-height: 3.6rem;
+    padding-bottom: 0.3rem;
+    font-size: 0.8rem;
+  }
+
+  .lab-scale b {
+    position: absolute;
+    right: 28%;
+    bottom: 1.6rem;
+    left: 28%;
+    height: calc(var(--h) * 0.55);
+    background: var(--line);
+    transition: background-color 150ms ease;
+  }
+
+  .lab-scale label:has(~ label input:checked) b {
+    background: var(--ink);
+  }
+
+  .lab-scale input:checked + span b {
+    background: #ffcf33;
   }
 
   .lab-step:hover,

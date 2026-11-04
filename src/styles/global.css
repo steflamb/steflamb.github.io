@@ -2508,6 +2508,13 @@
   }
 
   @media (max-width: 54rem) {
+    /* Snapped or started, a demo's scene sits just under the 4.5rem header. */
+    .demo-showcase {
+      gap: 1.25rem;
+      padding-block: 1.25rem 2.5rem;
+      scroll-margin-top: 3.75rem;
+    }
+
     .site-header,
     .site-header[data-scrolled] {
       height: 4.5rem;

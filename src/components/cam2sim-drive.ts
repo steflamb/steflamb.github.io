@@ -36,6 +36,12 @@ const mat3 = (m: number[][]) => new THREE.Matrix4().set(...m[0], 0, ...m[1], 0, 
 
 export async function startCam2SimDrive({ root, simCanvas, splatCanvas, recorded, status, autopilot, autoplay }: DriveElements) {
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  // Draw-loop state, declared first: the car model can finish loading and ask for a frame
+  // while the splat renderer is still being imported.
+  let settle = 30;
+  let frameId = 0;
+  let last = performance.now();
+  let visible = true;
   const drive: Drive = await (await fetch('/cam2sim/drive.json')).json();
   const path = drive.path.map(([x, y, yaw, frame]) => ({ x, y, yaw, frame }));
 
@@ -132,6 +138,28 @@ export async function startCam2SimDrive({ root, simCanvas, splatCanvas, recorded
     50,
   );
 
+  // The route bar under the views: each reconstruction segment as a band along the street.
+  const total = along[along.length - 1];
+  const sAtFrame = (frame: number) => {
+    const i = path.findIndex((p) => p.frame >= frame);
+    return along[i === -1 ? path.length - 1 : i];
+  };
+  const track = root.querySelector('#c2s-route-track') as HTMLElement | null;
+  const routeCar = root.querySelector('#c2s-route-car') as HTMLElement | null;
+  const routeMetres = root.querySelector('#c2s-route-m') as HTMLElement | null;
+  const bands = drive.splits.map((split, k) => {
+    const band = document.createElement('i');
+    band.className = 'c2s-seg';
+    const from = sAtFrame(split.from);
+    const to = sAtFrame(split.to);
+    band.style.left = `${(from / total) * 100}%`;
+    band.style.width = `${((to - from) / total) * 100}%`;
+    band.style.bottom = `${k * 5 + 3}px`;
+    band.innerHTML = `<span>${k + 1}</span>`;
+    track?.prepend(band);
+    return band;
+  });
+
   const meshes: (InstanceType<typeof SplatMesh> | null)[] = drive.splits.map(() => null);
   const cameras: (Cameras | null)[] = drive.splits.map(() => null);
   const loading: Promise<void>[] = [];
@@ -164,6 +192,7 @@ export async function startCam2SimDrive({ root, simCanvas, splatCanvas, recorded
       mesh.visible = false;
       splatScene.add(mesh);
       meshes[k] = mesh;
+      settle = 30;
       requestDraw();
     });
     return loading[k];
@@ -216,11 +245,18 @@ export async function startCam2SimDrive({ root, simCanvas, splatCanvas, recorded
     return correction.multiply(fitted(split, pose.x, pose.y, pose.heading));
   }
 
+  let forced = -1;
   function chooseSplit(frame: number) {
+    if (forced !== -1) return forced;
     const current = drive.splits[state.split];
     if (frame >= current.from + 20 && frame <= current.to - 20) return state.split;
-    const k = drive.splits.findIndex((s) => frame >= s.from + 20 && frame <= s.to - 20);
-    return k === -1 ? state.split : k;
+    // Away from the overlaps' edges, the segment whose middle holds this frame; at the very
+    // ends of the street (or after the autopilot wraps round), any segment that holds it.
+    const inner = drive.splits.findIndex((s) => frame >= s.from + 20 && frame <= s.to - 20);
+    if (inner !== -1) return inner;
+    if (frame >= current.from && frame <= current.to) return state.split;
+    const any = drive.splits.findIndex((s) => frame >= s.from && frame <= s.to);
+    return any === -1 ? state.split : any;
   }
 
   let lastFrameName = '';
@@ -274,13 +310,25 @@ export async function startCam2SimDrive({ root, simCanvas, splatCanvas, recorded
     const k = chooseSplit(path[pose.i].frame);
     state.split = k;
     loadSplit(k);
+    // Preload the segment that comes next: the following one near the end of this one, or,
+    // on autopilot, the first one again before the loop wraps round.
+    const frame = path[pose.i].frame;
     const nextSplit = drive.splits[k + 1];
-    const nearEnd = nextSplit && path[pose.i].frame > nextSplit.from + 10;
+    const preload = nextSplit
+      ? frame > nextSplit.from + 10
+        ? k + 1
+        : -1
+      : auto && state.s > along[along.length - 1] - 30
+        ? 0
+        : -1;
     drive.splits.forEach((_, n) => {
       if (n === k) return;
-      if (n === k + 1 && nearEnd) loadSplit(n);
+      if (n === preload) loadSplit(n);
       else releaseSplit(n);
     });
+    bands.forEach((band, n) => (band.dataset.state = n === k && meshes[n] ? 'active' : meshes[n] || loading[n] ? 'loaded' : ''));
+    if (routeCar) routeCar.style.left = `${(state.s / total) * 100}%`;
+    if (routeMetres) routeMetres.textContent = `${Math.round(state.s)} m`;
     if (meshes[k] && cameras[k]) {
       meshes.forEach((m, n) => m && (m.visible = n === k));
       cameraPose(k, pose).decompose(splatCamera.position, splatCamera.quaternion, new THREE.Vector3());
@@ -300,14 +348,16 @@ export async function startCam2SimDrive({ root, simCanvas, splatCanvas, recorded
       status.textContent = `Loading segment ${k + 1} of 3…`;
     }
 
-    if (running()) frameId = requestAnimationFrame(draw);
+    // Spark sorts the splats in a worker, a frame or more behind; keep drawing for a moment
+    // after the car stops or a segment swaps in, so the last frame shown is a sorted one.
+    if (running()) settle = 30;
+    else if (settle > 0) settle--;
+    if (running() || (settle > 0 && visible && !document.hidden)) frameId = requestAnimationFrame(draw);
   }
 
-  let frameId = 0;
-  let last = performance.now();
-  let visible = true;
   const running = () => visible && !document.hidden && (auto || state.speed > 0.01 || Object.values(input).some(Boolean));
   function requestDraw() {
+    settle = 30;
     if (!frameId) {
       last = performance.now();
       frameId = requestAnimationFrame(draw);
@@ -325,6 +375,9 @@ export async function startCam2SimDrive({ root, simCanvas, splatCanvas, recorded
     }
     simCamera.aspect = simCanvas.clientWidth / Math.max(1, simCanvas.clientHeight);
     simCamera.updateProjectionMatrix();
+    // Same vertical field of view as the recorded camera, cropped to the pane's shape.
+    splatCamera.aspect = splatCanvas.clientWidth / Math.max(1, splatCanvas.clientHeight);
+    splatCamera.updateProjectionMatrix();
     requestDraw();
   }
   new ResizeObserver(resize).observe(root);
@@ -390,6 +443,18 @@ export async function startCam2SimDrive({ root, simCanvas, splatCanvas, recorded
       setAuto(false);
       status.textContent = `The graphics card dropped the ${name}. Reload the page to drive again.`;
     });
+  }
+
+  if (import.meta.env.DEV) {
+    // Test hook: jump along the street.
+    (root as HTMLElement & { c2sJump?: (s: number, k?: number) => void }).c2sJump = (s: number, k?: number) => {
+      forced = k ?? -1;
+      state.s = s;
+      state.offset = 0;
+      state.heading = 0;
+      settle = 30;
+      requestDraw();
+    };
   }
 
   await loadSplit(0);

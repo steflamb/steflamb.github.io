@@ -7,7 +7,7 @@
   <div class="pv-stage">
     <figure class="pv-pane pv-map-pane">
       <svg class="pv-map" id="pv-map" role="img" aria-label="Map of Guerickestraße with the nominal run and the selected perturbed run"></svg>
-      <figcaption>Recorded trajectory</figcaption>
+      <figcaption><b>A</b> Recorded trajectory</figcaption>
       <ul class="pv-legend" aria-label="Distance from the nominal run">
         <li><i style="background:#2f6f4f"></i>&lt; 0.5 m</li>
         <li><i style="background:#e0a800"></i>&lt; 1.2 m</li>
@@ -21,8 +21,10 @@
     </figure>
     <figure class="pv-pane">
       <canvas id="pv-canvas" aria-hidden="true"></canvas>
-      <figcaption>Simulator replay, bird's-eye</figcaption>
+      <figcaption><b>B</b> Simulator replay</figcaption>
+      <p class="pv-stamp" id="pv-stamp" aria-hidden="true" hidden></p>
       <p class="pv-readout" id="pv-readout" aria-hidden="true">Loading the runs…</p>
+      <div class="pv-timeline" aria-hidden="true"><i id="pv-progress"></i></div>
     </figure>
   </div>
 
@@ -45,7 +47,14 @@
         </div>
       </fieldset>
       <button type="button" class="pv-play" id="pv-play" aria-pressed="true">Pause</button>
-      <dl class="pv-card" id="pv-card" aria-live="polite"></dl>
+      <section class="pv-report" aria-labelledby="pv-report-title">
+        <header class="pv-report-head">
+          <p class="pv-report-title" id="pv-report-title">Run report <span id="pv-report-id"></span></p>
+          <p class="pv-report-stamp" id="pv-report-stamp"></p>
+        </header>
+        <div class="pv-completion" aria-hidden="true"><i id="pv-completion"></i></div>
+        <dl class="pv-card" id="pv-card" aria-live="polite"></dl>
+      </section>
       <p class="pv-note">
         Trajectories, outcomes and errors are the processed on-vehicle results published with
         <a href="https://github.com/ast-fortiss-tum/pertOV" target="_blank" rel="noreferrer">PertOV</a>.
@@ -61,7 +70,7 @@
 <style>
   .pv {
     grid-template-columns: 1fr;
-    gap: clamp(1.5rem, 3vw, 2.5rem);
+    gap: clamp(1.25rem, 3vw, 2.5rem);
   }
 
   .pv-stage {
@@ -75,7 +84,7 @@
   .pv-pane {
     position: relative;
     margin: 0;
-    aspect-ratio: 16 / 10;
+    aspect-ratio: 4 / 3;
     overflow: hidden;
     background: #e9e7df;
   }
@@ -100,13 +109,89 @@
 
   .pv-pane figcaption {
     top: 0.8rem;
+    display: flex;
+    gap: 0.5rem;
     letter-spacing: 0.06em;
     text-transform: uppercase;
   }
 
+  .pv-pane figcaption b {
+    color: var(--muted-dark);
+    font-weight: 500;
+  }
+
   .pv-readout {
-    bottom: 0.8rem;
+    bottom: 1.1rem;
     color: #ffcf33;
+  }
+
+  /* How far into the recording the replay is. */
+  .pv-timeline {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    height: 4px;
+    background: rgba(15, 23, 32, 0.5);
+  }
+
+  .pv-timeline i {
+    display: block;
+    width: 0;
+    height: 100%;
+    background: #ffcf33;
+  }
+
+  /* The run's verdict, stamped on the replay like on an incident report. */
+  .pv-stamp,
+  .pv-report-stamp {
+    margin: 0;
+    padding: 0.3rem 0.55rem;
+    border: 2px solid currentColor;
+    font-family: var(--mono);
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .pv-stamp {
+    position: absolute;
+    top: 0.8rem;
+    right: 0.8rem;
+    background: rgba(250, 250, 248, 0.92);
+    font-size: 0.75rem;
+    transform: rotate(-3deg);
+  }
+
+  .pv-stamp[hidden] {
+    display: none;
+  }
+
+  .pv-stamp[data-ok='true'],
+  .pv-report-stamp[data-ok='true'] {
+    color: #2f6f4f;
+  }
+
+  .pv-stamp[data-ok='false'],
+  .pv-report-stamp[data-ok='false'] {
+    color: #b3001b;
+  }
+
+  .pv-map :global(.pv-scalebar) {
+    stroke: var(--ink);
+    fill: none;
+    vector-effect: non-scaling-stroke;
+    stroke-width: 1.5;
+  }
+
+  .pv-map :global(.pv-north) {
+    fill: var(--ink);
+  }
+
+  .pv-map :global(.pv-maptext) {
+    fill: var(--ink);
+    font-family: var(--mono);
   }
 
   .pv-legend {
@@ -299,13 +384,60 @@
     outline-offset: 3px;
   }
 
+  .pv-report {
+    border: 1px solid var(--ink);
+    background: var(--paper-bright);
+  }
+
+  .pv-report-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.7rem 0.9rem;
+    border-bottom: 1px solid var(--ink);
+  }
+
+  .pv-report-title {
+    margin: 0;
+    font-family: var(--mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .pv-report-title span {
+    color: var(--muted);
+  }
+
+  .pv-report-stamp {
+    font-size: 0.6875rem;
+    transform: rotate(-2deg);
+  }
+
+  .pv-report-stamp:empty {
+    display: none;
+  }
+
+  .pv-completion {
+    height: 6px;
+    background: var(--line);
+  }
+
+  .pv-completion i {
+    display: block;
+    width: 0;
+    height: 100%;
+    background: var(--ink);
+    transition: width 400ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
   .pv-card {
     display: grid;
     grid-template-columns: auto 1fr;
     gap: 0.45rem 1rem;
-    padding-block: 1rem;
-    border-top: 1px solid var(--line);
-    border-bottom: 1px solid var(--line);
+    margin: 0;
+    padding: 0.9rem;
     font-size: 0.85rem;
   }
 
@@ -341,6 +473,32 @@
     .pv-stage,
     .pv-copy {
       grid-template-columns: 1fr;
+    }
+
+    .pv-stage {
+      width: min(100%, 28svh * 16 / 10);
+      margin-inline: auto;
+    }
+
+    .pv-pane {
+      aspect-ratio: 16 / 10;
+    }
+
+    .pv-legend {
+      top: auto;
+      right: auto;
+      bottom: 0.6rem;
+      left: 0.6rem;
+      display: flex;
+      gap: 0.6rem;
+      padding: 0.3rem 0.5rem;
+      font-size: 0.625rem;
+    }
+
+    .pv-attribution {
+      top: 0;
+      bottom: auto;
+      font-size: 0.5625rem;
     }
   }
 </style>

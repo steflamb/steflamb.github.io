@@ -93,6 +93,40 @@ export async function startPertovReplay(el: ReplayElements) {
   const runLayer = node('g', {});
   const endMarker = node('g', { class: 'pv-end' });
   const carMarker = node('circle', { r: 1.6, class: 'pv-car' });
+  const furniture = node('g', {});
+
+  // The view box grown to the pane's shape, so the map fills it and its corners are the
+  // pane's corners; then a north arrow and a true-length scale bar in one of them.
+  const compact = window.matchMedia('(max-width: 54rem)');
+  function fitMap() {
+    const w = el.mapSvg.clientWidth;
+    const h = el.mapSvg.clientHeight;
+    if (!w || !h) return;
+    const fit = { ...box };
+    if (w / h > box.w / box.h) {
+      fit.w = box.h * (w / h);
+      fit.x = box.x - (fit.w - box.w) / 2;
+    } else {
+      fit.h = box.w / (w / h);
+      fit.y = box.y - (fit.h - box.h) / 2;
+    }
+    el.mapSvg.setAttribute('viewBox', `${fit.x} ${fit.y} ${fit.w} ${fit.h}`);
+    const unit = fit.w / w; // map metres per screen pixel
+    const length = [10, 20, 25, 50, 100].reduce((a, b) => (Math.abs(b - fit.w * 0.16) < Math.abs(a - fit.w * 0.16) ? b : a));
+    const margin = 14 * unit;
+    const right = compact.matches;
+    const x0 = right ? fit.x + fit.w - margin - length : fit.x + margin;
+    const y0 = fit.y + fit.h - margin;
+    const tick = 5 * unit;
+    furniture.replaceChildren();
+    node('path', { d: `M${x0},${y0 - tick}V${y0}H${x0 + length}V${y0 - tick}M${x0 + length / 2},${y0}v${-tick * 0.6}`, class: 'pv-scalebar' }, furniture);
+    node('text', { x: x0 + length / 2, y: y0 - tick - 3 * unit, 'text-anchor': 'middle', 'font-size': 10 * unit, class: 'pv-maptext' }, furniture).textContent = `${length} m`;
+    const nx = right ? x0 + length - 4 * unit : x0 + 4 * unit;
+    const ny = y0 - tick - 30 * unit;
+    node('path', { d: `M${nx},${ny - 9 * unit}L${nx + 4.5 * unit},${ny + 4 * unit}L${nx},${ny + 1.5 * unit}L${nx - 4.5 * unit},${ny + 4 * unit}Z`, class: 'pv-north' }, furniture);
+    node('text', { x: nx, y: ny - 12 * unit, 'text-anchor': 'middle', 'font-size': 10 * unit, class: 'pv-maptext' }, furniture).textContent = 'N';
+  }
+  new ResizeObserver(fitMap).observe(el.mapSvg);
 
   const nominalXY = nominal.pts.map((p) => new THREE.Vector2(p[1], p[2]));
   const distanceToNominal = (x: number, y: number) => {
@@ -177,6 +211,20 @@ export async function startPertovReplay(el: ReplayElements) {
   }
 
   // --- Bird's-eye replay in the simulator: Fortuna on the OSM street, camera following ---
+
+  const stamp = el.root.querySelector('#pv-stamp') as HTMLElement;
+  const reportStamp = el.root.querySelector('#pv-report-stamp') as HTMLElement;
+  const reportId = el.root.querySelector('#pv-report-id') as HTMLElement;
+  const completionBar = el.root.querySelector('#pv-completion') as HTMLElement;
+  const progress = el.root.querySelector('#pv-progress') as HTMLElement;
+  const VERDICT: Record<string, string> = {
+    n: 'Completed',
+    cc: 'Collision',
+    os: 'Oversteer',
+    us: 'Understeer',
+    eo: 'Erratic start',
+    r: 'Off the road',
+  };
 
   const renderer = new THREE.WebGLRenderer({ canvas: el.canvas, antialias: true });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
@@ -302,6 +350,9 @@ export async function startPertovReplay(el: ReplayElements) {
     carMarker.setAttribute('cx', String(pose.x));
     carMarker.setAttribute('cy', String(-pose.y));
     el.readout.textContent = `${run.fn}(scale=${run.scale}) · ${Math.min(time, end).toFixed(1)} s`;
+    progress.style.width = `${end ? (Math.min(time, end) / end) * 100 : 0}%`;
+    // The verdict lands once the replay reaches the end of the recording.
+    stamp.hidden = time < end;
 
     if (playing && visible && !document.hidden) frameId = requestAnimationFrame(draw);
   }
@@ -327,6 +378,13 @@ export async function startPertovReplay(el: ReplayElements) {
       ['Cross-track error', r.meanCte == null ? '—' : `${r.meanCte.toFixed(2)} m mean · ${r.maxCte!.toFixed(2)} m max`],
       ['Recorded', r.pts.length ? `${r.duration.toFixed(1)} s` : 'No trajectory: the vehicle did not get under way'],
     ];
+    const verdict = r.code ? VERDICT[r.code] ?? r.outcome : 'Not reported';
+    for (const target of [stamp, reportStamp]) {
+      target.textContent = verdict;
+      target.dataset.ok = String(!failed);
+    }
+    reportId.textContent = r.paper ?? '';
+    completionBar.style.width = `${r.completion ?? 0}%`;
     el.card.replaceChildren(
       ...rows.flatMap(([k, v]) => {
         const dt = document.createElement('dt');
