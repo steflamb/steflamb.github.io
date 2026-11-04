@@ -1,0 +1,147 @@
+---
+// A video split into steps: each button plays one segment of the video, then holds its last
+// frame. Used for the Foresee and ICST 2024 talk animations on the demos page.
+export interface Step {
+  label: string;
+  start: number; // seconds into the video
+  end: number;
+  rate?: number; // playback speed for this step
+  hold?: number; // minimum seconds the step lasts, holding the last frame
+  row?: number; // buttons are grouped into rows; each row's buttons share it evenly
+  note: string;
+}
+interface Props {
+  src: string;
+  poster: string;
+  width: number;
+  height: number;
+  label: string;
+  steps: Step[];
+  prompt: string;
+  sound?: boolean; // play with audio (narrated talks), with a mute toggle
+  youtube?: string; // link to the full video on YouTube
+}
+const { src, poster, width, height, label, steps, prompt, sound = false, youtube } = Astro.props;
+const SPEAKER = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5L6 9H3v6h3l5 4z" fill="currentColor" stroke="none"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/></svg>';
+const numbered = steps.map((step, i) => ({ ...step, num: String(i + 1).padStart(2, '0') }));
+const rows = [...new Set(numbered.map((s) => s.row ?? 1))].sort().map((r) => numbered.filter((s) => (s.row ?? 1) === r));
+---
+
+<div class="step-player" data-step-player>
+  <div class="video-frame" style={`aspect-ratio: ${width} / ${height};`}>
+    {sound && (
+      <span class="step-sound-badge"><Fragment set:html={SPEAKER} /> Narrated, with sound</span>
+    )}
+    <video src={src} poster={poster} muted={!sound} playsinline preload="metadata" aria-label={`${label}. Pick a step below to play that part.`}></video>
+  </div>
+  <div class="step-buttons" role="group" aria-label={`${label}: steps`}>
+    {rows.map((row) => (
+      <div class="step-row" style={`--cols: ${row.length}`}>
+        {row.map((step) => (
+          <button
+            type="button"
+            class="step-button"
+            data-start={step.start}
+            data-end={step.end}
+            data-rate={step.rate ?? 1}
+            data-hold={step.hold}
+            data-note={step.note}
+            aria-pressed="false"
+          >
+            <span class="step-button-num">{step.num}</span>
+            <span class="step-button-label">{step.label}</span>
+            <span class="step-button-bar" aria-hidden="true"><i></i></span>
+          </button>
+        ))}
+      </div>
+    ))}
+  </div>
+  <div class="step-footer">
+    <p class="step-note" aria-live="polite">{prompt}</p>
+    <div class="step-actions">
+      {sound && (
+        <button type="button" class="step-mute" aria-pressed="false" data-mute><Fragment set:html={SPEAKER} /> <span data-mute-label>Sound on</span></button>
+      )}
+      {youtube && (
+        <a class="step-mute" href={youtube} target="_blank" rel="noreferrer">Watch on YouTube <span aria-hidden="true">↗︎</span></a>
+      )}
+    </div>
+  </div>
+</div>
+
+<script>
+  // Each step button plays its own part of the video, then holds the last frame.
+  document.querySelectorAll<HTMLElement>('[data-step-player]').forEach((root) => {
+    const video = root.querySelector('video')!;
+    const note = root.querySelector('.step-note')!;
+    const buttons = [...root.querySelectorAll<HTMLButtonElement>('.step-button')];
+    let start = 0;
+    let end = 0;
+    let rate = 1;
+    let playTime = 0; // seconds of real time the segment takes at its rate
+    let total = 0; // playTime, or longer if the step holds its last frame
+    let heldAt = 0; // when the video stopped on its last frame
+    let active: HTMLButtonElement | null = null;
+    let frame = 0;
+    let token = 0;
+
+    // The bar follows the video itself while it plays, then the clock while a step holds its
+    // last frame, so the two can't drift apart. The loop keeps running until the video has
+    // been stopped at the segment's end.
+    function tick() {
+      frame = 0;
+      if (!active) return;
+      if (!heldAt && (video.currentTime >= end || video.ended)) {
+        video.pause();
+        video.currentTime = Math.min(end, video.duration || end);
+        heldAt = performance.now();
+      }
+      const played = heldAt
+        ? playTime + (performance.now() - heldAt) / 1000
+        : Math.max(0, video.currentTime - start) / rate;
+      const progress = Math.min(1, played / total);
+      active.style.setProperty('--progress', String(progress));
+      if (!heldAt || progress < 1) frame = requestAnimationFrame(tick);
+    }
+
+    // Backstop for when the tab is in the background and animation frames are throttled.
+    video.addEventListener('timeupdate', () => {
+      if (active && !heldAt && video.currentTime >= end) tick();
+    });
+
+    function play(button: HTMLButtonElement) {
+      buttons.forEach((b) => {
+        b.setAttribute('aria-pressed', String(b === button));
+        b.style.setProperty('--progress', '0');
+      });
+      cancelAnimationFrame(frame);
+      frame = 0;
+      const current = ++token;
+      active = button;
+      start = Number(button.dataset.start);
+      end = Number(button.dataset.end);
+      rate = Number(button.dataset.rate) || 1;
+      playTime = (end - start) / rate;
+      total = Math.max(playTime, Number(button.dataset.hold) || 0);
+      heldAt = 0;
+      note.textContent = button.dataset.note ?? '';
+      video.preload = 'auto';
+      video.pause();
+      video.currentTime = start;
+      video.playbackRate = rate;
+      video.play().then(() => {
+        if (current !== token) return;
+        frame = requestAnimationFrame(tick);
+      }).catch(() => {});
+    }
+
+    buttons.forEach((button) => button.addEventListener('click', () => play(button)));
+
+    const mute = root.querySelector<HTMLButtonElement>('[data-mute]');
+    mute?.addEventListener('click', () => {
+      video.muted = !video.muted;
+      mute.setAttribute('aria-pressed', String(video.muted));
+      mute.querySelector('[data-mute-label]')!.textContent = video.muted ? 'Muted' : 'Sound on';
+    });
+  });
+</script>

@@ -1608,17 +1608,22 @@
     font-size: 0.9rem;
   }
 
-  /* Foresee step player on the demos page. */
-  .foresee-steps {
+  /* Step players on the demos page (Foresee, ICST 2024). */
+  .step-buttons {
     display: grid;
-    grid-template-columns: repeat(5, minmax(0, 1fr));
     gap: 1px;
     margin-top: 0.75rem;
     background: var(--line);
     border: 1px solid var(--line);
   }
 
-  .foresee-step {
+  .step-row {
+    display: grid;
+    grid-template-columns: repeat(var(--cols, 5), minmax(0, 1fr));
+    gap: 1px;
+  }
+
+  .step-button {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
@@ -1633,46 +1638,106 @@
     transition: background 150ms ease;
   }
 
-  .foresee-step-wide {
-    grid-column: 1 / -1;
-  }
-
-  .foresee-step:hover,
-  .foresee-step:focus-visible {
+  .step-button:hover,
+  .step-button:focus-visible {
     background: var(--paper-bright);
   }
 
-  .foresee-step[aria-pressed='true'] {
+  .step-button[aria-pressed='true'] {
     background: var(--ink);
     color: var(--paper);
   }
 
-  .foresee-step-num {
+  .step-button-num {
     color: var(--signal-ink);
     font-family: var(--mono);
     font-size: 0.625rem;
   }
 
-  .foresee-step-label {
+  .step-button-label {
     font-size: 0.95rem;
     font-weight: 560;
   }
 
-  .foresee-step-bar {
+  .step-button-bar {
     width: 100%;
     height: 2px;
     margin-top: 0.35rem;
     background: rgba(127, 127, 127, 0.25);
   }
 
-  .foresee-step-bar i {
+  .step-button-bar i {
     display: block;
     width: calc(var(--progress, 0) * 100%);
     height: 100%;
     background: var(--signal);
   }
 
-  .foresee-note {
+  .step-footer {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .step-sound-badge {
+    position: absolute;
+    z-index: 1;
+    top: 0.6rem;
+    right: 0.6rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.3rem 0.55rem;
+    background: rgba(15, 23, 32, 0.78);
+    color: #fff;
+    font-family: var(--mono);
+    font-size: 0.625rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    pointer-events: none;
+  }
+
+  .step-mute {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+
+  .step-mute[aria-pressed='true'] {
+    color: var(--muted);
+  }
+
+  .step-actions {
+    display: flex;
+    flex-shrink: 0;
+    gap: 0.5rem;
+  }
+
+  a.step-mute {
+    text-decoration: none;
+  }
+
+  .step-mute {
+    flex-shrink: 0;
+    margin-top: 0.75rem;
+    padding: 0.35rem 0.6rem;
+    border: 1px solid var(--line);
+    background: transparent;
+    color: var(--ink);
+    font-family: var(--mono);
+    font-size: 0.625rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+
+  .step-mute:hover,
+  .step-mute:focus-visible {
+    border-color: var(--ink);
+  }
+
+  .step-note {
     min-height: 2.8em;
     margin-top: 0.75rem;
     color: var(--muted);
@@ -1680,11 +1745,11 @@
   }
 
   @media (max-width: 38rem) {
-    .foresee-step {
+    .step-button {
       padding: 0.55rem 0.45rem 0.6rem;
     }
 
-    .foresee-step-label {
+    .step-button-label {
       font-size: 0.8rem;
     }
   }

@@ -4,6 +4,7 @@ import ConceptLab from '../components/ConceptLab.astro';
 import Cam2SimDrive from '../components/Cam2SimDrive.astro';
 import PertovReplay from '../components/PertovReplay.astro';
 import PaperSource from '../components/PaperSource.astro';
+import StepPlayer, { type Step } from '../components/StepPlayer.astro';
 import { publications } from '../data/site';
 
 const realWorldPerturbationPaper = publications.find((p) => p.title.startsWith('Real-World Perturbation Testing'))!;
@@ -15,14 +16,43 @@ const forecastingPaper = publications.find((p) => p.title.startsWith('Misbehavio
 const nanodronePaper = publications.find((p) => p.title.startsWith('Ultra-Low Power'))!;
 const qualityMetricsPaper = publications.find((p) => p.title.startsWith('Assessing Quality Metrics'))!;
 
-// Foresee's pipeline, mapped onto the talk animation (seconds into foresee-demo.mp4).
-const foreseeSteps = [
+// Foresee's pipeline, mapped onto the talk animation (seconds into foresee-steps.mp4).
+const foreseeSteps: Step[] = [
   { label: 'Monitor', start: 3.5, end: 5, rate: 1, note: 'Track the agents around the ego vehicle and forecast where each one is heading.' },
   { label: 'Classify', start: 9.5, end: 29.25, rate: 2, note: 'Label every agent by risk, from minimal to high, from how close its forecast comes to the ego vehicle.' },
   { label: 'Rank', start: 30.25, end: 31.25, rate: 1, note: 'Order the risky agents, so the most promising near miss comes first.' },
   { label: 'Clip', start: 36.25, end: 37.25, rate: 1, note: 'Cut the scenario down to the window around that near miss.' },
   { label: 'Fuzz', start: 41, end: 62.05, rate: 2, note: 'Mutate the clipped scenario, swapping an NPC or changing its path, to push the near miss toward a failure.' },
-  { label: 'Empirical study', start: 62.25, end: 64.5, rate: 1, hold: 5, wide: true, note: 'Evaluated in the CARLA simulator on 5 scenarios and 120 routes, with two driving systems, InterFuser and TransFuser, and 12 Foresee configurations over 3 parameters.' },
+  { label: 'Empirical study', start: 62.25, end: 64.5, rate: 1, hold: 5, row: 2, note: 'Evaluated in the CARLA simulator on 5 scenarios and 120 routes, with two driving systems, InterFuser and TransFuser, and 12 Foresee configurations over 3 parameters.' },
+];
+
+// The ICST 2024 talk, by research question (seconds into icst-steps.mp4: the talk's slides,
+// then its translation examples, with the closing and backup slides cut).
+// The ASE 2025 talk, by chapter (seconds into ase2025-steps.mp4, which starts at the
+// talk's "Motivation" card and ends before its closing card).
+const ase2025Steps: Step[] = [
+  { label: 'Motivation', start: 0, end: 138.4, note: 'Real-world testing is realistic but costly and risky; simulation is cheap but only approximates reality. The difference in sensors, physics, and scenarios is the reality gap.' },
+  { label: 'Execution levels', start: 138.5, end: 217.4, note: 'Four ways to run the same test, mixing simulated and real sensors and actuation. The goal: see how far SiL, ViL, and MR mitigate the behaviour, actuation, and perception gaps.' },
+  { label: 'Our platform', start: 217.5, end: 358.9, note: 'The small-scale lab, the Donkey Car, and the digital twin built from a 3D scan of the lab.' },
+  { label: 'Systems under test', start: 359, end: 428.4, note: 'Two driving systems: a modular perception–planning–control pipeline and an end-to-end model (DAVE-2).' },
+  { label: 'Framework', start: 428.5, end: 495.4, note: 'How the levels are compared, on lane keeping, obstacle avoidance, and adaptive cruise control.' },
+  { label: 'SiL', start: 495.5, end: 517.8, row: 2, note: 'Simulator-in-the-loop: simulated sensors, simulated actuation.' },
+  { label: 'ViL', start: 517.9, end: 544.1, row: 2, note: 'Vehicle-in-the-loop: simulated sensors, real actuation.' },
+  { label: 'MR', start: 544.2, end: 570.4, row: 2, note: 'Mixed reality: mixed sensors, real actuation.' },
+  { label: 'RW', start: 570.5, end: 596.7, row: 2, note: 'Real world: real sensors, real actuation.' },
+  { label: 'Research questions', start: 597, end: 637.9, row: 3, note: 'RQ1: the behaviour gap. RQ2: the actuation gap. RQ3: the perception gap.' },
+];
+
+const icstSteps: Step[] = [
+  { label: 'Problem', start: 5.05, end: 38.95, rate: 1, note: 'Simulators don’t reproduce real camera images. Image-to-image translation makes simulated frames look real, and image-quality metrics are meant to say whether it worked.' },
+  { label: 'Method', start: 39.05, end: 68.95, rate: 1, note: '2 perception-based driving tasks, 3 driving-behaviour metrics, 2 translation architectures (CycleGAN and pix2pix), and 13 image-quality metrics.' },
+  { label: 'Transferability', start: 69.05, end: 103.95, rate: 1, note: 'RQ1: does translation mitigate the gap equally across tasks? Pix2pix failed on vehicle detection, confidence was not a suitable metric, and attention error always improved.' },
+  { label: 'Correlation', start: 104.05, end: 148.95, rate: 1, note: 'RQ2: do image-quality metrics track driving behaviour? IS and FID were inconsistent across tasks while KID was consistent; single-image metrics had weak or negligible correlation, several in the wrong direction.' },
+  { label: 'Fine-tuning', start: 149.05, end: 178.95, rate: 1, note: 'RQ3: fine-tuning a semantic-segmentation metric for the task made it correlate on both domains. OC-TSS was the only metric with moderate correlation.' },
+  { label: 'pix2pix · full scale', start: 195.05, end: 252.25, row: 2, note: 'Vehicle detection on real driving data: simulated frame (top), pix2pix translation (middle), and the real frame (bottom).' },
+  { label: 'CycleGAN · full scale', start: 252.4, end: 297.9, row: 2, note: 'Vehicle detection on real driving data: simulated frame (top), CycleGAN translation (middle), and the real frame (bottom).' },
+  { label: 'pix2pix · small scale', start: 309.65, end: 330.75, row: 2, note: 'Lane keeping on the small-scale track: simulated frame (top), pix2pix translation (middle), and the real frame (bottom).' },
+  { label: 'CycleGAN · small scale', start: 330.85, end: 351.9, row: 2, note: 'Lane keeping on the small-scale track: simulated frame (top), CycleGAN translation (middle), and the real frame (bottom).' },
 ];
 ---
 
@@ -75,15 +105,17 @@ const foreseeSteps = [
         </Cam2SimDrive>
 
         <div class="demo-showcase" data-reveal>
-          <div class="video-frame">
-            <iframe
-              src="https://www.youtube-nocookie.com/embed/-YGdyNXgKb8"
-              title="ASE 2025 demo video"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-              allowfullscreen
-              loading="lazy"
-            ></iframe>
-          </div>
+          <StepPlayer
+            src="/videos/ase2025-steps.mp4"
+            poster="/images/ase2025-steps-poster.jpg"
+            width={1280}
+            height={684}
+            label="ASE 2025 talk on the reality gap"
+            steps={ase2025Steps}
+            prompt="A narrated talk, so turn your sound on. Pick a step to play that part."
+            sound
+            youtube="https://www.youtube.com/watch?v=-YGdyNXgKb8"
+          />
           <div class="demo-showcase-copy">
             <h3>The same reality gap, across four execution levels.</h3>
             <p>
@@ -119,28 +151,15 @@ const foreseeSteps = [
         </PertovReplay>
 
         <div class="demo-showcase" data-reveal>
-          <div class="foresee-player" data-foresee>
-            <div class="video-frame" style="aspect-ratio: 1600 / 864;">
-              <video
-                src="/videos/foresee-steps.mp4"
-                poster="/images/foresee-steps-poster.jpg"
-                muted
-                playsinline
-                preload="metadata"
-                aria-label="Animation of Foresee's pipeline. Pick a step below to play that part."
-              ></video>
-            </div>
-            <div class="foresee-steps" role="group" aria-label="Foresee pipeline steps">
-              {foreseeSteps.map((step, i) => (
-                <button type="button" class:list={['foresee-step', { 'foresee-step-wide': step.wide }]} data-start={step.start} data-end={step.end} data-rate={step.rate} data-hold={step.hold} data-note={step.note} aria-pressed="false">
-                  <span class="foresee-step-num">{String(i + 1).padStart(2, '0')}</span>
-                  <span class="foresee-step-label">{step.label}</span>
-                  <span class="foresee-step-bar" aria-hidden="true"><i></i></span>
-                </button>
-              ))}
-            </div>
-            <p class="foresee-note" aria-live="polite">Pick a step to see what Foresee does there.</p>
-          </div>
+          <StepPlayer
+            src="/videos/foresee-steps.mp4"
+            poster="/images/foresee-steps-poster.jpg"
+            width={1600}
+            height={864}
+            label="Foresee pipeline animation"
+            steps={foreseeSteps}
+            prompt="Pick a step to see what Foresee does there."
+          />
           <div class="demo-showcase-copy">
             <h3>Forecasting near misses to focus fuzzing.</h3>
             <p>
@@ -153,17 +172,15 @@ const foreseeSteps = [
         </div>
 
         <div class="demo-showcase" data-reveal>
-          <div class="video-frame">
-            <video
-              src="/videos/icst-final-demo.mp4"
-              poster="/images/icst-final-poster.jpg"
-              controls
-              muted
-              playsinline
-              preload="none"
-              aria-label="Talk recording for Assessing Quality Metrics for Neural Reality Gap Input Mitigation in Autonomous Driving Testing"
-            ></video>
-          </div>
+          <StepPlayer
+            src="/videos/icst-steps.mp4"
+            poster="/images/icst-steps-poster.jpg"
+            width={1024}
+            height={552}
+            label="ICST 2024 talk on image-quality metrics"
+            steps={icstSteps}
+            prompt="Pick a step to walk through the study."
+          />
           <div class="demo-showcase-copy">
             <h3>Do image-quality metrics track what actually matters?</h3>
             <p>
@@ -203,72 +220,3 @@ const foreseeSteps = [
   </section>
 </BaseLayout>
 
-<script>
-  // Foresee: each step button plays its own part of the animation, then holds the last frame.
-  document.querySelectorAll<HTMLElement>('[data-foresee]').forEach((root) => {
-    const video = root.querySelector('video')!;
-    const note = root.querySelector('.foresee-note')!;
-    const buttons = [...root.querySelectorAll<HTMLButtonElement>('.foresee-step')];
-    let start = 0;
-    let end = 0;
-    let rate = 1;
-    let playTime = 0; // seconds of real time the segment takes at its rate
-    let total = 0; // playTime, or longer if the step holds its last frame
-    let heldAt = 0; // when the video stopped on its last frame
-    let active: HTMLButtonElement | null = null;
-    let frame = 0;
-    let token = 0;
-
-    // The bar follows the video itself while it plays, then the clock while a step holds its
-    // last frame, so the two can't drift apart. The loop keeps running until the video has
-    // been stopped at the segment's end.
-    function tick() {
-      frame = 0;
-      if (!active) return;
-      if (!heldAt && (video.currentTime >= end || video.ended)) {
-        video.pause();
-        video.currentTime = Math.min(end, video.duration || end);
-        heldAt = performance.now();
-      }
-      const played = heldAt
-        ? playTime + (performance.now() - heldAt) / 1000
-        : Math.max(0, video.currentTime - start) / rate;
-      const progress = Math.min(1, played / total);
-      active.style.setProperty('--progress', String(progress));
-      if (!heldAt || progress < 1) frame = requestAnimationFrame(tick);
-    }
-
-    // Backstop for when the tab is in the background and animation frames are throttled.
-    video.addEventListener('timeupdate', () => {
-      if (active && !heldAt && video.currentTime >= end) tick();
-    });
-
-    function play(button: HTMLButtonElement) {
-      buttons.forEach((b) => {
-        b.setAttribute('aria-pressed', String(b === button));
-        b.style.setProperty('--progress', '0');
-      });
-      cancelAnimationFrame(frame);
-      frame = 0;
-      const current = ++token;
-      active = button;
-      start = Number(button.dataset.start);
-      end = Number(button.dataset.end);
-      rate = Number(button.dataset.rate) || 1;
-      playTime = (end - start) / rate;
-      total = Math.max(playTime, Number(button.dataset.hold) || 0);
-      heldAt = 0;
-      note.textContent = button.dataset.note ?? '';
-      video.preload = 'auto';
-      video.pause();
-      video.currentTime = start;
-      video.playbackRate = rate;
-      video.play().then(() => {
-        if (current !== token) return;
-        frame = requestAnimationFrame(tick);
-      }).catch(() => {});
-    }
-
-    buttons.forEach((button) => button.addEventListener('click', () => play(button)));
-  });
-</script>
