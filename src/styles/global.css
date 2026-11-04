@@ -48,24 +48,41 @@
 
 @layer base {
   :root {
-    --ink: #101311;
-    --ink-soft: #1a1e1b;
-    --paper: #f1efe8;
-    --paper-bright: #faf8f1;
-    --muted: #696d67;
-    --muted-dark: #aaa99f;
-    --line: rgba(16, 19, 17, 0.16);
-    --line-dark: rgba(250, 248, 241, 0.17);
-    --signal: #ff6034;
-    --signal-dark: #e7471e;
+    /* Road signage: blue-black ink on cool paper, safety orange for action, lane yellow for demos. */
+    --ink: #0f1720;
+    --ink-soft: #18212b;
+    --paper: #f3f4f1;
+    --paper-bright: #fafaf8;
+    --muted: #5c6470;
+    --muted-dark: #a9b0b8;
+    --line: rgba(15, 23, 32, 0.15);
+    --line-dark: rgba(250, 250, 248, 0.16);
+    --signal: #f05a28;
+    --signal-dark: #d9481a;
     --signal-ink: #b03a0e;
+    --lane: #ffcf33;
     --acid: #d8ff57;
     --max-width: 86rem;
     --content-width: 72rem;
     --gutter: clamp(1.25rem, 4vw, 4.5rem);
     --section-space: clamp(5.5rem, 10vw, 10rem);
-    --sans: "Helvetica Neue", Helvetica, Arial, sans-serif;
-    --mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+    --sans: "Barlow", "Helvetica Neue", Arial, sans-serif;
+    --display: "Barlow Condensed", "Barlow", "Arial Narrow", sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Consolas, monospace;
+  }
+
+  h1,
+  h2,
+  h3,
+  .hero-title,
+  .page-title,
+  .display-title {
+    font-family: var(--display);
+    text-wrap: balance;
+  }
+
+  em {
+    font-style: normal;
   }
 
   html {
@@ -139,7 +156,7 @@
     inset: 0 0 auto;
     height: 5rem;
     border-bottom: 1px solid var(--line-dark);
-    background: rgba(16, 19, 17, 0.96);
+    background: rgba(15, 23, 32, 0.96);
     color: var(--paper-bright);
     transition:
       background-color 180ms ease,
@@ -150,7 +167,7 @@
   .site-header[data-scrolled] {
     height: 4.4rem;
     border-bottom-color: var(--line-dark);
-    background: rgba(16, 19, 17, 0.93);
+    background: rgba(15, 23, 32, 0.93);
     backdrop-filter: blur(14px);
   }
 
@@ -177,7 +194,7 @@
     font-family: var(--mono);
     font-size: 0.7rem;
     font-weight: 700;
-    letter-spacing: -0.08em;
+    letter-spacing: -0.01em;
   }
 
   .wordmark-name {
@@ -196,7 +213,7 @@
     position: relative;
     display: block;
     padding-block: 0.5rem;
-    color: rgba(250, 248, 241, 0.68);
+    color: rgba(250, 250, 248, 0.68);
     font-family: var(--mono);
     font-size: 0.69rem;
     letter-spacing: 0.08em;
@@ -388,17 +405,18 @@
 
   .hero-title {
     max-width: 12ch;
-    font-size: clamp(3.4rem, 5.6vw, 6.5rem);
+    font-size: clamp(3.8rem, 6.4vw, 7.4rem);
     font-weight: 540;
-    letter-spacing: -0.072em;
+    letter-spacing: -0.01em;
     line-height: 0.87;
   }
 
   .hero-title em {
     display: inline-block;
     color: var(--signal);
-    font-family: Georgia, serif;
-    font-weight: 400;
+    font-family: inherit;
+    font-style: normal;
+    font-weight: inherit;
     font-size: 0.82em;
     white-space: nowrap;
   }
@@ -441,7 +459,7 @@
   .hero-intro {
     max-width: 38rem;
     margin-top: clamp(2.2rem, 4vw, 3.5rem);
-    color: #c7c7be;
+    color: #c9ced3;
     font-size: clamp(1rem, 1.5vw, 1.25rem);
     line-height: 1.55;
   }
@@ -489,14 +507,14 @@
     display: grid;
     place-items: center;
     border: 0;
-    background: rgba(16, 19, 17, 0.5);
+    background: rgba(15, 23, 32, 0.5);
     font: inherit;
     cursor: pointer;
   }
 
   .demo-start span {
     padding: 0.85rem 1.4rem;
-    background: #ffd23f;
+    background: #ffcf33;
     color: var(--ink);
     font-weight: 600;
   }
@@ -597,7 +615,7 @@
     width: 0;
     border-left: 2px dotted var(--paper-bright);
     content: '';
-    filter: drop-shadow(0 0 2px rgba(16, 19, 17, 0.6));
+    filter: drop-shadow(0 0 2px rgba(15, 23, 32, 0.6));
   }
 
   .gap-divider::before {
@@ -618,7 +636,7 @@
     place-items: center;
     border-radius: 50%;
     background: var(--paper-bright);
-    box-shadow: 0 4px 18px rgba(16, 19, 17, 0.35);
+    box-shadow: 0 4px 18px rgba(15, 23, 32, 0.35);
     color: var(--ink);
     transform: translate(-50%, -50%);
     transition: transform 160ms cubic-bezier(0.16, 1, 0.3, 1);
@@ -639,7 +657,7 @@
   }
 
   .gap-divider:focus-visible .gap-knob {
-    outline: 3px solid #ffd23f;
+    outline: 3px solid #ffcf33;
     outline-offset: 4px;
   }
 
@@ -651,11 +669,11 @@
     display: grid;
     justify-items: center;
     gap: 0.2rem;
-    color: #ffd23f;
+    color: #ffcf33;
     font-size: 1.15rem;
     font-weight: 600;
     letter-spacing: -0.02em;
-    text-shadow: 0 1px 10px rgba(16, 19, 17, 0.55);
+    text-shadow: 0 1px 10px rgba(15, 23, 32, 0.55);
     white-space: nowrap;
   }
 
@@ -691,7 +709,7 @@
     position: absolute;
     bottom: 1.25rem;
     padding: 0.4rem 0.6rem;
-    background: rgba(16, 19, 17, 0.82);
+    background: rgba(15, 23, 32, 0.82);
     color: var(--paper-bright);
     font-family: var(--mono);
     font-size: 0.6875rem;
@@ -701,7 +719,7 @@
 
   .gap-tag-sim {
     right: 1.25rem;
-    color: #ffd23f;
+    color: #ffcf33;
   }
 
   .hero-visual.is-ready .gap-tag-real {
@@ -821,14 +839,15 @@
     max-width: 15ch;
     font-size: clamp(2.8rem, 6.3vw, 6.5rem);
     font-weight: 520;
-    letter-spacing: -0.065em;
+    letter-spacing: -0.01em;
     line-height: 0.95;
   }
 
   .display-title em {
     color: var(--signal);
-    font-family: Georgia, serif;
-    font-weight: 400;
+    font-family: inherit;
+    font-style: normal;
+    font-weight: inherit;
   }
 
   .section-signal .display-title em {
@@ -887,14 +906,14 @@
     color: var(--signal);
     font-size: clamp(3rem, 5vw, 5rem);
     font-weight: 300;
-    letter-spacing: -0.08em;
+    letter-spacing: -0.01em;
   }
 
   .pillar-card h3 {
     max-width: 12ch;
     font-size: clamp(1.55rem, 2.7vw, 2.3rem);
     font-weight: 560;
-    letter-spacing: -0.04em;
+    letter-spacing: -0.01em;
     line-height: 1;
   }
 
@@ -966,14 +985,15 @@
     margin-block: 3rem;
     font-size: clamp(3.4rem, 6.4vw, 7rem);
     font-weight: 520;
-    letter-spacing: -0.07em;
+    letter-spacing: -0.01em;
     line-height: 0.87;
   }
 
   .fortuna-feature-copy h2 em {
     color: var(--paper-bright);
-    font-family: Georgia, serif;
-    font-weight: 400;
+    font-family: inherit;
+    font-style: normal;
+    font-weight: inherit;
   }
 
   .feature-description {
@@ -984,17 +1004,17 @@
   .feature-metrics {
     display: grid;
     margin-block: 3.5rem;
-    border-top: 1px solid rgba(16, 19, 17, 0.35);
+    border-top: 1px solid rgba(15, 23, 32, 0.35);
     grid-template-columns: repeat(2, 1fr);
   }
 
   .feature-metric {
     padding-block: 1.25rem;
-    border-bottom: 1px solid rgba(16, 19, 17, 0.35);
+    border-bottom: 1px solid rgba(15, 23, 32, 0.35);
   }
 
   .feature-metric:nth-child(odd) {
-    border-right: 1px solid rgba(16, 19, 17, 0.35);
+    border-right: 1px solid rgba(15, 23, 32, 0.35);
     padding-right: 1rem;
   }
 
@@ -1006,7 +1026,7 @@
     display: block;
     font-size: clamp(1.6rem, 3vw, 2.5rem);
     font-weight: 550;
-    letter-spacing: -0.05em;
+    letter-spacing: -0.01em;
     line-height: 1;
   }
 
@@ -1126,7 +1146,7 @@
     margin-block: 0.75rem 1rem;
     font-size: clamp(2.2rem, 4vw, 3.2rem);
     font-weight: 530;
-    letter-spacing: -0.05em;
+    letter-spacing: -0.01em;
     line-height: 0.95;
   }
 
@@ -1181,7 +1201,7 @@
   .research-loop h3 {
     font-size: clamp(1.5rem, 3vw, 2.6rem);
     font-weight: 520;
-    letter-spacing: -0.045em;
+    letter-spacing: -0.01em;
     line-height: 1;
   }
 
@@ -1396,14 +1416,15 @@
     max-width: 10ch;
     font-size: clamp(4rem, 9vw, 9rem);
     font-weight: 520;
-    letter-spacing: -0.075em;
+    letter-spacing: -0.01em;
     line-height: 0.84;
   }
 
   .page-title em {
     color: var(--signal);
-    font-family: Georgia, serif;
-    font-weight: 400;
+    font-family: inherit;
+    font-style: normal;
+    font-weight: inherit;
   }
 
   .page-hero-copy {
@@ -1450,7 +1471,7 @@
   .metric-card {
     min-height: 11rem;
     padding: clamp(1.3rem, 2.8vw, 2.5rem);
-    border-right: 1px solid rgba(16, 19, 17, 0.3);
+    border-right: 1px solid rgba(15, 23, 32, 0.3);
   }
 
   .metric-card:last-child {
@@ -1461,7 +1482,7 @@
     display: block;
     font-size: clamp(2.2rem, 4vw, 4rem);
     font-weight: 540;
-    letter-spacing: -0.065em;
+    letter-spacing: -0.01em;
     line-height: 1;
   }
 
@@ -1512,7 +1533,7 @@
     margin-block: 1rem;
     font-size: clamp(1.6rem, 3vw, 2.4rem);
     font-weight: 530;
-    letter-spacing: -0.05em;
+    letter-spacing: -0.01em;
     line-height: 1.05;
   }
 
@@ -1599,14 +1620,15 @@
     margin-block: 1.7rem 1.4rem;
     font-size: clamp(2.7rem, 5vw, 5.2rem);
     font-weight: 520;
-    letter-spacing: -0.06em;
+    letter-spacing: -0.01em;
     line-height: 0.95;
   }
 
   .architecture-copy h2 em {
     color: var(--signal-dark);
-    font-family: Georgia, serif;
-    font-weight: 400;
+    font-family: inherit;
+    font-style: normal;
+    font-weight: inherit;
   }
 
   .architecture-copy > p:not(.eyebrow) {
@@ -1702,7 +1724,7 @@
   .timeline-content h3 {
     font-size: clamp(1.8rem, 3.6vw, 3.5rem);
     font-weight: 540;
-    letter-spacing: -0.055em;
+    letter-spacing: -0.01em;
     line-height: 1;
   }
 
@@ -1738,7 +1760,7 @@
     margin-top: 0.9rem;
     font-size: clamp(1.65rem, 3vw, 2.5rem);
     font-weight: 530;
-    letter-spacing: -0.05em;
+    letter-spacing: -0.01em;
     line-height: 1.03;
   }
 
@@ -1877,7 +1899,7 @@
     margin-top: 0.6rem;
     font-size: clamp(1.2rem, 2vw, 1.5rem);
     font-weight: 560;
-    letter-spacing: -0.03em;
+    letter-spacing: -0.01em;
   }
 
   .person-card p {
@@ -1982,7 +2004,7 @@
     max-width: 38ch;
     font-size: clamp(1.45rem, 2.8vw, 2.4rem);
     font-weight: 550;
-    letter-spacing: -0.045em;
+    letter-spacing: -0.01em;
     line-height: 1.08;
   }
 
@@ -2085,7 +2107,7 @@
     position: absolute;
     z-index: 2;
     inset: 0;
-    background: linear-gradient(to top, rgba(16, 19, 17, 0.8), transparent 45%);
+    background: linear-gradient(to top, rgba(15, 23, 32, 0.8), transparent 45%);
   }
 
   .about-portrait-label {
@@ -2108,7 +2130,7 @@
     margin-block: 1.5rem 2rem;
     font-size: clamp(2.6rem, 5vw, 5rem);
     font-weight: 530;
-    letter-spacing: -0.065em;
+    letter-spacing: -0.01em;
     line-height: 0.95;
   }
 
@@ -2177,7 +2199,7 @@
     max-width: 10ch;
     font-size: clamp(3.2rem, 7vw, 6.5rem);
     font-weight: 540;
-    letter-spacing: -0.07em;
+    letter-spacing: -0.01em;
     line-height: 0.9;
   }
 
@@ -2209,7 +2231,7 @@
   .cv-entry h3 {
     font-size: clamp(1.25rem, 2vw, 1.7rem);
     font-weight: 580;
-    letter-spacing: -0.035em;
+    letter-spacing: -0.01em;
     line-height: 1.15;
   }
 
@@ -2253,7 +2275,7 @@
     margin-block: 1.6rem 2rem;
     font-size: clamp(2.7rem, 5.8vw, 5.8rem);
     font-weight: 520;
-    letter-spacing: -0.065em;
+    letter-spacing: -0.01em;
     line-height: 0.95;
   }
 
@@ -2292,7 +2314,7 @@
     justify-content: space-between;
     padding-block: 1.3rem;
     border-top: 1px solid var(--line-dark);
-    color: #8f9289;
+    color: #8b939c;
     font-family: var(--mono);
     font-size: 0.6875rem;
     letter-spacing: 0.04em;
@@ -2319,7 +2341,7 @@
     margin-block: 1.5rem;
     font-size: clamp(3rem, 10vw, 8rem);
     font-weight: 520;
-    letter-spacing: -0.07em;
+    letter-spacing: -0.01em;
     line-height: 0.9;
   }
 
@@ -2537,7 +2559,7 @@
       font-family: var(--sans);
       font-size: clamp(2rem, 8vw, 4rem);
       font-weight: 520;
-      letter-spacing: -0.05em;
+      letter-spacing: -0.01em;
       line-height: 1;
       text-transform: none;
     }
@@ -2705,7 +2727,7 @@
     .metric-card:last-child {
       min-height: 8rem;
       border-right: 0;
-      border-bottom: 1px solid rgba(16, 19, 17, 0.3);
+      border-bottom: 1px solid rgba(15, 23, 32, 0.3);
     }
 
     .pillar-card,

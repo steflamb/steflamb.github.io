@@ -106,7 +106,7 @@ export async function startPertovReplay(el: ReplayElements) {
     }
     return best;
   };
-  const deviationColour = (d: number) => (d < 0.5 ? '#2f6f4f' : d < 1.2 ? '#e0a800' : d < 2.5 ? '#ff6034' : '#b3001b');
+  const deviationColour = (d: number) => (d < 0.5 ? '#2f6f4f' : d < 1.2 ? '#e0a800' : d < 2.5 ? '#f05a28' : '#b3001b');
 
   // The car a collision run hit: parked at the kerb on the side the run was drifting towards,
   // parallel to the street, just ahead of where the recording stops.
@@ -231,7 +231,7 @@ export async function startPertovReplay(el: ReplayElements) {
     if (colors) geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
     return new THREE.Line(geometry, new THREE.LineBasicMaterial({ color, vertexColors: !!colors }));
   };
-  scene.add(trail(nominal.pts.map((p) => [p[1], p[2]]), '#101311'));
+  scene.add(trail(nominal.pts.map((p) => [p[1], p[2]]), '#0f1720'));
   let runTrail: THREE.Line | null = null;
   const camPos = new THREE.Vector3();
   const camLook = new THREE.Vector3();

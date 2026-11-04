@@ -103,7 +103,7 @@ export async function startCam2SimDrive({ root, simCanvas, splatCanvas, recorded
   // The generated camera's footprint, drawn in the simulator.
   const frustum = new THREE.Mesh(
     new THREE.ConeGeometry(2.6, 7, 4, 1, true).rotateX(-Math.PI / 2).rotateZ(Math.PI / 4).translate(0, 0, -3.5),
-    new THREE.MeshBasicMaterial({ color: '#ffd23f', transparent: true, opacity: 0.22, depthWrite: false, side: THREE.DoubleSide }),
+    new THREE.MeshBasicMaterial({ color: '#ffcf33', transparent: true, opacity: 0.22, depthWrite: false, side: THREE.DoubleSide }),
   );
   frustum.scale.set(1, 0.3, 1);
   sim.add(frustum);

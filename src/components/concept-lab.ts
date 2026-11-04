@@ -93,7 +93,7 @@ function buildTrack() {
 
   // Cones along the outside of each bend; trees and buildings beyond the track.
   const up = new THREE.Vector3(0, 1, 0);
-  const coneMaterial = flat('#ff6034');
+  const coneMaterial = flat('#f05a28');
   const coneGeometry = new THREE.ConeGeometry(0.18, 0.55, 16);
   for (let s = 0; s < length; s += 12) {
     const u = s / length;

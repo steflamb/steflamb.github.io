@@ -200,9 +200,9 @@ const journeyStops = [
     z-index: 500;
     top: 0.75rem;
     right: 0.75rem;
-    border: 1px solid rgba(250, 248, 241, 0.5);
+    border: 1px solid rgba(250, 250, 248, 0.5);
     border-radius: 4px;
-    background: rgba(16, 19, 17, 0.75);
+    background: rgba(15, 23, 32, 0.75);
     color: var(--paper-bright);
     font-family: var(--mono);
     font-size: 0.68rem;
@@ -313,7 +313,7 @@ const journeyStops = [
 
     const route = L.polyline(
       stopsData.map((s) => [s.lat, s.lon] as [number, number]),
-      { color: '#ff6034', weight: 2, opacity: 0.9, interactive: false },
+      { color: '#f05a28', weight: 2, opacity: 0.9, interactive: false },
     ).addTo(map);
 
     const markers = stopsData.map((stop, i) => {

@@ -79,7 +79,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     max-width: 26rem;
     margin: calc(5rem + clamp(1rem, 3vw, 2rem)) clamp(1rem, 3vw, 2rem) 0;
     padding: clamp(1.25rem, 3vw, 2rem);
-    background: rgba(16, 19, 17, 0.82);
+    background: rgba(15, 23, 32, 0.82);
     color: var(--paper-bright);
   }
 
@@ -96,7 +96,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     margin-top: 1.2rem;
     max-width: 22rem;
     font-size: 0.95rem;
-    text-shadow: 0 1px 12px rgba(16, 19, 17, 0.5);
+    text-shadow: 0 1px 12px rgba(15, 23, 32, 0.5);
   }
 
   .garage-hud .text-link {
@@ -143,13 +143,13 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     min-height: 2.5rem;
     align-items: center;
     padding: 0 0.85rem;
-    border: 1px solid rgba(250, 248, 241, 0.35);
+    border: 1px solid rgba(250, 250, 248, 0.35);
     font-size: 0.85rem;
   }
 
   .garage-vehicle input:checked + span {
-    border-color: #ffd23f;
-    background: #ffd23f;
+    border-color: #ffcf33;
+    background: #ffcf33;
     color: var(--ink);
   }
 
@@ -162,7 +162,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     margin-top: 0.6rem;
     font-size: 0.85rem;
     opacity: 0.85;
-    text-shadow: 0 1px 12px rgba(16, 19, 17, 0.5);
+    text-shadow: 0 1px 12px rgba(15, 23, 32, 0.5);
   }
 
   .garage-loading {
@@ -175,7 +175,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     font-size: 0.68rem;
     letter-spacing: 0.06em;
     text-transform: uppercase;
-    text-shadow: 0 1px 12px rgba(16, 19, 17, 0.6);
+    text-shadow: 0 1px 12px rgba(15, 23, 32, 0.6);
   }
 
   .garage-loading[hidden] {
@@ -196,14 +196,14 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     align-items: flex-end;
     gap: 0.4rem;
     padding: 0.6rem 0.75rem;
-    background: rgba(16, 19, 17, 0.82);
+    background: rgba(15, 23, 32, 0.82);
     text-align: right;
     color: var(--paper-bright);
     font-family: var(--mono);
     font-size: 0.6875rem;
     letter-spacing: 0.06em;
     text-transform: uppercase;
-    text-shadow: 0 1px 12px rgba(16, 19, 17, 0.6);
+    text-shadow: 0 1px 12px rgba(15, 23, 32, 0.6);
   }
 
   .garage-stats p {
@@ -219,7 +219,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       color: var(--paper-bright);
     }
     25% {
-      color: #ff6034;
+      color: #f05a28;
     }
     100% {
       color: var(--paper-bright);
@@ -236,15 +236,15 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     font-weight: 700;
     font-size: clamp(1.4rem, 4vw, 2.6rem);
     letter-spacing: 0.02em;
-    color: #ff6034;
-    text-shadow: 0 2px 20px rgba(16, 19, 17, 0.7);
+    color: #f05a28;
+    text-shadow: 0 2px 20px rgba(15, 23, 32, 0.7);
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.15s ease, transform 0.15s ease;
   }
 
   .garage-toast-record {
-    color: #ffd23f;
+    color: #ffcf33;
   }
 
   .garage-penalty-toast-show {
@@ -277,9 +277,9 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     justify-content: center;
     width: 3.4rem;
     height: 3.4rem;
-    border: 1px solid rgba(250, 248, 241, 0.5);
+    border: 1px solid rgba(250, 250, 248, 0.5);
     border-radius: 50%;
-    background: rgba(16, 19, 17, 0.45);
+    background: rgba(15, 23, 32, 0.45);
     color: var(--paper-bright);
     touch-action: none;
     -webkit-tap-highlight-color: transparent;
@@ -576,7 +576,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   const coneHeight = 0.8;
   const coneGeo = new THREE.ConeGeometry(0.35, coneHeight, 12);
   coneGeo.translate(0, coneHeight / 2, 0); // pivot at the base, so it topples instead of sinking
-  const coneMat = new THREE.MeshStandardMaterial({ color: '#ff6034', roughness: 0.8 });
+  const coneMat = new THREE.MeshStandardMaterial({ color: '#f05a28', roughness: 0.8 });
   const coneMargin = roadWidth / 2 + 1.3;
   // Spacing for laying out the cones; hits use each vehicle's footprint instead.
   const carHitRadius = 1.5;

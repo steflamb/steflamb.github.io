@@ -3,6 +3,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import ConceptLab from '../components/ConceptLab.astro';
 import Cam2SimDrive from '../components/Cam2SimDrive.astro';
 import PertovReplay from '../components/PertovReplay.astro';
+import PaperSource from '../components/PaperSource.astro';
 import { publications } from '../data/site';
 
 const realWorldPerturbationPaper = publications.find((p) => p.title.startsWith('Real-World Perturbation Testing'))!;
@@ -11,6 +12,7 @@ const realityGapPaper = publications.find((p) => p.title.startsWith('A Multi-Mod
 const perturbationBenchmarkPaper = publications.find((p) => p.title.startsWith('Benchmarking Image Perturbations'))!;
 const perturbationDriveJournalPaper = publications.find((p) => p.title.startsWith('PerturbationDrive:'))!;
 const forecastingPaper = publications.find((p) => p.title.startsWith('Misbehavior Forecasting'))!;
+const nanodronePaper = publications.find((p) => p.title.startsWith('Ultra-Low Power'))!;
 const qualityMetricsPaper = publications.find((p) => p.title.startsWith('Assessing Quality Metrics'))!;
 ---
 
@@ -45,7 +47,7 @@ const qualityMetricsPaper = publications.find((p) => p.title.startsWith('Assessi
             ></iframe>
           </div>
           <div class="demo-showcase-copy">
-            <p class="feature-kicker">Cam2Sim</p>
+            <p class="feature-kicker">Cam2Sim · talk video</p>
             <h3>Real drives, replayed in simulation.</h3>
             <p>
               Cam2Sim started from a practical problem. We had many hours of real driving
@@ -56,14 +58,12 @@ const qualityMetricsPaper = publications.find((p) => p.title.startsWith('Assessi
               a complete replacement for the real environment, but it allows us to reuse real
               experiments for closed-loop simulation.
             </p>
-            <a class="text-link" href={cam2simPaper.paper} target="_blank" rel="noreferrer">
-              Read the paper <span aria-hidden="true">↗︎</span>
-            </a>
+            <PaperSource papers={[cam2simPaper]} />
           </div>
         </div>
 
         <Cam2SimDrive>
-          <p class="feature-kicker">Cam2Sim, interactive</p>
+          <p class="feature-kicker">Cam2Sim · interactive</p>
           <h3>Drive the reconstructed street.</h3>
           <p>
             On the left, a simple simulator on Guerickestraße in Munich, with the road traced from
@@ -71,9 +71,7 @@ const qualityMetricsPaper = publications.find((p) => p.title.startsWith('Assessi
             generated from a Gaussian-splat reconstruction trained on that drive's camera
             frames, in three segments.
           </p>
-          <a slot="link" class="text-link" href={cam2simPaper.paper} target="_blank" rel="noreferrer">
-            Read the paper <span aria-hidden="true">↗︎</span>
-          </a>
+          <div slot="link"><PaperSource papers={[cam2simPaper]} /></div>
         </Cam2SimDrive>
 
         <div class="demo-showcase" data-reveal>
@@ -87,21 +85,19 @@ const qualityMetricsPaper = publications.find((p) => p.title.startsWith('Assessi
             ></iframe>
           </div>
           <div class="demo-showcase-copy">
-            <p class="feature-kicker">ASE 2025</p>
+            <p class="feature-kicker">Reality gap · talk video</p>
             <h3>The same reality gap, across four execution levels.</h3>
             <p>
               An open-source small-scale vehicle and its Unity digital twin, compared against
               Fortuna at full scale, across simulation, vehicle-in-the-loop, mixed-reality, and
               real-world testing.
             </p>
-            <a class="text-link" href={realityGapPaper.paper} target="_blank" rel="noreferrer">
-              Read the paper <span aria-hidden="true">↗︎</span>
-            </a>
+            <PaperSource papers={[realityGapPaper]} />
           </div>
         </div>
 
         <ConceptLab>
-          <p class="feature-kicker">PerturbationDrive</p>
+          <p class="feature-kicker">PerturbationDrive · interactive</p>
           <h3>The same perturbation, any simulator.</h3>
           <p>
             PerturbationDrive generates camera perturbations—like rain, or a corrupted
@@ -110,13 +106,11 @@ const qualityMetricsPaper = publications.find((p) => p.title.startsWith('Assessi
             stack. Here it runs on the camera following a scan of Fortuna round a test track:
             pick any of the library's perturbations and the scale it is applied at.
           </p>
-          <a slot="link" class="text-link" href={perturbationBenchmarkPaper.paper} target="_blank" rel="noreferrer">
-            Read the paper <span aria-hidden="true">↗︎</span>
-          </a>
+          <div slot="link"><PaperSource papers={[perturbationDriveJournalPaper, perturbationBenchmarkPaper]} /></div>
         </ConceptLab>
 
         <PertovReplay>
-          <p class="feature-kicker">Real-world perturbation testing</p>
+          <p class="feature-kicker">Real-world perturbation testing · interactive</p>
           <h3>The same perturbations, on a real vehicle.</h3>
           <p>
             We injected PerturbationDrive's camera perturbations online while the driving model
@@ -124,9 +118,7 @@ const qualityMetricsPaper = publications.find((p) => p.title.startsWith('Assessi
             intensity it was driven at to see the recorded trajectory against the nominal run,
             how the run ended, and the steering signal over time.
           </p>
-          <a slot="link" class="text-link" href={realWorldPerturbationPaper.paper} target="_blank" rel="noreferrer">
-            Read the paper <span aria-hidden="true">↗︎</span>
-          </a>
+          <div slot="link"><PaperSource papers={[realWorldPerturbationPaper]} /></div>
         </PertovReplay>
 
         <div class="demo-showcase" data-reveal>
@@ -142,16 +134,14 @@ const qualityMetricsPaper = publications.find((p) => p.title.startsWith('Assessi
             ></video>
           </div>
           <div class="demo-showcase-copy">
-            <p class="feature-kicker">Foresee</p>
+            <p class="feature-kicker">Foresee · talk video</p>
             <h3>Forecasting near misses to focus fuzzing.</h3>
             <p>
               Foresee monitors nearby agents, classifies and ranks the riskiest ones, then clips
               and fuzzes the scenario around them—so testing time goes where failures are most
               likely to surface.
             </p>
-            <a class="text-link" href={forecastingPaper.paper} target="_blank" rel="noreferrer">
-              Read the paper <span aria-hidden="true">↗︎</span>
-            </a>
+            <PaperSource papers={[forecastingPaper]} />
           </div>
         </div>
 
@@ -168,16 +158,14 @@ const qualityMetricsPaper = publications.find((p) => p.title.startsWith('Assessi
             ></video>
           </div>
           <div class="demo-showcase-copy">
-            <p class="feature-kicker">ICST 2024</p>
+            <p class="feature-kicker">Image-quality metrics · talk video</p>
             <h3>Do image-quality metrics track what actually matters?</h3>
             <p>
               The ICST 2024 talk on assessing quality metrics for neural
               reality-gap input mitigation—testing whether standard image-quality metrics track
               how neural image translation affects a driving system's perception and control.
             </p>
-            <a class="text-link" href={qualityMetricsPaper.paper} target="_blank" rel="noreferrer">
-              Read the paper <span aria-hidden="true">↗︎</span>
-            </a>
+            <PaperSource papers={[qualityMetricsPaper]} />
           </div>
         </div>
 
@@ -192,7 +180,7 @@ const qualityMetricsPaper = publications.find((p) => p.title.startsWith('Assessi
             ></iframe>
           </div>
           <div class="demo-showcase-copy">
-            <p class="feature-kicker">Before the reality gap</p>
+            <p class="feature-kicker">Nano-drones · video</p>
             <h3>Fitting a neural network onto a 40-gram nano-drone.</h3>
             <p>
               Before autonomous cars, I worked on autonomous nano-drones. At the Dalle Molle
@@ -202,9 +190,7 @@ const qualityMetricsPaper = publications.find((p) => p.title.startsWith('Assessi
               (IEEE ICRA 2023). The platform changed; the question didn’t: what has to be true for a
               learned model to work outside the lab it was trained in?
             </p>
-            <a class="text-link" href="https://arxiv.org/abs/2303.01940" target="_blank" rel="noreferrer">
-              Read the paper <span aria-hidden="true">↗︎</span>
-            </a>
+            <PaperSource papers={[nanodronePaper]} />
           </div>
         </div>
       </div>

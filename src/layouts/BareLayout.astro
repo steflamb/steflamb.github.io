@@ -1,4 +1,13 @@
 ---
+// Self-hosted type: Barlow for text, Barlow Condensed for headings, IBM Plex Mono for data.
+import '@fontsource/barlow/latin-400.css';
+import '@fontsource/barlow/latin-500.css';
+import '@fontsource/barlow/latin-600.css';
+import '@fontsource/barlow-condensed/latin-500.css';
+import '@fontsource/barlow-condensed/latin-600.css';
+import '@fontsource/ibm-plex-mono/latin-400.css';
+import '@fontsource/ibm-plex-mono/latin-500.css';
+import '@fontsource/ibm-plex-mono/latin-600.css';
 import '../styles/global.css';
 
 interface Props {
@@ -26,7 +35,7 @@ const socialImage = new URL(image, Astro.site);
     <meta name="viewport" content="width=device-width" />
     <meta name="generator" content={Astro.generator} />
     <meta name="description" content={description} />
-    <meta name="theme-color" content="#101311" />
+    <meta name="theme-color" content="#0f1720" />
     <meta property="og:type" content="website" />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
@@ -68,7 +77,7 @@ const socialImage = new URL(image, Astro.site);
     font-size: 0.75rem;
     letter-spacing: 0.02em;
     border: 1px solid var(--line);
-    box-shadow: 0 6px 18px rgba(16, 19, 17, 0.16);
+    box-shadow: 0 6px 18px rgba(15, 23, 32, 0.16);
     opacity: 0.55;
     transition: opacity 0.2s ease, transform 0.2s ease;
     text-decoration: none;
