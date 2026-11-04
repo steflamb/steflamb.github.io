@@ -55,105 +55,88 @@ const realityGapPaper = publications.find((p) => p.title.startsWith('A Multi-Mod
     <div class="metric-card"><strong>2</strong><span>Vehicle scales—a full-size Fortuna and a small-scale Donkey Car</span></div>
   </div>
 
-  <section class="section section-dark" aria-labelledby="drive-heading">
-    <div class="container-wide">
-      <div class="section-heading" data-reveal>
-        <div>
-          <h2 id="drive-heading" class="display-title">Two ways to drive the same <em>car.</em></h2>
-          <p class="section-lede">
-            The driving stack can be an end-to-end model or a modular perception-planning-control
-            pipeline. Bring your own laptop or PC, up to 1000 W, connect it over Ethernet, and
-            start driving.
-          </p>
-        </div>
-      </div>
-      <div class="video-grid">
-        <figure data-reveal>
-          <div class="video-frame">
-            <video
-              src="/videos/fortuna-drive.mp4"
-              poster="/images/fortuna-drive-poster.jpg"
-              controls
-              muted
-              playsinline
-              preload="none"
-              aria-label="Dashcam footage from inside Fortuna running an end-to-end driving model during a closed-loop test drive in Munich"
-            ></video>
-          </div>
-          <figcaption class="video-frame-caption">
-            End-to-end model — camera in, steering and throttle out.
-          </figcaption>
-        </figure>
-        <figure data-reveal>
-          <div class="video-frame">
-            <video
-              src="/videos/fortuna-modular.mp4"
-              poster="/images/modular-poster.jpg"
-              controls
-              muted
-              playsinline
-              preload="none"
-              aria-label="Dashcam footage from inside Fortuna running a modular perception-planning-control pipeline during a closed-loop test drive in Munich"
-            ></video>
-          </div>
-          <figcaption class="video-frame-caption">
-            Modular pipeline — perception, planning, and control as separate stages.
-          </figcaption>
-        </figure>
-      </div>
-    </div>
-  </section>
-
-  <section class="section" aria-labelledby="platform-story-heading">
-    <div class="container-wide story-centered" data-reveal>
-      <h2 id="platform-story-heading" class="sr-only">The Fortuna platform</h2>
-      <p>
-        Fortuna is fortiss’s full-size autonomous-driving research vehicle: a retrofitted,
-        street-legal Volkswagen Passat Variant GTE with five cameras, three LiDARs providing
-        360° coverage, precise localization, onboard compute, and real-time access to steering
-        and acceleration through the vehicle gateway.
-      </p>
-      <p>
-        We use it to run the same research question across offline models, hardware-in-the-loop
-        setups, and a complete moving vehicle, then compare where the answer changes.
-      </p>
-    </div>
-  </section>
-
   <section class="section" aria-labelledby="breakdown-heading">
     <div class="container-wide">
       <div class="section-heading" data-reveal>
         <div>
           <h2 id="breakdown-heading" class="display-title">What I actually did.</h2>
+          <p class="section-lede">
+            I didn’t build Fortuna. I got it working again, then changed it so it could serve
+            more than one project. Here is what was already there, what I did, and what was a
+            shared effort.
+          </p>
         </div>
       </div>
-      <div class="theme-grid breakdown-grid">
-        <article class="theme-card breakdown-card" data-reveal>
-          <span class="theme-number">01</span>
-          <h3>Inherited</h3>
+      <ol class="ledger">
+        <li class="ledger-row" data-reveal>
+          <div class="ledger-label">
+            <span class="theme-number">01</span>
+            <h3>Already there</h3>
+            <p class="ledger-when">2016–21, fortiss for Providentia</p>
+          </div>
           <p>
-            Drive-by-wire actuation and control, the camera and LiDAR hardware, and the Apollo
-            integration with GPS/IMU and the CAN bus—built for Providentia between 2016 and 2021.
+            The drive-by-wire retrofit, the camera and LiDAR hardware, the onboard compute, and an
+            Apollo integration handling GPS/IMU, the CAN bus, and real-time control through a
+            dSpace MicroAutoBox II. It was built for one project and ran on Apollo alone.
           </p>
-        </article>
-        <article class="theme-card breakdown-card" data-reveal>
-          <span class="theme-number">02</span>
-          <h3>Recovered</h3>
+        </li>
+        <li class="ledger-row" data-reveal>
+          <div class="ledger-label">
+            <span class="theme-number">02</span>
+            <h3>The starting point</h3>
+            <p class="ledger-when">2023</p>
+          </div>
           <p>
-            In 2023, after more than a year of inactivity: reassessed every subsystem, restored
-            communication paths, and made the vehicle inspectable and operable again.
+            The car had been inactive for more than a year after Providentia ended. Before anyone
+            could drive it again, parts of the architecture and the operating procedures had to be
+            reconstructed.
           </p>
-        </article>
-        <article class="theme-card breakdown-card" data-reveal>
-          <span class="theme-number">03</span>
-          <h3>Changed since 2023</h3>
+        </li>
+        <li class="ledger-row" data-reveal>
+          <div class="ledger-label">
+            <span class="theme-number">03</span>
+            <h3>What I did</h3>
+            <p class="ledger-when">2023 onward</p>
+          </div>
           <p>
-            A ROS bridge alongside Apollo so any laptop or PC can drive the car over Ethernet,
-            modular and end-to-end driving stacks, simulation integration, hardware-in-the-loop
-            infrastructure, and the small-scale Donkey Car platform.
+            Reassessed every subsystem, restored the communication paths between them, and made
+            the vehicle inspectable and operable again. Then expanded the Apollo-only setup into a
+            distributed ROS system: a bridge machine runs the ROS master and an Apollo/ROS adapter,
+            so a separate node running the system under test can read sensor data and send control
+            commands without touching Apollo. Any laptop or PC up to 1000 W can now drive the car
+            over Ethernet.
           </p>
-        </article>
-      </div>
+        </li>
+        <li class="ledger-row" data-reveal>
+          <div class="ledger-label">
+            <span class="theme-number">04</span>
+            <h3>What we did together</h3>
+            <p class="ledger-when">2024 onward</p>
+          </div>
+          <p>
+            With students joining the project: modular and end-to-end driving stacks, sensor
+            pipelines, simulation integration, and hardware-in-the-loop infrastructure. The
+            small-scale Donkey Car platform and its mixed-reality lab grew alongside. I lead the
+            technical work under the supervision of Prof. Andrea Stocco; the students behind
+            specific parts are <a class="text-link" href="#people-heading">credited below</a>.
+          </p>
+        </li>
+        <li class="ledger-row" data-reveal>
+          <div class="ledger-label">
+            <span class="theme-number">05</span>
+            <h3>What it made possible</h3>
+            <p class="ledger-when">So far</p>
+          </div>
+          <p>
+            A 2026 study of 72 camera and LiDAR perturbations across offline analysis,
+            hardware-in-the-loop execution, and closed-loop driving: more than 740 experiments and
+            over 48 hours of autonomous driving. Recorded drives that Cam2Sim turns into
+            closed-loop simulations. Several bachelor’s and master’s theses. And the same research
+            question can now run offline, in the loop, and on the road, so we can
+            <a class="text-link" href="/publications/">compare where the answer changes</a>.
+          </p>
+        </li>
+      </ol>
     </div>
   </section>
 
@@ -240,6 +223,71 @@ const realityGapPaper = publications.find((p) => p.title.startsWith('A Multi-Mod
           The back of the car, mid-recovery, 2023.
         </figcaption>
       </figure>
+    </div>
+  </section>
+
+  <section class="section section-dark" aria-labelledby="drive-heading">
+    <div class="container-wide">
+      <div class="section-heading" data-reveal>
+        <div>
+          <h2 id="drive-heading" class="display-title">Two ways to drive the same <em>car.</em></h2>
+          <p class="section-lede">
+            The driving stack can be an end-to-end model or a modular perception-planning-control
+            pipeline. Bring your own laptop or PC, up to 1000 W, connect it over Ethernet, and
+            start driving.
+          </p>
+        </div>
+      </div>
+      <div class="video-grid">
+        <figure data-reveal>
+          <div class="video-frame">
+            <video
+              src="/videos/fortuna-drive.mp4"
+              poster="/images/fortuna-drive-poster.jpg"
+              controls
+              muted
+              playsinline
+              preload="none"
+              aria-label="Dashcam footage from inside Fortuna running an end-to-end driving model during a closed-loop test drive in Munich"
+            ></video>
+          </div>
+          <figcaption class="video-frame-caption">
+            End-to-end model — camera in, steering and throttle out.
+          </figcaption>
+        </figure>
+        <figure data-reveal>
+          <div class="video-frame">
+            <video
+              src="/videos/fortuna-modular.mp4"
+              poster="/images/modular-poster.jpg"
+              controls
+              muted
+              playsinline
+              preload="none"
+              aria-label="Dashcam footage from inside Fortuna running a modular perception-planning-control pipeline during a closed-loop test drive in Munich"
+            ></video>
+          </div>
+          <figcaption class="video-frame-caption">
+            Modular pipeline — perception, planning, and control as separate stages.
+          </figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="platform-story-heading">
+    <div class="container-wide story-centered" data-reveal>
+      <h2 id="platform-story-heading" class="display-title">What’s on the car.</h2>
+      <p>
+        Fortuna is fortiss’s full-size autonomous-driving research vehicle: a retrofitted,
+        street-legal Volkswagen Passat Variant GTE with five cameras, three LiDARs providing
+        360° coverage, precise localization, onboard compute, and real-time access to steering
+        and acceleration through the vehicle gateway.
+      </p>
+      <p>
+        We use it to run the same research question across offline models, hardware-in-the-loop
+        setups, and a complete moving vehicle, then compare where the answer changes.
+      </p>
     </div>
   </section>
 
@@ -431,9 +479,10 @@ const realityGapPaper = publications.find((p) => p.title.startsWith('A Multi-Mod
         <canvas id="fortuna-3d-preview" aria-label="Rotating 3D model of Fortuna"></canvas>
       </div>
       <div class="demo-showcase-copy">
-        <h2 id="garage-teaser-heading">I also scanned Fortuna into a 3D model.</h2>
+        <h2 id="garage-teaser-heading">Race Fortuna, just for fun.</h2>
         <p>
-          You can take it for a lap around the track, no research question required.
+          Race Gaussian-splat models of Fortuna and my motorcycle around a track, no research
+          question required.
         </p>
         <a class="text-link" href="/garage/">
           Open it up <span aria-hidden="true">↗︎</span>

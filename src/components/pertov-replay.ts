@@ -89,6 +89,9 @@ export async function startPertovReplay(el: ReplayElements) {
   for (const road of drive.map.roads) node('polyline', { points: road.pts.map(project).join(' '), class: 'pv-road', 'stroke-width': road.w + 4 }, base);
   for (const road of drive.map.roads) node('polyline', { points: road.pts.map(project).join(' '), class: 'pv-asphalt', 'stroke-width': road.w }, base);
   for (const b of drive.map.buildings) node('polygon', { points: b.pts.map(project).join(' '), class: 'pv-building' }, base);
+  // Street trees and lamps, where OpenStreetMap has them.
+  for (const [x, y, h] of drive.map.trees ?? []) node('circle', { cx: x, cy: -y, r: Math.max(2, (h ?? 12) * 0.22), class: 'pv-tree' }, base);
+  for (const [x, y] of drive.map.lamps ?? []) node('circle', { cx: x, cy: -y, r: 0.7, class: 'pv-lamp' }, base);
   node('polyline', { points: nominal.pts.map((p) => project([p[1], p[2]])).join(' '), class: 'pv-nominal' });
   const runLayer = node('g', {});
   const endMarker = node('g', { class: 'pv-end' });

@@ -1608,6 +1608,12 @@
     font-size: 0.9rem;
   }
 
+  .theme-card .theme-question {
+    color: var(--ink);
+    font-size: 1rem;
+    line-height: 1.45;
+  }
+
   .theme-finding {
     padding-top: 1rem;
     border-top: 1px solid var(--line);
@@ -1756,6 +1762,56 @@
     width: 100%;
     height: auto;
     border-radius: 4px;
+  }
+
+  .story-centered h2 + p {
+    margin-top: 1.5rem;
+  }
+
+  /* Fortuna attribution ledger: what existed, what I did, what was shared. */
+  .ledger {
+    margin-top: 3.5rem;
+    border-top: 1px solid var(--line);
+    list-style: none;
+  }
+
+  .ledger-row {
+    display: grid;
+    grid-template-columns: minmax(12rem, 1fr) minmax(0, 2.4fr);
+    gap: clamp(1.25rem, 4vw, 4rem);
+    padding-block: 1.9rem;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .ledger-label h3 {
+    margin-top: 0.5rem;
+    font-size: clamp(1.3rem, 2.2vw, 1.75rem);
+    font-weight: 530;
+    letter-spacing: -0.01em;
+    line-height: 1.1;
+  }
+
+  .ledger-when {
+    margin-top: 0.4rem;
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .ledger-row > p {
+    max-width: 46rem;
+    color: var(--muted);
+    font-size: 1rem;
+    line-height: 1.6;
+  }
+
+  @media (max-width: 38rem) {
+    .ledger-row {
+      grid-template-columns: 1fr;
+      gap: 0.9rem;
+    }
   }
 
   .contributor-list {
@@ -2146,6 +2202,12 @@
     font-size: 0.6875rem;
     letter-spacing: 0.04em;
     text-transform: uppercase;
+  }
+
+  .footer-meta a {
+    margin-left: 0.6rem;
+    color: var(--paper-bright);
+    text-underline-offset: 0.2em;
   }
 
   .not-found {

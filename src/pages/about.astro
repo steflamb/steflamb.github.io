@@ -158,7 +158,14 @@ const journeyStops = [
           aria-label="Map of places Stefano has lived"
           data-stops={JSON.stringify(journeyStops)}
         ></div>
-        <button type="button" class="journey-reset" id="journey-reset">Show whole journey</button>
+        <button type="button" class="journey-reset" id="journey-reset" hidden>Show whole journey</button>
+        <div class="journey-consent" id="journey-consent" hidden>
+          <p>
+            The map loads from OpenStreetMap, so your browser will send your IP address to the
+            OpenStreetMap Foundation's servers. <a href="/privacy/">Privacy</a>
+          </p>
+          <button type="button" class="button" id="journey-consent-yes">Show the map</button>
+        </div>
       </div>
 
       <ol class="journey-list">
@@ -179,6 +186,34 @@ const journeyStops = [
   .journey-map-wrap {
     position: relative;
     margin-top: 3rem;
+  }
+
+  .journey-consent {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    display: grid;
+    place-content: center;
+    justify-items: center;
+    gap: 1.2rem;
+    padding: 1.5rem;
+    background: var(--paper-bright);
+    text-align: center;
+  }
+
+  .journey-consent[hidden] {
+    display: none;
+  }
+
+  .journey-consent p {
+    max-width: 30rem;
+    color: var(--muted);
+    font-size: 0.95rem;
+    line-height: 1.55;
+  }
+
+  .journey-consent a {
+    color: var(--ink);
   }
 
   .journey-map {
@@ -288,9 +323,11 @@ const journeyStops = [
 <script>
   import L from 'leaflet';
   import 'leaflet/dist/leaflet.css';
+  import { giveMapConsent, hasMapConsent } from '../components/map-consent';
 
   const container = document.getElementById('journey-map');
-  if (container) {
+  function showJourneyMap(container: HTMLElement) {
+    document.getElementById('journey-reset')!.hidden = false;
     const stopsData = JSON.parse(container.dataset.stops || '[]') as Array<{
       name: string;
       note: string;
@@ -382,5 +419,19 @@ const journeyStops = [
       map.closePopup();
       map.flyToBounds(bounds, { padding: [40, 40], duration: 0.8, animate: !reduceMotion.matches });
     });
+  }
+
+  // Map tiles come from OpenStreetMap, so they load only once the visitor agrees.
+  if (container) {
+    const gate = document.getElementById('journey-consent') as HTMLElement;
+    if (hasMapConsent()) showJourneyMap(container);
+    else {
+      gate.hidden = false;
+      document.getElementById('journey-consent-yes')!.addEventListener('click', () => {
+        giveMapConsent();
+        gate.hidden = true;
+        showJourneyMap(container);
+      });
+    }
   }
 </script>

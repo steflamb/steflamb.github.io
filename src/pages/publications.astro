@@ -15,45 +15,71 @@ const paperLink = (p: (typeof publications)[number]) => ({
   href: p.paper,
 });
 
-const themes = [
+const realWorldPerturbationPaper = publications.find((p) => p.title.startsWith('Real-World Perturbation'))!;
+
+// The research questions, in the order they build on each other. A paper can
+// answer more than one; its "Found:" line sits under the question it answers.
+const questions = [
+  {
+    number: 'A',
+    title: 'Measuring the gap',
+    question:
+      'How much does a system’s behavior change when the same test moves from simulation toward a real vehicle, and how much of that change comes from actuation and how much from perception?',
+    copy: 'Run the same test in simulation, vehicle-in-the-loop, mixed reality, and real driving, on a small-scale vehicle and on Fortuna, and compare where the results diverge.',
+    findings: [
+      'On the small-scale vehicle, vehicle-in-the-loop testing reduced the actuation gap and mixed-reality testing reduced the perception gap, compared with simulation alone.',
+    ],
+    links: [paperLink(realityGapPaper), paperLink(realWorldPerturbationPaper)],
+  },
+  {
+    number: 'B',
+    title: 'Understanding failures',
+    question:
+      'Which failures does a system have, and which of them only appear under conditions that offline or simulated testing doesn’t reproduce?',
+    copy: 'Stress camera and LiDAR pipelines with controlled perturbations, then follow the effect past model accuracy into timing, planning, control, and vehicle behavior. When failures are rare, spend the testing budget where they are more likely.',
+    findings: [
+      'Offline robustness was only weakly predictive of closed-loop failures on the real vehicle, across more than 740 experiments.',
+      'In simulation, focusing the search around forecasted near misses found failures with a smaller testing budget than an unfocused search.',
+    ],
+    links: [paperLink(perturbationBenchmarkPaper), paperLink(realWorldPerturbationPaper), paperLink(forecastingPaper)],
+  },
+  {
+    number: 'C',
+    title: 'Reducing the gap',
+    question:
+      'Which techniques improve transfer from simulation to a physical vehicle, and under what conditions do they stop working?',
+    copy: 'Some techniques change the test setup, replacing parts of the simulation with real hardware or real camera input. Others change the system, by training on perturbed data, or its inputs, by translating simulated images to look real. Whether they worked is judged against A and B, not by how the output looks.',
+    findings: [
+      'Training on perturbed images improved robustness under adverse conditions.',
+      'Standard image-quality metrics did not consistently track how image translation affected downstream driving tasks, so they should be used carefully as a proxy.',
+    ],
+    links: [paperLink(perturbationBenchmarkPaper), paperLink(qualityMetricsPaper), paperLink(realityGapPaper)],
+  },
+];
+
+// Infrastructure that makes the questions above testable. Kept separate so it
+// doesn't read as a fourth question, but its own results stay attached.
+const infrastructure = [
   {
     number: '01',
-    title: 'Reality-gap measurement',
-    copy: 'Measure which actuation, perception, and behavioral differences matter when a test moves between virtual and physical environments.',
-    finding: 'Vehicle-in-the-loop testing reduced the actuation gap, and mixed-reality testing reduced the perception gap, compared with simulation alone.',
-    links: [paperLink(realityGapPaper)],
+    title: 'Real-to-simulation reconstruction',
+    copy: 'Turn recorded drives into replayable CARLA scenarios that keep the road geometry, trajectory, and visual character of the original, with Gaussian Splatting for the camera view.',
+    finding: 'It’s not a full replacement for the real environment, but it lets us reuse real drives for closed-loop testing instead of only replaying recorded sensor data.',
+    links: [paperLink(cam2simPaper), { meta: 'Demo', label: 'Drive a reconstructed Munich street', href: '/demos/' }],
   },
   {
     number: '02',
-    title: 'Robustness under perturbation',
-    copy: 'Stress camera and LiDAR pipelines, then follow the effect beyond model accuracy into timing, planning, control, and system behavior.',
-    finding: 'Offline robustness was only weakly predictive of closed-loop failures on the real vehicle; training on perturbed data improved robustness under adverse conditions.',
-    links: [paperLink(perturbationBenchmarkPaper), paperLink(perturbationDriveJournalPaper)],
+    title: 'Execution environments and test tooling',
+    copy: 'The interfaces that let the same test, and the same perturbation, run in simulation, hardware-in-the-loop, or on a physical vehicle without rewriting it each time.',
+    links: [
+      paperLink(perturbationDriveJournalPaper),
+      { meta: 'Code', label: 'ROS small-scale vehicle and mixed-reality setup', href: 'https://github.com/ast-fortiss-tum/ROS-small-scale-vehicle' },
+    ],
   },
   {
     number: '03',
-    title: 'Focused failure discovery',
-    copy: 'Use near misses and predicted future states to spend the testing budget where failures are more likely to surface.',
-    finding: 'Focusing the search around forecasted near misses found failures using a smaller testing budget than an unfocused search.',
-    links: [paperLink(forecastingPaper)],
-  },
-  {
-    number: '04',
-    title: 'Real-to-simulation reconstruction',
-    copy: 'Turn recorded road scenes into replayable simulations that preserve the geometry, trajectory, and visual character of the original drive.',
-    finding: "It's not a full replacement for the real environment, but it lets us reuse real drives for closed-loop testing.",
-    links: [paperLink(cam2simPaper), paperLink(qualityMetricsPaper)],
-  },
-  {
-    number: '05',
-    title: 'Execution environments',
-    copy: 'The interfaces and tooling that let the same test run in simulation, hardware-in-the-loop, or on a physical vehicle, without rewriting it each time.',
-    links: [paperLink(realityGapPaper)],
-  },
-  {
-    number: '06',
     title: 'Research platforms',
-    copy: 'Fortuna, the small-scale platform, and the tools around them are maintained so other students and researchers can keep using them, not just demo them once.',
+    copy: 'Fortuna, the small-scale Donkey Car, and the tools around them, maintained so other students and researchers can keep using them rather than demo them once.',
     links: [
       { meta: 'Vehicle', label: 'Fortuna, the research platform', href: '/fortuna/' },
       { meta: 'Students', label: 'Teaching and student projects', href: '/teaching/' },
@@ -64,7 +90,7 @@ const themes = [
 
 <BaseLayout
   title="Research and publications — Stefano Carlo Lambertenghi"
-  description="Research on the reality gap, autonomous-driving robustness, failure forecasting, and real-to-simulation reconstruction, with selected publications."
+  description="Research on the sim-to-real gap in autonomous driving: measuring it, understanding the failures it hides, and reducing it, with selected publications."
 >
   <section class="page-hero page-hero-light publications-hero">
     <div class="page-hero-inner research-hero-stacked container-wide">
@@ -74,9 +100,9 @@ const themes = [
         </div>
         <div class="page-hero-copy-col">
           <p class="page-hero-copy">
-            I study how well results transfer between simulation and the real world, how to make an
-            autonomous-driving system more robust once that gap is measured, and how to reuse real
-            driving data to make simulation more realistic.
+            I study what changes when an autonomous-driving test moves from simulation to a real
+            vehicle: how to measure that gap, which failures it hides, and which techniques close
+            part of it.
           </p>
           <div class="hero-actions">
             <a class="button-secondary" href={profileLinks.dblp} target="_blank" rel="noreferrer">
@@ -98,25 +124,68 @@ const themes = [
     </div>
   </section>
 
-  <section class="section" aria-labelledby="themes-heading">
+  <section class="section" aria-labelledby="questions-heading">
     <div class="container-wide">
       <div class="section-heading theme-heading-centered" data-reveal>
         <div>
-          <h2 id="themes-heading" class="display-title">Six research themes.</h2>
+          <h2 id="questions-heading" class="display-title">Three questions.</h2>
+          <p class="section-lede">
+            Most of the work comes back to one gap: a system that behaves one way in simulation
+            and another on a real road. The papers ask three questions about it, roughly in
+            order. You need a measurement before you can say where things break, and you need
+            both before you can tell whether a fix helped.
+          </p>
         </div>
       </div>
 
       <div class="theme-grid">
-        {themes.map((theme) => (
+        {questions.map((q) => (
           <article class="theme-card" data-reveal>
-            <span class="theme-number">{theme.number}</span>
-            <h3>{theme.title}</h3>
-            <p>{theme.copy}</p>
-            {theme.finding && (
-              <p class="theme-finding"><strong>Found:</strong> {theme.finding}</p>
+            <span class="theme-number">{q.number}</span>
+            <h3>{q.title}</h3>
+            <p class="theme-question">{q.question}</p>
+            <p>{q.copy}</p>
+            {q.findings.map((finding) => (
+              <p class="theme-finding"><strong>Found:</strong> {finding}</p>
+            ))}
+            <div class="theme-papers" aria-label={`Related work on ${q.title}`}>
+              {q.links.map((link) => (
+                <a class="theme-paper" href={link.href} target={link.href.startsWith('/') ? undefined : '_blank'} rel={link.href.startsWith('/') ? undefined : 'noreferrer'}>
+                  <span class="theme-paper-meta">{link.meta}</span>
+                  <span class="theme-paper-title">{link.label} <span aria-hidden="true">↗︎</span></span>
+                </a>
+              ))}
+            </div>
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="section section-tight-top" aria-labelledby="infrastructure-heading">
+    <div class="container-wide">
+      <div class="section-heading section-heading-flush" data-reveal>
+        <div>
+          <h2 id="infrastructure-heading" class="display-title">What the experiments run on.</h2>
+          <p class="section-lede">
+            Answering those questions means running the same test in more than one place, which
+            takes infrastructure that didn’t exist off the shelf. It isn’t a separate line of
+            research, but some of it produced results of its own.
+          </p>
+        </div>
+      </div>
+
+      <div class="theme-grid">
+        {infrastructure.map((item) => (
+          <article class="theme-card breakdown-card" data-reveal>
+            <span class="theme-number">{item.number}</span>
+            <h3>{item.title}</h3>
+            <p>{item.copy}</p>
+            {item.finding && (
+              <p class="theme-finding"><strong>Found:</strong> {item.finding}</p>
             )}
-            <div class="theme-papers" aria-label={`Related work on ${theme.title}`}>
-              {theme.links.map((link) => (
+            <div class="theme-papers" aria-label={`Related work on ${item.title}`}>
+              {item.links.map((link) => (
                 <a class="theme-paper" href={link.href} target={link.href.startsWith('/') ? undefined : '_blank'} rel={link.href.startsWith('/') ? undefined : 'noreferrer'}>
                   <span class="theme-paper-meta">{link.meta}</span>
                   <span class="theme-paper-title">{link.label} <span aria-hidden="true">↗︎</span></span>

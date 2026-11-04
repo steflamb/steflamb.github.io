@@ -15,7 +15,7 @@
         <li><i style="background:#b3001b"></i>more</li>
       </ul>
       <small class="pv-attribution">
-        Map data ©
+        Map data ©{' '}
         <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">OpenStreetMap contributors</a>
       </small>
     </figure>
@@ -56,7 +56,7 @@
         <dl class="pv-card" id="pv-card" aria-live="polite"></dl>
       </section>
       <p class="pv-note">
-        Trajectories, outcomes and errors are the processed on-vehicle results published with
+        Trajectories, outcomes and errors are the processed on-vehicle results published with{' '}
         <a href="https://github.com/ast-fortiss-tum/pertOV" target="_blank" rel="noreferrer">PertOV</a>.
         The bird's-eye view replays each recorded trajectory in our simulator on the OpenStreetMap
         street. Where a run ended in a collision, the other car is drawn just ahead of where the
@@ -247,6 +247,19 @@
     fill: #d2cfc6;
     stroke: #bdbab1;
     stroke-width: 0.3;
+  }
+
+  .pv-map :global(.pv-tree) {
+    fill: #6f9158;
+    fill-opacity: 0.85;
+    stroke: #4f6e3d;
+    stroke-width: 0.4;
+  }
+
+  .pv-map :global(.pv-lamp) {
+    fill: #3d454c;
+    stroke: #fafaf8;
+    stroke-width: 0.25;
   }
 
   .pv-map :global(.pv-nominal) {

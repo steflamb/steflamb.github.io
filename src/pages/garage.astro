@@ -4,17 +4,32 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
 <BaseLayout
   title="Just for fun — Stefano Carlo Lambertenghi"
-  description="I also scanned Fortuna into a 3D model. Take it for a lap around the track, no research question required."
+  description="Race Gaussian-splat models of Fortuna and my motorcycle on three circuits, Guerickestraße or any street on the map."
   noindex={true}
 >
-  <section class="garage" data-phase="showroom">
+  <section class="garage" data-phase="intro">
     <canvas id="garage-canvas"></canvas>
 
+    <div class="garage-intro" id="garage-intro">
+      <div class="garage-door" aria-hidden="true">
+        <span class="garage-door-sweep"></span>
+      </div>
+      <div class="garage-door-leak" aria-hidden="true"></div>
+      <div class="garage-intro-copy">
+        <h1 class="garage-intro-title">
+          <span class="garage-intro-line">Stefano's</span>
+          <span class="garage-intro-line">garage.</span>
+        </h1>
+        <p class="garage-intro-lede">Race Gaussian-splat models of Fortuna and my motorcycle, on three circuits or any street on the map.</p>
+        <button type="button" class="garage-go garage-intro-start" id="garage-intro-start">Start Stefano's garage</button>
+      </div>
+    </div>
+
     <div class="garage-showroom" id="garage-showroom" data-step="vehicle">
-      <h1>Just for fun.</h1>
+      <h2>Just for fun.</h2>
       <p class="garage-instructions">
-        I scanned Fortuna and my motorcycle into 3D models. Pick one, pick a track, and take it
-        for a lap. No research question required.
+        Race Gaussian-splat models of Fortuna and my motorcycle. Pick one, pick a track, and
+        take it for a lap. No research question required.
       </p>
 
       <div class="garage-step" id="garage-step-vehicle">
@@ -34,6 +49,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           <label><input type="radio" name="circuit" value="monza" /><span><svg data-preview="monza" aria-hidden="true"></svg><b>Monza</b><small>Simplified</small></span></label>
           <label><input type="radio" name="circuit" value="spa" /><span><svg data-preview="spa" aria-hidden="true"></svg><b>Spa</b><small>Simplified</small></span></label>
           <label><input type="radio" name="circuit" value="guericke" disabled /><span><svg data-preview="guericke" aria-hidden="true"></svg><b>Guerickestraße</b><small>Munich, from the Cam2Sim drive</small></span></label>
+          <label><input type="radio" name="circuit" value="custom" id="garage-custom" /><span><svg data-preview="custom" aria-hidden="true"></svg><b id="garage-custom-name">Any street</b><small id="garage-custom-note">Pick it on the map, rebuilt with our Cam2Sim street code</small></span></label>
         </fieldset>
         <div class="garage-options">
           <label>
@@ -51,10 +67,17 @@ import BaseLayout from '../layouts/BaseLayout.astro';
             <label><input type="checkbox" id="garage-ghost" checked /> <span>Ghost of best lap</span></label>
           </div>
         </div>
+        <p class="garage-result" id="garage-result" aria-live="polite" hidden></p>
         <div class="garage-actions">
           <button type="button" class="garage-back" id="garage-to-vehicle">Back</button>
           <button type="button" class="garage-go" id="garage-start">Start driving</button>
         </div>
+        <p class="garage-storage">
+          Best times, ghost laps and loaded streets are saved only in this browser's local storage
+          (no cookies) and never leave your device.{' '}
+          <button type="button" id="garage-clear">Clear saved data</button> ·{' '}
+          <a href="/privacy/">Privacy</a>
+        </p>
       </div>
     </div>
 
@@ -62,6 +85,49 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       <button type="button" class="garage-back" id="garage-exit">Back to the garage</button>
       <p class="garage-controls garage-desktop-only">Arrow keys or WASD to drive.</p>
     </div>
+
+    <div class="garage-picker" id="garage-picker" role="dialog" aria-modal="true" aria-labelledby="garage-picker-title" hidden>
+      <div class="garage-picker-map" id="garage-picker-map"></div>
+      <div class="garage-picker-bar">
+        <h2 id="garage-picker-title">Pick a street.</h2>
+        <p class="garage-picker-lede">
+          The street is rebuilt in 3D with the code from our Cam2Sim demo, the same code that
+          recreates Guerickestraße from OpenStreetMap.
+        </p>
+        <div class="garage-picker-consent" id="garage-picker-consent" hidden>
+          <p>
+            This track is built from OpenStreetMap. To pick it, the page loads map tiles from the
+            OpenStreetMap Foundation, and loading your route asks the public Overpass API
+            (overpass-api.de) for the streets and buildings around it.
+          </p>
+          <p>
+            Your browser then sends those services your IP address, its standard request details
+            and the map area. No account, name or anything else is involved. Your choice is
+            remembered in this browser until you clear saved data.{' '}
+            <a href="/privacy/">Privacy</a>
+          </p>
+          <div class="garage-actions">
+            <button type="button" class="garage-back" data-picker-cancel>Not now</button>
+            <button type="button" class="garage-go" id="garage-picker-consent-yes">Load the map</button>
+          </div>
+        </div>
+        <div class="garage-picker-pick" id="garage-picker-pick" hidden>
+          <p class="garage-picker-status" id="garage-picker-status" aria-live="polite">Tap where the sprint starts, then where it finishes.</p>
+          <div class="garage-actions">
+            <button type="button" class="garage-back" data-picker-cancel>Cancel</button>
+            <button type="button" class="garage-go" id="garage-picker-load" disabled>Load this route</button>
+          </div>
+          <p class="garage-picker-note">
+            Loading the route sends the area around your two points to the Overpass API. Map
+            data © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">OpenStreetMap contributors</a>.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <small class="garage-osm-credit" id="garage-osm-credit" hidden>
+      Map data © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">OpenStreetMap contributors</a>
+    </small>
 
     <div class="garage-offtrack" id="garage-offtrack" aria-live="assertive" hidden>
       <p>Off track.</p>
@@ -127,11 +193,190 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     color: var(--paper-bright);
   }
 
-  .garage[data-phase='race'] .garage-showroom {
+  .garage[data-phase='race'] .garage-showroom,
+  .garage[data-phase='intro'] .garage-showroom {
     display: none;
   }
 
-  .garage-showroom h1 {
+  /* The intro: the garage's roller door, closed. A headlight beam crosses it, light leaks
+     from under it, and "Start" rolls it up onto the turntable. */
+  .garage-intro {
+    position: absolute;
+    z-index: 5;
+    inset: 0;
+    overflow: hidden;
+    display: grid;
+    align-items: center;
+    padding: 5rem clamp(1.25rem, 6vw, 6rem) 0;
+    color: var(--paper-bright);
+  }
+
+  .garage-intro[hidden] {
+    display: none;
+  }
+
+  .garage-door {
+    position: absolute;
+    inset: 0 0 1.25rem;
+    overflow: hidden;
+    background:
+      linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 0, rgba(255, 255, 255, 0) 0.5rem, rgba(0, 0, 0, 0.35) 0.5rem, rgba(0, 0, 0, 0) 0.75rem) 0 0 / 100% 2.75rem,
+      linear-gradient(180deg, #232b34, #161c23 70%, #12171d);
+    box-shadow: inset 0 -0.6rem 0 #0b0f13;
+    transition: transform 1150ms cubic-bezier(0.7, 0, 0.2, 1);
+  }
+
+  /* A headlight passing outside, once, across the slats. */
+  .garage-door-sweep {
+    position: absolute;
+    top: -20%;
+    bottom: -20%;
+    left: -40%;
+    width: 40%;
+    background: radial-gradient(closest-side, rgba(255, 244, 214, 0.22), rgba(255, 244, 214, 0));
+    transform: skewX(-12deg);
+    animation: garage-sweep 2600ms cubic-bezier(0.45, 0, 0.2, 1) 350ms both;
+  }
+
+  @keyframes garage-sweep {
+    from {
+      transform: translateX(0) skewX(-12deg);
+    }
+    to {
+      transform: translateX(400%) skewX(-12deg);
+    }
+  }
+
+  /* Warm light from inside, under the door: where the door has not quite met the floor. */
+  .garage-door-leak {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    height: 1.25rem;
+    background: linear-gradient(to top, rgba(255, 207, 51, 0.35), rgba(255, 207, 51, 0.9));
+    box-shadow: 0 0 3.5rem 1.2rem rgba(255, 207, 51, 0.28);
+    animation: garage-leak 3.2s ease-in-out 1.2s infinite alternate;
+  }
+
+  @keyframes garage-leak {
+    to {
+      opacity: 0.65;
+    }
+  }
+
+  .garage-intro-copy {
+    position: relative;
+    display: grid;
+    justify-items: start;
+    gap: clamp(1.6rem, 3vw, 2.4rem);
+    max-width: 48rem;
+    transition:
+      transform 900ms cubic-bezier(0.7, 0, 0.2, 1),
+      opacity 500ms ease;
+  }
+
+  .garage-intro-title {
+    display: grid;
+    gap: 0.04em;
+    font-size: clamp(3.6rem, 12vw, 10rem);
+    font-weight: 600;
+    letter-spacing: -0.005em;
+    line-height: 0.95;
+  }
+
+  .garage-intro-line {
+    display: block;
+    animation: garage-line 1100ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .garage-intro-line + .garage-intro-line {
+    color: var(--lane);
+    animation-delay: 140ms;
+  }
+
+  @keyframes garage-line {
+    from {
+      clip-path: inset(100% -0.2em -0.3em -0.2em);
+      transform: translateY(0.3em);
+    }
+    to {
+      clip-path: inset(-0.2em -0.2em -0.3em -0.2em);
+    }
+  }
+
+  .garage-intro-lede {
+    max-width: 30rem;
+    color: #c9ced3;
+    font-size: clamp(1rem, 1.6vw, 1.2rem);
+    line-height: 1.5;
+    animation: hero-fade 700ms ease 650ms both;
+  }
+
+  .garage-intro-start {
+    min-height: 3.5rem;
+    padding: 0 1.8rem;
+    font-size: 1.05rem;
+    box-shadow: 0 0.6rem 2.4rem rgba(255, 207, 51, 0.25);
+    animation: hero-fade 700ms ease 900ms both;
+  }
+
+  /* Start: the door rolls up, the copy goes with it, the garage is revealed behind. */
+  .garage-intro.is-opening .garage-door {
+    transform: translateY(-101%);
+  }
+
+  .garage-intro.is-opening .garage-intro-copy {
+    transform: translateY(-60vh);
+    opacity: 0;
+  }
+
+  .garage-intro.is-opening .garage-door-leak {
+    animation: none;
+    opacity: 0;
+    transition: opacity 500ms ease;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .garage-door-sweep,
+    .garage-door-leak,
+    .garage-intro-line,
+    .garage-intro-lede,
+    .garage-intro-start {
+      animation: none;
+    }
+
+    .garage-door,
+    .garage-intro-copy {
+      transition: opacity 300ms ease;
+    }
+
+    .garage-intro.is-opening .garage-door,
+    .garage-intro.is-opening .garage-intro-copy {
+      transform: none;
+      opacity: 0;
+    }
+  }
+
+  .garage-result {
+    padding: 0.7rem 0.85rem;
+    border: 1px solid var(--lane);
+    background: rgba(255, 207, 51, 0.1);
+    color: var(--paper-bright);
+    font-size: 0.9rem;
+  }
+
+  .garage-result[hidden] {
+    display: none;
+  }
+
+  .garage-picker-lede {
+    color: var(--paper-bright);
+    font-size: 0.9rem;
+    line-height: 1.5;
+  }
+
+  .garage-showroom h2 {
     font-size: clamp(2.8rem, 6vw, 5rem);
     font-weight: 560;
     letter-spacing: -0.02em;
@@ -436,6 +681,142 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     }
   }
 
+  .garage-circuits label:has(input[value='custom']) {
+    grid-column: 1 / -1;
+  }
+
+  .garage-circuits label:has(input[value='custom']) span {
+    grid-template-columns: 4.5rem minmax(0, 1fr);
+    column-gap: 0.8rem;
+    align-items: center;
+  }
+
+  .garage-circuits label:has(input[value='custom']) svg {
+    grid-row: span 2;
+    margin-bottom: 0;
+  }
+
+  /* The picker: a map over the garage, with the instructions and actions beside it. */
+  .garage-picker {
+    position: absolute;
+    z-index: 4;
+    inset: 5rem 0 0;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 24rem;
+    background: var(--ink);
+  }
+
+  .garage-picker[hidden] {
+    display: none;
+  }
+
+  .garage-picker-map {
+    min-height: 0;
+    background: #dfe3e0;
+  }
+
+  .garage-picker-bar {
+    display: grid;
+    align-content: start;
+    gap: 1.1rem;
+    padding: clamp(1.25rem, 3vw, 2rem);
+    color: var(--paper-bright);
+  }
+
+  .garage-picker-bar h2 {
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: 560;
+    line-height: 0.95;
+  }
+
+  .garage-picker-status {
+    min-height: 3em;
+    color: #c9ced3;
+    font-size: 0.95rem;
+    line-height: 1.5;
+  }
+
+  .garage-picker-status[data-tone='error'] {
+    color: #ff8a6b;
+  }
+
+  .garage-picker-consent,
+  .garage-picker-pick {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .garage-picker-consent[hidden],
+  .garage-picker-pick[hidden] {
+    display: none;
+  }
+
+  .garage-picker-consent p {
+    color: #c9ced3;
+    font-size: 0.9rem;
+    line-height: 1.55;
+  }
+
+  .garage-picker-consent a,
+  .garage-storage a {
+    color: var(--paper-bright);
+    text-underline-offset: 0.2em;
+  }
+
+  .garage-storage {
+    color: var(--muted-dark);
+    font-size: 0.75rem;
+    line-height: 1.5;
+  }
+
+  .garage-storage button {
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--paper-bright);
+    font: inherit;
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+    cursor: pointer;
+  }
+
+  .garage-storage button:focus-visible {
+    outline: 2px solid var(--signal);
+    outline-offset: 2px;
+  }
+
+  .garage-picker-note {
+    color: var(--muted-dark);
+    font-size: 0.75rem;
+    line-height: 1.5;
+  }
+
+  .garage-picker-note a,
+  .garage-osm-credit a {
+    color: inherit;
+  }
+
+  .garage-go:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+
+  .garage-osm-credit {
+    position: absolute;
+    z-index: 1;
+    bottom: 0;
+    left: 0;
+    padding: 0.2rem 0.5rem;
+    background: rgba(250, 250, 248, 0.85);
+    color: var(--ink);
+    font-size: 0.6875rem;
+  }
+
+  .garage-osm-credit[hidden],
+  .garage[data-phase='showroom'] .garage-osm-credit {
+    display: none;
+  }
+
   .garage-choice input:disabled + span {
     opacity: 0.45;
     cursor: wait;
@@ -631,7 +1012,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       background: linear-gradient(to bottom, rgba(15, 23, 32, 0), rgba(15, 23, 32, 0.92) 18%);
     }
 
-    .garage-showroom h1 {
+    .garage-showroom h2 {
       font-size: 2.4rem;
     }
 
@@ -661,6 +1042,34 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       left: 0.75rem;
     }
 
+    .garage-picker {
+      inset: 4.5rem 0 0;
+      grid-template-columns: 1fr;
+      grid-template-rows: minmax(0, 1fr) auto;
+    }
+
+    .garage-picker-bar {
+      gap: 0.6rem;
+      padding: 1rem;
+    }
+
+    .garage-picker-bar h2 {
+      display: none;
+    }
+
+    .garage-picker-status {
+      min-height: 0;
+    }
+
+    .garage-osm-credit {
+      bottom: auto;
+      top: calc(4.5rem + 0.75rem);
+      right: auto;
+      left: auto;
+      right: 0.75rem;
+      display: none;
+    }
+
     .garage-stats {
       top: calc(4.5rem + 4rem) !important;
       right: 0.75rem !important;
@@ -675,10 +1084,14 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
   import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
   import { createPerturbationPass } from '../components/perturbation-pass';
-  import { buildStreet, type OsmMap } from '../components/osm-world';
+  import { buildStreet, parkingSpots, type OsmMap, type ParkingSpot } from '../components/osm-world';
+  import { createParkedCars } from '../components/parked-cars';
+  import { lastRoute, type CustomRoute } from '../components/osm-area';
+  import { giveMapConsent, hasMapConsent, MAP_CONSENT_KEY } from '../components/map-consent';
 
   const canvas = document.getElementById('garage-canvas') as HTMLCanvasElement;
   const loadingEl = document.getElementById('garage-loading') as HTMLElement;
+  const osmCredit = document.getElementById('garage-osm-credit') as HTMLElement;
   const coneStatEl = document.getElementById('garage-cone-stat') as HTMLElement;
   const lapStatEl = document.getElementById('garage-lap-stat') as HTMLElement;
   const penaltyToastEl = document.getElementById('garage-penalty-toast') as HTMLElement;
@@ -849,18 +1262,23 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   const streetReady = fetch('/cam2sim/drive.json')
     .then((r) => r.json() as Promise<{ map: OsmMap }>)
     .then((d) => (streetMap = d.map));
-  const OPEN_CIRCUITS = new Set(['guericke']);
-  const streetHalfWidth = 3.5;
+  const OPEN_CIRCUITS = new Set(['guericke', 'custom']);
+  let streetHalfWidth = 3.5;
+  // A street picked on the map, loaded from OpenStreetMap through the Overpass API.
+  let customRoute: CustomRoute | null = null;
 
   function circuitPath(key: string): PathPoint[] {
     let raw: { x: number; z: number }[];
     const open = OPEN_CIRCUITS.has(key);
     if (key === 'cones') {
       raw = stadiumPoints();
-    } else if (key === 'guericke') {
-      const road = streetMap!.roads.find((r) => r.name === 'Guerickestraße')!;
-      const pts = [...road.pts];
-      if (pts[0][0] > pts[pts.length - 1][0]) pts.reverse();
+    } else if (key === 'guericke' || key === 'custom') {
+      let pts: number[][];
+      if (key === 'custom') pts = customRoute!.route;
+      else {
+        pts = [...streetMap!.roads.find((r) => r.name === 'Guerickestraße')!.pts];
+        if (pts[0][0] > pts[pts.length - 1][0]) pts.reverse();
+      }
       const curve = new THREE.CatmullRomCurve3(pts.map(([e, n]) => new THREE.Vector3(e, 0, -n)), false, 'centripetal');
       raw = curve.getSpacedPoints(Math.round(curve.getLength())).map((v) => ({ x: v.x, z: v.z }));
     } else {
@@ -934,7 +1352,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     return { x: a.x + (b.x - a.x) * f, z: a.z + (b.z - a.z) * f, tx: a.tx, tz: a.tz };
   }
 
-  function buildRoadGeometry(path: PathPoint[], width: number, y: number) {
+  function buildRoadGeometry(path: PathPoint[], width: number, y: number, open = false) {
     const n = path.length;
     const positions: number[] = [];
     const uvs: number[] = [];
@@ -947,7 +1365,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       positions.push(p.x + nx * (width / 2), y, p.z + nz * (width / 2));
       uvs.push(0, i, 1, i);
     }
-    for (let i = 0; i < n; i++) {
+    for (let i = 0; i < (open ? n - 1 : n); i++) {
       const a = i * 2;
       const b = i * 2 + 1;
       const c = ((i + 1) % n) * 2;
@@ -989,6 +1407,29 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   const finishLineGeo = new THREE.PlaneGeometry(1.6, roadWidth);
   finishLineGeo.rotateX(-Math.PI / 2);
   const finishLineMat = new THREE.MeshStandardMaterial({ map: makeCheckerTexture(), roughness: 0.9, side: THREE.DoubleSide });
+  const guideMat = new THREE.MeshBasicMaterial({
+    color: '#ffcf33',
+    transparent: true,
+    opacity: 0.9,
+    side: THREE.DoubleSide,
+    polygonOffset: true,
+    polygonOffsetFactor: -10,
+    polygonOffsetUnits: -10,
+  });
+  // A flat chevron pointing along +Z, 1.6 m wide.
+  const chevronGeo = (() => {
+    const shape = new THREE.Shape();
+    shape.moveTo(-0.8, -0.35);
+    shape.lineTo(0, 0.45);
+    shape.lineTo(0.8, -0.35);
+    shape.lineTo(0.55, -0.55);
+    shape.lineTo(0, 0.05);
+    shape.lineTo(-0.55, -0.55);
+    shape.closePath();
+    const geometry = new THREE.ShapeGeometry(shape);
+    geometry.rotateX(Math.PI / 2);
+    return geometry;
+  })();
   const streetLineMat = finishLineMat.clone();
   streetLineMat.polygonOffset = true;
   streetLineMat.polygonOffsetFactor = -8;
@@ -1054,13 +1495,52 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   const circuitGroup = new THREE.Group();
   scene.add(circuitGroup);
 
+  // OSM's straight road segments and the smoothed route drift apart on curves: any parked car
+  // within reach of a traffic lane is turned to follow the route (when parked parallel) and
+  // moved out until a passing car clears it.
+  const LANE_EDGE = 1.75 + 0.92 + 0.4; // lane offset, a traffic car's half-width, margin
+  function clearOfLanes(spots: ParkingSpot[]) {
+    return spots.map((spot) => {
+      const x = spot.x;
+      const z = -spot.y;
+      let best = Infinity;
+      let near = trackPath[0];
+      for (const p of trackPath) {
+        const d = (p.x - x) ** 2 + (p.z - z) ** 2;
+        if (d < best) {
+          best = d;
+          near = p;
+        }
+      }
+      if (Math.sqrt(best) > 12) return spot;
+      // The route's direction in the local frame (x east, y north): world z is -y.
+      const along = Math.atan2(-near.tz, near.tx);
+      const skew = Math.abs(Math.sin(spot.heading - along));
+      let heading = spot.heading;
+      if (skew < 0.5) heading = Math.cos(spot.heading - along) >= 0 ? along : along + Math.PI;
+      const angle = skew < 0.5 ? 0 : Math.asin(Math.min(1, skew));
+      // How far the car reaches towards the lane, at its angle to the route.
+      const reach = 2.35 * Math.sin(angle) + 0.92 * Math.cos(angle);
+      const clearance = LANE_EDGE + reach;
+      const offset = (x - near.x) * near.tz - (z - near.z) * near.tx;
+      if (Math.abs(offset) >= clearance) return { ...spot, heading };
+      const push = (Math.sign(offset) || 1) * (clearance - Math.abs(offset));
+      // Along the outward normal (tz, -tx) in world x, z; local y is -z.
+      return { x: spot.x + near.tz * push, y: spot.y + near.tx * push, heading };
+    });
+  }
+
+  // Cars parked along the street on a sprint (world x, z, heading), filled once Fortuna loads.
+  let parked: { x: number; z: number; h: number; cooldown: number }[] = [];
+
   function buildCircuitWorld(key: string) {
     circuitGroup.traverse((o) => {
       const mesh = o as THREE.Mesh;
-      if (mesh.isMesh && mesh.geometry !== dashGeo && mesh.geometry !== coneGeo && mesh.geometry !== finishLineGeo) mesh.geometry.dispose();
+      if (mesh.isMesh && mesh.geometry !== dashGeo && mesh.geometry !== coneGeo && mesh.geometry !== finishLineGeo && mesh.geometry !== chevronGeo && !mesh.userData.sharedGeometry) mesh.geometry.dispose();
     });
     circuitGroup.clear();
     cones = [];
+    parked = [];
 
     trackOpen = OPEN_CIRCUITS.has(key);
     trackPath = circuitPath(key);
@@ -1072,12 +1552,14 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     trackLength = trackAlong[trackAlong.length - 1] + (trackOpen ? 0 : Math.hypot(trackPath[0].x - last.x, trackPath[0].z - last.z));
     startPoint = trackOpen ? pathAt(22) : trackPath[0];
     finishPoint = trackOpen ? pathAt(trackLength - 14) : null;
+    streetHalfWidth = key === 'custom' ? 4.5 : 3.5;
     offRoadLimit = trackOpen ? streetHalfWidth + 2 : roadWidth / 2 + 0.5;
+    osmCredit.hidden = !trackOpen;
     ground.visible = !trackOpen;
 
-    if (key === 'guericke') {
+    if (trackOpen) {
       // The real street: OSM roads, pavements, buildings and green, as in the Cam2Sim demo.
-      const street = buildStreet(streetMap!);
+      const street = buildStreet(key === 'custom' ? customRoute!.map : streetMap!);
       street.traverse((o) => {
         if ((o as THREE.Mesh).isMesh) {
           o.castShadow = true;
@@ -1085,6 +1567,25 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         }
       });
       circuitGroup.add(street);
+      // Red Fortunas parked wherever OpenStreetMap maps street parking: obstacles, too.
+      const spots = clearOfLanes(parkingSpots(key === 'custom' ? customRoute!.map : streetMap!));
+      const builtFor = key;
+      loadVehicle(vehicles.fortuna).then((model) => {
+        if (circuitKey !== builtFor) return;
+        circuitGroup.add(createParkedCars(model, spots));
+        parked = spots.map((p: ParkingSpot) => ({ x: p.x, z: -p.y, h: Math.atan2(Math.cos(p.heading), -Math.sin(p.heading)), cooldown: 0 }));
+      });
+      // The way to go: a guide line along the route, with chevrons pointing along it, so the
+      // turns at junctions are clear. Pulled forward in depth past the street surfaces.
+      const guide = new THREE.Mesh(buildRoadGeometry(trackPath, 0.35, 0.07, true), guideMat);
+      circuitGroup.add(guide);
+      for (let along = 6; along < trackLength - 4; along += 9) {
+        const p = pathAt(along);
+        const chevron = new THREE.Mesh(chevronGeo, guideMat);
+        chevron.position.set(p.x, 0.075, p.z);
+        chevron.rotation.y = Math.atan2(p.tx, p.tz);
+        circuitGroup.add(chevron);
+      }
       for (const point of [startPoint, finishPoint!]) {
         // Pulled forward in depth past the street's own offset asphalt, so it shows from afar.
         const line = new THREE.Mesh(finishLineGeo, streetLineMat);
@@ -1398,8 +1899,10 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   let lapElapsed = 0;
   // The best lap survives a reload, so a returning driver has something to beat.
   // One record per circuit and vehicle; the original cone course keeps its old key.
+  // A street picked on the map keeps a record per route.
+  const circuitId = () => (circuitKey === 'custom' && customRoute ? `custom-${customRoute.id}` : circuitKey);
   const bestLapKey = () =>
-    circuitKey === 'cones' && vehicleKey === 'fortuna' ? 'garage-best-lap' : `garage-best-lap:${circuitKey}:${vehicleKey}`;
+    circuitKey === 'cones' && vehicleKey === 'fortuna' ? 'garage-best-lap' : `garage-best-lap:${circuitId()}:${vehicleKey}`;
   function readBestLap() {
     try {
       const stored = Number.parseFloat(localStorage.getItem(bestLapKey()) ?? '');
@@ -1430,7 +1933,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   const ghost = new THREE.Group();
   ghost.visible = false;
   scene.add(ghost);
-  const ghostKey = () => `garage-ghost:${circuitKey}:${vehicleKey}`;
+  const ghostKey = () => `garage-ghost:${circuitId()}:${vehicleKey}`;
   function readGhost() {
     try {
       const stored = JSON.parse(localStorage.getItem(ghostKey()) ?? 'null');
@@ -1694,6 +2197,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     if (finishPoint && lapStarted && !offRoad) {
       const past = (car_state.x - finishPoint.x) * finishPoint.tx + (car_state.z - finishPoint.z) * finishPoint.tz;
       if (past >= 0) {
+        const lapTime = lapElapsed;
+        const previousBest = bestLapTime;
         const record = bestLapTime === null || lapElapsed < bestLapTime;
         showPenaltyToast(record ? `${bestLapTime === null ? 'Time set' : 'Personal best'} — ${formatLapTime(lapElapsed)}` : `Finish — ${formatLapTime(lapElapsed)}`, record ? 'record' : 'penalty');
         if (record) {
@@ -1705,7 +2210,9 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         lapStarted = false;
         lapElapsed = 0;
         sprintDone = true;
-        setTimeout(() => section.dataset.phase === 'race' && trackOpen && restartRace(), 1800);
+        const trackName = document.querySelector('input[name="circuit"]:checked + span b')?.textContent ?? 'the street';
+        const result = `Finished ${trackName} in ${formatLapTime(lapTime)}${record ? (previousBest === null ? '. Time set.' : '. New personal best!') : `. Best ${formatLapTime(bestLapTime!)}.`}`;
+        setTimeout(() => section.dataset.phase === 'race' && trackOpen && backToGarage(result), 2000);
       }
     }
 
@@ -1746,6 +2253,31 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     updateLapDisplay();
   }
 
+  // --- Parked cars: solid, and a touch costs time like traffic ---
+  function updateParked(dt: number) {
+    for (const p of parked) {
+      p.cooldown -= dt;
+      if (Math.abs(p.x - car_state.x) > 7 || Math.abs(p.z - car_state.z) > 7) continue;
+      const hit = footprintOverlap(
+        car_state.x, car_state.z, car_state.heading, vehicle.halfLength, vehicle.halfWidth,
+        p.x, p.z, p.h, 2.35, 0.92,
+      );
+      if (!hit) continue;
+      car_state.x -= hit.nx * (hit.depth + 0.02);
+      car_state.z -= hit.nz * (hit.depth + 0.02);
+      const into = car_state.speed * (Math.sin(car_state.heading) * hit.nx + Math.cos(car_state.heading) * hit.nz);
+      if (into > 0) car_state.speed *= 0.3;
+      if (p.cooldown <= 0) {
+        p.cooldown = 1.5;
+        if (lapStarted && !offRoad) {
+          lapElapsed += contactPenaltySeconds;
+          flashStat(lapStatEl);
+          showPenaltyToast(`Parked car — +${contactPenaltySeconds}s`);
+        }
+      }
+    }
+  }
+
   // --- Off track: a slow-motion beat in grey, the verdict, then back on the road ---
   const offtrackEl = document.getElementById('garage-offtrack') as HTMLElement;
   const offtrackNote = document.getElementById('garage-offtrack-note') as HTMLElement;
@@ -1768,7 +2300,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     requestAnimationFrame(tick);
     timer.update();
     const realDt = Math.min(timer.getDelta(), 0.05);
-    if (section.dataset.phase === 'showroom') {
+    if (section.dataset.phase !== 'race') {
       renderStudio(realDt);
       return;
     }
@@ -1816,6 +2348,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     updateCones(dt);
     updateLap(dt);
     updateTraffic(dt);
+    updateParked(dt);
     updateGhost();
 
     const camDistance = carLength * 1.9 + 4;
@@ -1913,6 +2446,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   studio.add(rimLight, rimLight.target);
 
   let studioRadius = 3;
+  // Behind the closed door the camera waits further back, then glides in as it rolls up.
+  let introDolly = 1.9;
   let studioSpin = 0.35;
   let studioPop = 1;
   function showOnTurntable(model: THREE.Object3D) {
@@ -1947,11 +2482,18 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     const w = section.clientWidth;
     const h = section.clientHeight;
     studioCamera.aspect = w / h;
+    // A narrow screen gets a wider lens, so the vehicle is not a speck in the distance.
+    studioCamera.fov = compactScreen.matches ? 44 : 30;
     // Frame the vehicle beside the panel: to the right on wide screens, above it on phones.
     const fit = studioRadius / Math.sin(THREE.MathUtils.degToRad(studioCamera.fov) / 2);
-    const distance = fit * (compactScreen.matches ? 1.25 : 1.05) / Math.min(1, studioCamera.aspect * 0.9);
+    if (section.dataset.phase !== 'intro') introDolly += (1 - introDolly) * Math.min(1, dt * (reduceMotion.matches ? 60 : 1.6));
+    const distance = (fit * (compactScreen.matches ? 1.25 : 1.05) * introDolly) / Math.min(1, studioCamera.aspect * 0.9);
     const dir = new THREE.Vector3(0.8, 0.36, 1).normalize();
     studioCamera.position.copy(dir.multiplyScalar(Math.max(distance, 6)));
+    // Fog falls off behind the vehicle wherever the camera stands, never on it.
+    const fog = studio.fog as THREE.Fog;
+    fog.near = Math.max(distance, 6) + studioRadius * 2;
+    fog.far = fog.near + 26;
     studioCamera.lookAt(0, studioRadius * 0.45, 0);
     if (compactScreen.matches) studioCamera.setViewOffset(w, h, 0, h * 0.2, w, h);
     else studioCamera.setViewOffset(w, h, -w * 0.17, 0, w, h);
@@ -1967,14 +2509,44 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     renderer.render(studio, studioCamera);
   }
 
+  // --- The intro: the door rolls up onto the garage ---
+  const introEl = document.getElementById('garage-intro') as HTMLElement;
+  document.getElementById('garage-intro-start')!.addEventListener('click', () => {
+    introEl.classList.add('is-opening');
+    section.dataset.phase = 'showroom';
+    studioSpin = 3; // the turntable spins up as the light comes in
+    setTimeout(
+      () => {
+        introEl.hidden = true;
+        stepVehicle.querySelector<HTMLElement>('input:checked')?.focus({ preventScroll: true });
+      },
+      reduceMotion.matches ? 320 : 1200,
+    );
+  });
+
   // --- Steps: vehicle, then track, then the drive ---
   const showroomEl = document.getElementById('garage-showroom') as HTMLElement;
   const stepVehicle = document.getElementById('garage-step-vehicle') as HTMLElement;
   const stepTrack = document.getElementById('garage-step-track') as HTMLElement;
+  const resultEl = document.getElementById('garage-result') as HTMLElement;
+
+  // After a finished sprint: back to the garage, on the track step, with the result.
+  function backToGarage(result?: string) {
+    section.dataset.phase = 'showroom';
+    for (const k of Object.keys(input) as (keyof typeof input)[]) input[k] = false;
+    offTrackTimer = 0;
+    offtrackEl.hidden = true;
+    section.classList.remove('is-offtrack');
+    resultEl.hidden = !result;
+    if (result) resultEl.textContent = result;
+    restartRace();
+    showStep('track');
+  }
   function showStep(step: 'vehicle' | 'track') {
     stepVehicle.hidden = step !== 'vehicle';
     stepTrack.hidden = step !== 'track';
     showroomEl.dataset.step = step;
+    if (step === 'vehicle') resultEl.hidden = true;
     (step === 'vehicle' ? stepVehicle : stepTrack).querySelector<HTMLElement>('input:checked')?.focus({ preventScroll: true });
   }
   document.getElementById('garage-to-track')!.addEventListener('click', () => showStep('track'));
@@ -1986,18 +2558,12 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     resize();
     (document.activeElement as HTMLElement | null)?.blur();
   });
-  document.getElementById('garage-exit')!.addEventListener('click', () => {
-    section.dataset.phase = 'showroom';
-    for (const k of Object.keys(input) as (keyof typeof input)[]) input[k] = false;
-    offTrackTimer = 0;
-    offtrackEl.hidden = true;
-    section.classList.remove('is-offtrack');
-    showStep('track');
-  });
+  document.getElementById('garage-exit')!.addEventListener('click', () => backToGarage());
 
   // Track cards: each circuit's own centreline, drawn small.
   function drawPreview(svg: SVGSVGElement) {
     const key = svg.dataset.preview!;
+    svg.replaceChildren();
     const pts = circuitPath(key);
     const xs = pts.map((p) => p.x);
     const zs = pts.map((p) => p.z);
@@ -2021,10 +2587,163 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     document.querySelector<HTMLInputElement>('input[name="circuit"][value="guericke"]')!.disabled = false;
   });
 
+  // --- Any street: pick a start and a finish on a map, load the area from OpenStreetMap ---
+  const customRadio = document.getElementById('garage-custom') as HTMLInputElement;
+  const customName = document.getElementById('garage-custom-name') as HTMLElement;
+  const customNote = document.getElementById('garage-custom-note') as HTMLElement;
+  const pickerEl = document.getElementById('garage-picker') as HTMLElement;
+  const pickerStatus = document.getElementById('garage-picker-status') as HTMLElement;
+  const pickerLoad = document.getElementById('garage-picker-load') as HTMLButtonElement;
+  const pickerConsent = document.getElementById('garage-picker-consent') as HTMLElement;
+  const pickerPick = document.getElementById('garage-picker-pick') as HTMLElement;
+  let picker: { refresh: () => void; reset: () => void; showRoute: (latlngs: [number, number][]) => void } | null = null;
+  // A route found but not yet chosen: shown on the map until "Drive this route".
+  let foundRoute: CustomRoute | null = null;
+  let picked: { start: { lat: number; lng: number } | null; end: { lat: number; lng: number } | null } = { start: null, end: null };
+  let loadAbort: AbortController | null = null;
+
+  const setPickerStatus = (text: string, tone = '') => {
+    pickerStatus.textContent = text;
+    pickerStatus.dataset.tone = tone;
+  };
+
+  function showCustomCard() {
+    if (!customRoute) return;
+    const r = customRoute.route;
+    let length = 0;
+    for (let i = 1; i < r.length; i++) length += Math.hypot(r[i][0] - r[i - 1][0], r[i][1] - r[i - 1][1]);
+    customName.textContent = customRoute.name;
+    customNote.textContent = `${Math.round(length)} m sprint · select again to pick another`;
+    drawPreview(document.querySelector<SVGSVGElement>('svg[data-preview="custom"]')!);
+  }
+
+  // Nothing is requested from OpenStreetMap or Overpass before the visitor agrees.
+  async function openPicker() {
+    pickerEl.hidden = false;
+    const consented = hasMapConsent();
+    pickerConsent.hidden = consented;
+    pickerPick.hidden = !consented;
+    if (!consented) {
+      document.getElementById('garage-picker-consent-yes')!.focus();
+      return;
+    }
+    pickerEl.querySelector<HTMLElement>('#garage-picker-pick [data-picker-cancel]')!.focus();
+    if (!picker) {
+      setPickerStatus('Loading the map…');
+      const { createPicker } = await import('../components/osm-picker');
+      picker = createPicker(document.getElementById('garage-picker-map')!, (state) => {
+        picked = state;
+        foundRoute = null;
+        loadAbort?.abort();
+        pickerLoad.textContent = 'Load this route';
+        pickerLoad.disabled = !(state.start && state.end);
+        setPickerStatus(
+          state.hint ??
+            (!state.start
+              ? 'Tap where the sprint starts, then where it finishes.'
+              : !state.end
+                ? 'Now tap where it finishes.'
+                : 'Ready. Load the route, or tap the map to start over.'),
+        );
+      });
+      setPickerStatus('Tap where the sprint starts, then where it finishes.');
+    }
+    requestAnimationFrame(() => picker!.refresh());
+  }
+
+  function closePicker() {
+    loadAbort?.abort();
+    loadAbort = null;
+    pickerEl.hidden = true;
+    customRadio.focus({ preventScroll: true });
+  }
+
+  function useRoute(route: CustomRoute) {
+    customRoute = route;
+    showCustomCard();
+    customRadio.checked = true;
+    circuitKey = 'custom';
+    buildCircuitWorld(circuitKey);
+    restartRace();
+    updateStats();
+    closePicker();
+  }
+
+  pickerLoad.addEventListener('click', async () => {
+    if (foundRoute) {
+      useRoute(foundRoute);
+      return;
+    }
+    if (!picked.start || !picked.end) return;
+    pickerLoad.disabled = true;
+    setPickerStatus('Loading the streets and buildings around your route from OpenStreetMap…');
+    loadAbort?.abort();
+    const abort = (loadAbort = new AbortController());
+    try {
+      const { loadRoute, toLatLng } = await import('../components/osm-area');
+      const route = await loadRoute(picked.start, picked.end, abort.signal, (text) => {
+        if (!abort.signal.aborted) setPickerStatus(text);
+      });
+      if (abort.signal.aborted) return;
+      foundRoute = route;
+      picker!.showRoute(route.route.map((p) => toLatLng(route, p)));
+      let length = 0;
+      for (let i = 1; i < route.route.length; i++) length += Math.hypot(route.route[i][0] - route.route[i - 1][0], route.route[i][1] - route.route[i - 1][1]);
+      setPickerStatus(`Found ${Math.round(length)} m along ${route.name}. Drive it, or tap the map to pick again.`);
+      pickerLoad.textContent = 'Drive this route';
+      pickerLoad.disabled = false;
+    } catch (error) {
+      if ((error as Error).name === 'AbortError') return;
+      setPickerStatus((error as Error).message, 'error');
+      pickerLoad.disabled = false;
+    }
+  });
+  pickerEl.querySelectorAll('[data-picker-cancel]').forEach((b) => b.addEventListener('click', closePicker));
+  document.getElementById('garage-picker-consent-yes')!.addEventListener('click', () => {
+    giveMapConsent();
+    openPicker();
+  });
+
+  // Everything the garage keeps in this browser, gone in one press.
+  const clearButton = document.getElementById('garage-clear') as HTMLButtonElement;
+  clearButton.addEventListener('click', () => {
+    try {
+      for (const key of Object.keys(localStorage)) {
+        if (key.startsWith('garage-') || key === MAP_CONSENT_KEY) localStorage.removeItem(key);
+      }
+    } catch {
+      // Storage blocked: there is nothing saved to clear.
+    }
+    bestLapTime = null;
+    ghostLap = null;
+    updateLapDisplay();
+    clearButton.textContent = 'Cleared';
+    setTimeout(() => (clearButton.textContent = 'Clear saved data'), 2000);
+  });
+  pickerEl.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closePicker();
+  });
+  // Select the card to drive the loaded street; select it again (or before any) to pick one.
+  customRadio.addEventListener('click', (e) => {
+    if (!customRoute || circuitKey === 'custom') {
+      e.preventDefault();
+      openPicker();
+    }
+  });
+
+  // The last street picked on this device comes back with the page.
+  customRoute = lastRoute();
+  showCustomCard();
+
   // --- Settings panel ---
   document.querySelectorAll<HTMLInputElement>('input[name="circuit"]').forEach((radio) =>
     radio.addEventListener('change', () => {
       if (!radio.checked) return;
+      if (radio.value === 'custom' && !customRoute) {
+        document.querySelector<HTMLInputElement>(`input[name="circuit"][value="${circuitKey}"]`)!.checked = true;
+        openPicker();
+        return;
+      }
       circuitKey = radio.value;
       buildCircuitWorld(circuitKey);
       restartRace();
@@ -2040,7 +2759,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
   if (import.meta.env.DEV) {
     // Test hook: read and place the player, and see the traffic.
-    (window as unknown as Record<string, unknown>).__garage = { car_state, traffic: () => trafficCars, footprintOverlap, vehicle: () => vehicle, pathAt, trackOffset, circuitGroup, startPoint: () => startPoint, info: () => ({ trackLength, trackOpen, offRoadLimit, n: trackPath.length, first: trackPath[0], last: trackPath[trackPath.length - 1] }) };
+    (window as unknown as Record<string, unknown>).__garage = { car_state, traffic: () => trafficCars, footprintOverlap, vehicle: () => vehicle, pathAt, parked: () => parked, trafficOverlapsParked: () => trafficCars.reduce((n, t) => n + parked.filter((p) => footprintOverlap(t.mesh.position.x, t.mesh.position.z, t.mesh.rotation.y, 2.35, 0.92, p.x, p.z, p.h, 2.35, 0.92)).length, 0), trackOffset, circuitGroup, startPoint: () => startPoint, info: () => ({ trackLength, trackOpen, offRoadLimit, n: trackPath.length, first: trackPath[0], last: trackPath[trackPath.length - 1] }) };
   }
 
   resize();
