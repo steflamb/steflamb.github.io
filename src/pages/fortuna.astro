@@ -26,11 +26,9 @@ const realityGapPaper = publications.find((p) => p.title.startsWith('A Multi-Mod
         </div>
         <div class="page-hero-copy">
           <p>
-            When I started working with Fortuna in 2023, the vehicle had been inactive for more
-            than a year. I took responsibility for bringing it back into operation. This involved
-            reconstructing parts of the existing architecture and operating procedures, restoring
-            the software and hardware components needed for autonomous driving, and gradually
-            making the vehicle usable for research again.
+            When I started working with Fortuna in 2023, it had been inactive for more than a
+            year. I took responsibility for bringing it back into operation and making it usable
+            for research again.
           </p>
           <p>
             Today I lead the technical work around the vehicle. We use it for research on
@@ -49,10 +47,10 @@ const realityGapPaper = publications.find((p) => p.title.startsWith('A Multi-Mod
   </section>
 
   <div class="metrics-strip" aria-label="Fortuna platform summary">
-    <div class="metric-card"><strong>2023</strong><span>Recovery and reintegration began</span></div>
-    <div class="metric-card"><strong>48h+</strong><span>Real-world driving in the 2026 perturbation study</span></div>
-    <div class="metric-card"><strong>Multiple</strong><span>Modular and end-to-end ADS architectures</span></div>
-    <div class="metric-card"><strong>2</strong><span>Vehicle scales—a full-size Fortuna and a small-scale Donkey Car</span></div>
+    <div class="metric-card"><strong>5</strong><span>Cameras, for visual perception and end-to-end driving</span></div>
+    <div class="metric-card"><strong>3</strong><span>LiDARs, for 360° coverage</span></div>
+    <div class="metric-card"><strong>740+</strong><span>Experiments in the 2026 perturbation study</span></div>
+    <div class="metric-card"><strong>48h+</strong><span>Of autonomous driving in that study</span></div>
   </div>
 
   <section class="section" aria-labelledby="breakdown-heading">
@@ -74,11 +72,16 @@ const realityGapPaper = publications.find((p) => p.title.startsWith('A Multi-Mod
             <h3>Already there</h3>
             <p class="ledger-when">2016–21, fortiss for Providentia</p>
           </div>
-          <p>
-            The drive-by-wire retrofit, the camera and LiDAR hardware, the onboard compute, and an
-            Apollo integration handling GPS/IMU, the CAN bus, and real-time control through a
-            dSpace MicroAutoBox II. It was built for one project and ran on Apollo alone.
-          </p>
+          <div class="ledger-body">
+            <p>
+              fortiss built Fortuna as a 5G-connected automated-vehicle prototype for Providentia,
+              a project on connected, automated driving along the A9 digital motorway test bed
+              near Munich. That included the drive-by-wire retrofit, the cameras and LiDARs, the
+              onboard compute, and an Apollo integration handling GPS/IMU, the CAN bus, and
+              real-time control through a dSpace MicroAutoBox II. It ran on Apollo alone, for one
+              project, and when Providentia ended in 2021, so did the car’s job.
+            </p>
+          </div>
         </li>
         <li class="ledger-row" data-reveal>
           <div class="ledger-label">
@@ -86,26 +89,40 @@ const realityGapPaper = publications.find((p) => p.title.startsWith('A Multi-Mod
             <h3>The starting point</h3>
             <p class="ledger-when">2023</p>
           </div>
-          <p>
-            The car had been inactive for more than a year after Providentia ended. Before anyone
-            could drive it again, parts of the architecture and the operating procedures had to be
-            reconstructed.
-          </p>
+          <div class="ledger-body">
+            <p>
+              The car had been inactive for more than a year. Before anyone could drive it again,
+              parts of the architecture and the operating procedures had to be reconstructed.
+            </p>
+            <figure class="ledger-photo">
+              <img
+                src="/images/fortuna-recovery.jpg"
+                alt="The rear compute rack inside Fortuna, exposed with its PCs, GPUs, and batteries during the 2023 recovery work"
+                width="1400"
+                height="1867"
+                loading="lazy"
+              />
+              <figcaption class="video-frame-caption">The back of the car, mid-recovery, 2023.</figcaption>
+            </figure>
+          </div>
         </li>
         <li class="ledger-row" data-reveal>
           <div class="ledger-label">
             <span class="theme-number">03</span>
             <h3>What I did</h3>
-            <p class="ledger-when">2023 onward</p>
+            <p class="ledger-when">2023–25</p>
           </div>
-          <p>
-            Reassessed every subsystem, restored the communication paths between them, and made
-            the vehicle inspectable and operable again. Then expanded the Apollo-only setup into a
-            distributed ROS system: a bridge machine runs the ROS master and an Apollo/ROS adapter,
-            so a separate node running the system under test can read sensor data and send control
-            commands without touching Apollo. Any laptop or PC up to 1000 W can now drive the car
-            over Ethernet.
-          </p>
+          <div class="ledger-body">
+            <p>
+              Reassessed every subsystem, restored the communication paths between them, and made
+              the vehicle inspectable and operable again. Then, rather than restore the
+              single-purpose setup, rebuilt it as a modular ROS platform: a bridge machine runs the
+              ROS master and an Apollo/ROS adapter, so the system under test can read sensor data
+              and send control commands without touching Apollo. Both the driving stack and the
+              computer running it can be swapped; any laptop or PC up to 1000 W connects over
+              Ethernet.
+            </p>
+          </div>
         </li>
         <li class="ledger-row" data-reveal>
           <div class="ledger-label">
@@ -113,116 +130,35 @@ const realityGapPaper = publications.find((p) => p.title.startsWith('A Multi-Mod
             <h3>What we did together</h3>
             <p class="ledger-when">2024 onward</p>
           </div>
-          <p>
-            With students joining the project: modular and end-to-end driving stacks, sensor
-            pipelines, simulation integration, and hardware-in-the-loop infrastructure. The
-            small-scale Donkey Car platform and its mixed-reality lab grew alongside. I lead the
-            technical work under the supervision of Prof. Andrea Stocco; the students behind
-            specific parts are <a class="text-link" href="#people-heading">credited below</a>.
-          </p>
+          <div class="ledger-body">
+            <p>
+              With students joining the project: modular and end-to-end driving stacks, sensor
+              pipelines, simulation integration, and hardware-in-the-loop infrastructure. The
+              small-scale Donkey Car platform and its mixed-reality lab grew alongside. I lead the
+              technical work under the supervision of Prof. Andrea Stocco; the students behind
+              specific parts are <a class="text-link" href="#people-heading">credited below</a>.
+            </p>
+          </div>
         </li>
         <li class="ledger-row" data-reveal>
           <div class="ledger-label">
             <span class="theme-number">05</span>
             <h3>What it made possible</h3>
-            <p class="ledger-when">So far</p>
+            <p class="ledger-when">2026</p>
           </div>
-          <p>
-            A 2026 study of 72 camera and LiDAR perturbations across offline analysis,
-            hardware-in-the-loop execution, and closed-loop driving: more than 740 experiments and
-            over 48 hours of autonomous driving. Recorded drives that Cam2Sim turns into
-            closed-loop simulations. Several bachelor’s and master’s theses. And the same research
-            question can now run offline, in the loop, and on the road, so we can
-            <a class="text-link" href="/publications/">compare where the answer changes</a>.
-          </p>
-        </li>
-      </ol>
-    </div>
-  </section>
-
-  <section class="section" aria-labelledby="timeline-heading">
-    <div class="container-wide">
-      <div class="section-heading" data-reveal>
-        <div>
-          <h2 id="timeline-heading" class="display-title">From recovery to research.</h2>
-          <p class="section-lede">
-            Fortuna wasn’t built for me. It was fortiss’s automated-driving prototype for
-            Providentia—then the project ended, and the car sat unused.
-          </p>
-        </div>
-      </div>
-
-      <ol class="timeline">
-        <li class="timeline-item" data-reveal>
-          <p class="timeline-year">2016–21</p><span class="timeline-dot" aria-hidden="true"></span>
-          <div class="timeline-content">
-            <h3>Built for Providentia</h3>
+          <div class="ledger-body">
             <p>
-              As fortiss’s 5G-connected automated-vehicle prototype, Fortuna gathered data
-              alongside roadside sensor infrastructure for Providentia, a project researching
-              connected, automated driving on Germany’s A9 digital motorway test bed near Munich.
-              When the project ended in 2021, so did the car’s job.
-            </p>
-          </div>
-        </li>
-        <li class="timeline-item" data-reveal>
-          <p class="timeline-year">2023</p><span class="timeline-dot" aria-hidden="true"></span>
-          <div class="timeline-content">
-            <h3>Understand and recover</h3>
-            <p>
-              I assessed each inactive subsystem, restored communication paths, and made the
-              vehicle inspectable and operable again.
-            </p>
-          </div>
-        </li>
-        <li class="timeline-item" data-reveal>
-          <p class="timeline-year">2024–25</p><span class="timeline-dot" aria-hidden="true"></span>
-          <div class="timeline-content">
-            <h3>Rebuild it modular</h3>
-            <p>
-              Rather than restore the original single-purpose setup, I rebuilt Fortuna as a
-              modular, ROS-based platform: the driving stack can simply be swapped, and so can
-              the compute behind it—any laptop or PC up to 1000 W, connected over Ethernet. With
-              students joining the project, we integrated modular and end-to-end driving stacks,
-              sensor pipelines, and simulation.
-            </p>
-          </div>
-        </li>
-        <li class="timeline-item" data-reveal>
-          <p class="timeline-year">2026</p><span class="timeline-dot" aria-hidden="true"></span>
-          <div class="timeline-content">
-            <h3>Test at full scale</h3>
-            <p>
-              For our ASE 2026 study, I compared 72 camera and LiDAR perturbations across offline
-              analysis, hardware-in-the-loop execution, and closed-loop driving on Fortuna: more
-              than 740 experiments and over 48 hours of autonomous driving.
-            </p>
-          </div>
-        </li>
-        <li class="timeline-item" data-reveal>
-          <p class="timeline-year">NEXT</p><span class="timeline-dot" aria-hidden="true"></span>
-          <div class="timeline-content">
-            <h3>Turn fieldwork into shared infrastructure</h3>
-            <p>
-              I keep connecting physical drives to reproducible scenarios, open tools, student
-              projects, and research questions the next team can build on.
+              For our ASE 2026 study, Matthias Weil and I compared 72 camera and LiDAR
+              perturbations across offline analysis, hardware-in-the-loop execution, and
+              closed-loop driving on Fortuna: more than 740 experiments and over 48 hours of
+              autonomous driving. Recorded drives that Cam2Sim turns into closed-loop simulations.
+              Several bachelor’s and master’s theses. The same question can now run offline, in the
+              loop, and on the road, so we can{' '}
+              <a class="text-link" href="/publications/">compare where the answer changes</a>.
             </p>
           </div>
         </li>
       </ol>
-
-      <figure class="timeline-photo" data-reveal>
-        <img
-          src="/images/fortuna-recovery.jpg"
-          alt="The rear compute rack inside Fortuna, exposed with its PCs, GPUs, and batteries during the 2023 recovery work"
-          width="1400"
-          height="1867"
-          loading="lazy"
-        />
-        <figcaption class="video-frame-caption">
-          The back of the car, mid-recovery, 2023.
-        </figcaption>
-      </figure>
     </div>
   </section>
 
@@ -275,26 +211,15 @@ const realityGapPaper = publications.find((p) => p.title.startsWith('A Multi-Mod
     </div>
   </section>
 
-  <section class="section" aria-labelledby="platform-story-heading">
-    <div class="container-wide story-centered" data-reveal>
-      <h2 id="platform-story-heading" class="display-title">What’s on the car.</h2>
-      <p>
-        Fortuna is fortiss’s full-size autonomous-driving research vehicle: a retrofitted,
-        street-legal Volkswagen Passat Variant GTE with five cameras, three LiDARs providing
-        360° coverage, precise localization, onboard compute, and real-time access to steering
-        and acceleration through the vehicle gateway.
-      </p>
-      <p>
-        We use it to run the same research question across offline models, hardware-in-the-loop
-        setups, and a complete moving vehicle, then compare where the answer changes.
-      </p>
-    </div>
-  </section>
-
   <section class="architecture-panel" aria-labelledby="architecture-heading">
     <div class="container-wide">
       <div class="architecture-copy architecture-copy-wide" data-reveal>
-        <h2 id="architecture-heading">Sensors, compute, and control.</h2>
+        <h2 id="architecture-heading">What’s on the car.</h2>
+        <p>
+          A retrofitted, street-legal 2018 Volkswagen Passat Variant GTE with five cameras, three
+          LiDARs for 360° coverage, RTK localization, onboard compute, and real-time drive-by-wire
+          control through the vehicle gateway.
+        </p>
         <ol class="architecture-key">
           <li><span>01</span> Cameras for visual perception and end-to-end driving</li>
           <li><span>02</span> Three LiDARs for 360° geometry, obstacles, and modular stacks</li>
@@ -311,31 +236,26 @@ const realityGapPaper = publications.find((p) => p.title.startsWith('A Multi-Mod
           loading="lazy"
         />
       </div>
-    </div>
-  </section>
-
-  <section class="section section-dark" aria-labelledby="hw-logic-heading">
-    <div class="container-wide architecture-layout">
-      <div class="architecture-copy" data-reveal>
-        <h2 id="hw-logic-heading">Hardware and distributed computing pipeline.</h2>
-        <p>
-          The original platform ran on Apollo alone. I expanded it into a distributed system:
-          camera and LiDAR drivers publish over ROS from an Nvidia Drive PX2 and a dedicated PC,
-          Apollo still owns GPS/IMU, the CAN bus, and the real-time control interface that talks
-          to the dSpace MicroAutoBox II, and everything meets over Ethernet. A bridge machine
-          runs the ROS master alongside an Apollo/ROS adapter, so a separate “intelligence” node
-          (the system under test, plus whatever extra tooling a given experiment needs) can
-          subscribe to sensor data and publish control commands without touching Apollo directly.
-        </p>
-      </div>
-      <div class="diagram-plate">
-        <img
-          src="/images/fortuna-hw-scheme.jpg"
-          alt="Hardware and software architecture diagram: camera and LiDAR drivers on an Nvidia Drive PX2 and PC1 publish over ROS; GPS/IMU, CAN bus, and control drivers run inside Apollo on PC1 and send control commands to a dSpace MicroAutoBox II; all machines connect over Ethernet to PC2, which runs the ROS master and an Apollo/ROS adapter, exposing data and control to an Intelligence node running the system under test and extra auxiliary modules"
-          width="1600"
-          height="900"
-          loading="lazy"
-        />
+      <div class="architecture-layout specs-pipeline">
+        <div class="architecture-copy" data-reveal>
+          <h3 class="specs-subhead">How the pieces talk.</h3>
+          <p>
+            Camera and LiDAR drivers publish over ROS from an Nvidia Drive PX2 and a dedicated PC.
+            Apollo still owns GPS/IMU, the CAN bus, and the real-time control interface to the
+            dSpace MicroAutoBox II. A bridge machine runs the ROS master and an Apollo/ROS adapter,
+            so the system under test, on its own machine, subscribes to sensor data and publishes
+            control commands without touching Apollo. Everything meets over Ethernet.
+          </p>
+        </div>
+        <div class="diagram-plate" data-reveal>
+          <img
+            src="/images/fortuna-hw-scheme.jpg"
+            alt="Hardware and software architecture diagram: camera and LiDAR drivers on an Nvidia Drive PX2 and PC1 publish over ROS; GPS/IMU, CAN bus, and control drivers run inside Apollo on PC1 and send control commands to a dSpace MicroAutoBox II; all machines connect over Ethernet to PC2, which runs the ROS master and an Apollo/ROS adapter, exposing data and control to an Intelligence node running the system under test and extra auxiliary modules"
+            width="1600"
+            height="900"
+            loading="lazy"
+          />
+        </div>
       </div>
     </div>
   </section>
@@ -389,6 +309,7 @@ const realityGapPaper = publications.find((p) => p.title.startsWith('A Multi-Mod
               scenarios.
             </p>
           </div>
+          <a class="text-link" href="https://arxiv.org/abs/2607.04770" target="_blank" rel="noreferrer">Cam2Sim <span aria-hidden="true">↗︎</span></a>
         </li>
         <li class="contributor-row" data-reveal>
           <div>
@@ -407,6 +328,7 @@ const realityGapPaper = publications.find((p) => p.title.startsWith('A Multi-Mod
               became our ASE 2026 paper.
             </p>
           </div>
+          <a class="text-link" href="https://arxiv.org/abs/2607.04953" target="_blank" rel="noreferrer">ASE 2026 <span aria-hidden="true">↗︎</span></a>
         </li>
         <li class="contributor-row" data-reveal>
           <div>
@@ -416,6 +338,7 @@ const realityGapPaper = publications.find((p) => p.title.startsWith('A Multi-Mod
               vehicle-in-the-loop, and mixed-reality testing on the small-scale platform.
             </p>
           </div>
+          <a class="text-link" href="https://doi.org/10.1109/ASE63991.2025.00230" target="_blank" rel="noreferrer">ASE 2025 <span aria-hidden="true">↗︎</span></a>
         </li>
         <li class="contributor-row" data-reveal>
           <div>
@@ -434,6 +357,7 @@ const realityGapPaper = publications.find((p) => p.title.startsWith('A Multi-Mod
               framework for testing automated driving assistance systems.
             </p>
           </div>
+          <a class="text-link" href="https://arxiv.org/abs/2603.23661" target="_blank" rel="noreferrer">PerturbationDrive <span aria-hidden="true">↗︎</span></a>
         </li>
         <li class="contributor-row" data-reveal>
           <div>
@@ -442,15 +366,6 @@ const realityGapPaper = publications.find((p) => p.title.startsWith('A Multi-Mod
               Constantin's bachelor's thesis used Stable Diffusion and CARLA to reconstruct real
               driving scenarios and generate matching road layouts from recordings—the basis
               Cam2Sim was later built on.
-            </p>
-          </div>
-        </li>
-        <li class="contributor-row" data-reveal>
-          <div>
-            <h3>Timo Götz</h3>
-            <p>
-              Timo's industrial thesis, done in collaboration with BMW, automatically validates
-              acoustic test-bench recordings of electric motors.
             </p>
           </div>
         </li>

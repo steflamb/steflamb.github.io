@@ -1909,11 +1909,36 @@
     text-transform: uppercase;
   }
 
+  .ledger-body p,
   .ledger-row > p {
     max-width: 46rem;
     color: var(--muted);
     font-size: 1rem;
     line-height: 1.6;
+  }
+
+  .ledger-photo {
+    max-width: 15rem;
+    margin-top: 1.4rem;
+  }
+
+  .ledger-photo img {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: 4px;
+  }
+
+  .specs-pipeline {
+    margin-top: clamp(3.5rem, 7vw, 6rem);
+  }
+
+  .architecture-copy .specs-subhead {
+    margin-bottom: 1.2rem;
+    font-size: clamp(1.8rem, 3.2vw, 2.8rem);
+    font-weight: 530;
+    letter-spacing: -0.01em;
+    line-height: 1;
   }
 
   @media (max-width: 38rem) {
