@@ -387,7 +387,7 @@
   import { onDemoStart } from './demo-start';
   const root = document.getElementById('pertov-replay');
   if (root) {
-    onDemoStart(root, root.querySelector('.pv-stage') as HTMLElement, () => {
+    onDemoStart(root, root.querySelector('.pv-stage') as HTMLElement, (requested) => {
     import('./pertov-replay').then(({ startPertovReplay }) =>
       startPertovReplay({
         root,
@@ -398,6 +398,7 @@
         playButton: document.getElementById('pv-play') as HTMLButtonElement,
         card: document.getElementById('pv-card') as HTMLElement,
         readout: document.getElementById('pv-readout') as HTMLElement,
+        autoplay: requested,
       }),
     );
     });

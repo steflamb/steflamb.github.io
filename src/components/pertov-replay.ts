@@ -26,6 +26,7 @@ type ReplayElements = {
   playButton: HTMLButtonElement;
   card: HTMLElement;
   readout: HTMLElement;
+  autoplay?: boolean;
 };
 
 const SVG = 'http://www.w3.org/2000/svg';
@@ -241,7 +242,7 @@ export async function startPertovReplay(el: ReplayElements) {
 
   let run: Run = perturbed[0];
   let time = 0;
-  let playing = !reduceMotion.matches;
+  let playing = el.autoplay || !reduceMotion.matches;
   let visible = true;
   let frameId = 0;
   let last = performance.now();

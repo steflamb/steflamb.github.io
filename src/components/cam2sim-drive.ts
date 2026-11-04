@@ -9,6 +9,7 @@ type DriveElements = {
   recorded: HTMLImageElement;
   status: HTMLElement;
   autopilot: HTMLButtonElement;
+  autoplay?: boolean;
 };
 
 type Split = {
@@ -33,7 +34,7 @@ const MAX_SPEED = 9;
 
 const mat3 = (m: number[][]) => new THREE.Matrix4().set(...m[0], 0, ...m[1], 0, ...m[2], 0, 0, 0, 0, 1);
 
-export async function startCam2SimDrive({ root, simCanvas, splatCanvas, recorded, status, autopilot }: DriveElements) {
+export async function startCam2SimDrive({ root, simCanvas, splatCanvas, recorded, status, autopilot, autoplay }: DriveElements) {
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   const drive: Drive = await (await fetch('/cam2sim/drive.json')).json();
   const path = drive.path.map(([x, y, yaw, frame]) => ({ x, y, yaw, frame }));
@@ -393,5 +394,5 @@ export async function startCam2SimDrive({ root, simCanvas, splatCanvas, recorded
 
   await loadSplit(0);
   resize();
-  if (!reduceMotion.matches) setAuto(true);
+  if (autoplay || !reduceMotion.matches) setAuto(true);
 }

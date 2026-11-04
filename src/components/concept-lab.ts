@@ -3,7 +3,7 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
 import { MODE, RANDOM_PER_IMAGE, perturbationFragment, perturbationVertex } from './perturbations';
 
-type LabElements = { stage: HTMLElement; canvas: HTMLCanvasElement; form: HTMLFormElement };
+type LabElements = { stage: HTMLElement; canvas: HTMLCanvasElement; form: HTMLFormElement; autoplay?: boolean };
 
 const ROAD_WIDTH = 7;
 const SPEED = 9; // m/s, about 32 km/h
@@ -162,7 +162,7 @@ function logoTexture() {
 
 // --- The lab ---
 
-export async function startPerturbationLab({ stage, canvas, form }: LabElements) {
+export async function startPerturbationLab({ stage, canvas, form, autoplay }: LabElements) {
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   const readout = stage.querySelector('#lab-readout') as HTMLElement;
   const loading = stage.querySelector('#lab-loading') as HTMLElement;
@@ -228,7 +228,7 @@ export async function startPerturbationLab({ stage, canvas, form }: LabElements)
   postScene.add(new THREE.Mesh(new THREE.PlaneGeometry(2, 2), post));
   const postCamera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
 
-  const state = { id: select.value, scale: 2, playing: !reduceMotion.matches };
+  const state = { id: select.value, scale: 2, playing: autoplay || !reduceMotion.matches };
   let car: THREE.Object3D | null = null;
   let progress = 0.02; // fraction of the lap
   let visible = true;

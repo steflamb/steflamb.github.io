@@ -306,6 +306,8 @@
           recorded,
           status,
           autopilot,
+          // The visitor pressed Load, so start driving straight away.
+          autoplay: true,
         });
         document.getElementById('c2s-splat-pane')!.append(recorded);
         document.getElementById('c2s-start')!.hidden = true;

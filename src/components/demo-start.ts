@@ -3,13 +3,14 @@
 const compact = window.matchMedia('(max-width: 54rem), (pointer: coarse)');
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
-export function onDemoStart(root: HTMLElement, stage: HTMLElement, start: () => void, label = 'Start demo') {
+// start(true) means the visitor asked for it, so the demo moves even under reduced motion.
+export function onDemoStart(root: HTMLElement, stage: HTMLElement, start: (requested: boolean) => void, label = 'Start demo') {
   if (!compact.matches) {
     new IntersectionObserver(
       ([entry], observer) => {
         if (!entry.isIntersecting) return;
         observer.disconnect();
-        start();
+        start(false);
       },
       { rootMargin: '300px 0px' },
     ).observe(root);
@@ -24,6 +25,6 @@ export function onDemoStart(root: HTMLElement, stage: HTMLElement, start: () => 
   button.addEventListener('click', () => {
     button.remove();
     root.scrollIntoView({ behavior: reduceMotion.matches ? 'auto' : 'smooth', block: 'start' });
-    start();
+    start(true);
   });
 }

@@ -286,8 +286,10 @@ const groups = [...new Set(PERTURBATIONS.map((p) => p.group))].map((group) => ({
       document.getElementById('lab-fallback')!.hidden = false;
     } else {
       // Fetch three.js and the scan only when the lab is about to be used.
-      onDemoStart(lab, stage, () => {
-        import('./concept-lab').then(({ startPerturbationLab }) => startPerturbationLab({ stage, canvas, form }));
+      onDemoStart(lab, stage, (requested) => {
+        import('./concept-lab').then(({ startPerturbationLab }) =>
+          startPerturbationLab({ stage, canvas, form, autoplay: requested }),
+        );
       });
     }
   }

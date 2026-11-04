@@ -543,6 +543,20 @@
   }
 
   @media (max-width: 54rem) {
+    /* Interactive demos: the controls sit right under the scene so both fit on one screen. */
+    .demo-showcase-copy:has(> .lab-controls, > .pv-controls, > .c2s-controls) {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .demo-showcase-copy > .lab-controls,
+    .demo-showcase-copy > .pv-controls,
+    .demo-showcase-copy > .c2s-controls {
+      order: -1;
+      margin-top: 0;
+      margin-bottom: 1.6rem;
+    }
+
     html:has(.demo-showcase-list) {
       scroll-snap-type: y proximity;
     }

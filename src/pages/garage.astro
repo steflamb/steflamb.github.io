@@ -17,11 +17,38 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         I scanned Fortuna and my motorcycle into 3D models. Take either for a lap around the
         track, no research question required.
       </p>
-      <fieldset class="garage-vehicle">
-        <legend>Vehicle</legend>
-        <label><input type="radio" name="vehicle" value="fortuna" checked /><span>Fortuna</span></label>
-        <label><input type="radio" name="vehicle" value="gs" /><span>GS motorcycle</span></label>
-      </fieldset>
+      <details class="garage-settings" id="garage-settings" open>
+        <summary>Race settings</summary>
+        <fieldset class="garage-vehicle">
+          <legend>Vehicle</legend>
+          <label><input type="radio" name="vehicle" value="fortuna" checked /><span>Fortuna</span></label>
+          <label><input type="radio" name="vehicle" value="gs" /><span>GS motorcycle</span></label>
+        </fieldset>
+        <div class="garage-options">
+          <label>
+            <span>Circuit</span>
+            <select id="garage-circuit">
+              <option value="cones">Cone course</option>
+              <option value="monza">Monza, simplified</option>
+              <option value="spa">Spa, simplified</option>
+            </select>
+          </label>
+          <label>
+            <span>Weather</span>
+            <select id="garage-weather">
+              <option value="clear">Clear</option>
+              <option value="rain">Rain</option>
+              <option value="fog">Fog</option>
+              <option value="sun">Low sun</option>
+              <option value="snow">Snow</option>
+            </select>
+          </label>
+        </div>
+        <div class="garage-toggles">
+          <label><input type="checkbox" id="garage-traffic" /> <span>Traffic</span></label>
+          <label><input type="checkbox" id="garage-ghost" checked /> <span>Ghost of best lap</span></label>
+        </div>
+      </details>
       <p class="garage-controls garage-desktop-only">Arrow keys or WASD to drive.</p>
       <p class="garage-controls garage-mobile-only">Use the on-screen controls to drive.</p>
       <a class="text-link text-link-light" href="/fortuna/">← Back to Fortuna</a>
@@ -105,6 +132,75 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
   .garage-mobile-only {
     display: none;
+  }
+
+  .garage-settings {
+    margin-top: 1rem;
+  }
+
+  .garage-settings summary {
+    display: none;
+  }
+
+  .garage-options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+    margin-top: 0.9rem;
+  }
+
+  .garage-options label {
+    display: grid;
+    gap: 0.35rem;
+    color: var(--muted-dark);
+    font-family: var(--mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .garage-options select {
+    min-height: 2.5rem;
+    padding: 0 0.6rem;
+    border: 1px solid rgba(250, 250, 248, 0.35);
+    border-radius: 0;
+    background: rgba(15, 23, 32, 0.6);
+    color: var(--paper-bright);
+    font: inherit;
+    font-family: var(--sans);
+    font-size: 0.85rem;
+    letter-spacing: 0;
+    text-transform: none;
+  }
+
+  .garage-toggles {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 1.1rem;
+    margin-top: 0.8rem;
+    font-size: 0.85rem;
+  }
+
+  .garage-toggles label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    cursor: pointer;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  .garage-toggles input {
+    width: 1rem;
+    height: 1rem;
+    accent-color: var(--lane);
+  }
+
+  .garage-options select:focus-visible,
+  .garage-toggles input:focus-visible,
+  .garage-settings summary:focus-visible {
+    outline: 3px solid var(--signal);
+    outline-offset: 3px;
   }
 
   .garage-vehicle {
@@ -314,6 +410,51 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       bottom: 9rem;
       right: 1.25rem;
     }
+
+    /* On phones the panel is a compact bar; settings open on demand over the track. */
+    .garage-hud {
+      max-width: none;
+      margin: 5.6rem 0.6rem 0;
+      padding: 0.7rem 0.9rem;
+    }
+
+    .garage-hud .eyebrow,
+    .garage-instructions,
+    .garage-controls,
+    .garage-hud .text-link {
+      display: none;
+    }
+
+    .garage-hud h1 {
+      display: none;
+    }
+
+    .garage-settings {
+      margin-top: 0;
+    }
+
+    .garage-settings summary {
+      display: flex;
+      min-height: 2.5rem;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      font-weight: 600;
+      list-style: none;
+    }
+
+    .garage-settings summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .garage-settings summary::after {
+      content: '+';
+      font-family: var(--mono);
+    }
+
+    .garage-settings[open] summary::after {
+      content: '–';
+    }
   }
 </style>
 
@@ -321,6 +462,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   import * as THREE from 'three';
   import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
   import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
+  import { createPerturbationPass } from '../components/perturbation-pass';
 
   const canvas = document.getElementById('garage-canvas') as HTMLCanvasElement;
   const loadingEl = document.getElementById('garage-loading') as HTMLElement;
@@ -362,10 +504,22 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFShadowMap;
 
+  // Weather is drawn with PerturbationDrive's shaders; rain and snow also cost grip.
+  const WEATHER: Record<string, { id: string; scale: number; grip: number } | undefined> = {
+    rain: { id: 'dynamic_rain_filter', scale: 2, grip: 0.8 },
+    fog: { id: 'fog_filter', scale: 3, grip: 1 },
+    sun: { id: 'dynamic_sun_filter', scale: 2, grip: 1 },
+    snow: { id: 'dynamic_snow_filter', scale: 2, grip: 0.6 },
+  };
+  let weather = 'clear';
+  let weatherClock = 0;
+  const pass = createPerturbationPass(renderer, camera);
+
   function resize() {
     const w = section.clientWidth;
     const h = section.clientHeight;
     renderer.setSize(w, h, false);
+    pass.setSize(w, h);
     camera.aspect = w / h;
     camera.updateProjectionMatrix();
   }
@@ -422,44 +576,73 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   ground.receiveShadow = true;
   scene.add(ground);
 
-  // --- Track: a stadium shape (two straights joined by two turns), built as a strip of
-  // points with a tangent at each one. Everything below (the road mesh, the dashed
-  // centerline, the cones, and the lap-crossing math) is derived from this same path,
-  // so it's all guaranteed to line up with the actual shape of the road.
-  const straightLength = 44;
-  const turnRadius = 15;
+  // --- Circuits. Each is a closed path of points with a tangent at each one; the road
+  // mesh, dashes, cones, off-road test and lap-crossing math all derive from it, so
+  // everything lines up with the actual shape of the road.
   const roadWidth = 9;
-
   type PathPoint = { x: number; z: number; tx: number; tz: number };
 
-  function buildTrackPath(): PathPoint[] {
+  // The original cone course: two straights joined by two turns.
+  function stadiumPoints() {
+    const straightLength = 44;
+    const turnRadius = 15;
     const halfL = straightLength / 2;
     const segsPerTurn = 40;
-    // Sample the straights at roughly the same point-per-length density as the turns,
-    // so the path (and anything placed along it—dashes, cones) is spaced evenly by
-    // actual distance, not by which segment happens to own more array indices.
     const straightSegs = Math.max(4, Math.round((segsPerTurn / (Math.PI * turnRadius)) * straightLength));
     const raw: { x: number; z: number }[] = [];
-
-    // Each loop below contributes points up to (but not including) its own endpoint,
-    // since that endpoint is the very next segment's starting point.
-    for (let i = 0; i < straightSegs; i++) {
-      const t = i / straightSegs;
-      raw.push({ x: -halfL + t * straightLength, z: -turnRadius }); // bottom straight, left to right
-    }
+    for (let i = 0; i < straightSegs; i++) raw.push({ x: -halfL + (i / straightSegs) * straightLength, z: -turnRadius });
     for (let i = 0; i < segsPerTurn; i++) {
       const theta = -Math.PI / 2 + (i / segsPerTurn) * Math.PI;
-      raw.push({ x: halfL + Math.cos(theta) * turnRadius, z: Math.sin(theta) * turnRadius }); // right turn
+      raw.push({ x: halfL + Math.cos(theta) * turnRadius, z: Math.sin(theta) * turnRadius });
     }
-    for (let i = 0; i < straightSegs; i++) {
-      const t = i / straightSegs;
-      raw.push({ x: halfL - t * straightLength, z: turnRadius }); // top straight, right to left
-    }
+    for (let i = 0; i < straightSegs; i++) raw.push({ x: halfL - (i / straightSegs) * straightLength, z: turnRadius });
     for (let i = 0; i < segsPerTurn; i++) {
       const theta = Math.PI / 2 + (i / segsPerTurn) * Math.PI;
-      raw.push({ x: -halfL + Math.cos(theta) * turnRadius, z: Math.sin(theta) * turnRadius }); // left turn
+      raw.push({ x: -halfL + Math.cos(theta) * turnRadius, z: Math.sin(theta) * turnRadius });
     }
+    return raw;
+  }
 
+  // Layouts after well-known circuits, simplified and scaled down: [east, north] in metres,
+  // starting on the main straight.
+  const LAYOUTS: Record<string, { points: number[][]; scale: number }> = {
+    // Main straight, Rettifilo chicane, Curva Grande, Roggia, the two Lesmos, the back
+    // straight with the Ascari chicane, and the Parabolica back onto the straight.
+    monza: {
+      scale: 0.75,
+      points: [
+        [0, -130], [0, 0], [0, 150], [7, 170], [-9, 187], [0, 205], [14, 250], [40, 292], [78, 316],
+        [110, 320], [122, 311], [133, 327], [147, 318], [176, 312], [194, 292], [204, 262], [200, 232],
+        [184, 170], [160, 90], [140, 20], [128, -30], [142, -50], [124, -72], [131, -95], [118, -150],
+        [100, -200], [70, -230], [36, -232], [12, -210], [2, -175],
+      ],
+    },
+    // Start straight into the La Source hairpin, down through Eau Rouge, the Kemmel straight,
+    // Les Combes, Rivage, Pouhon, Stavelot, Blanchimont and the Bus Stop chicane.
+    spa: {
+      scale: 0.85,
+      points: [
+        [0, -40], [0, 30], [6, 62], [24, 76], [42, 66], [46, 40], [38, 14], [54, -8], [46, -32],
+        [70, -72], [110, -136], [140, -180], [156, -196], [170, -198], [178, -214], [188, -240],
+        [182, -266], [160, -264], [132, -250], [106, -262], [84, -286], [56, -292], [28, -282],
+        [8, -256], [-12, -220], [-20, -170], [-14, -122], [-4, -100], [-14, -86], [-2, -72],
+      ],
+    },
+  };
+
+  function circuitPath(key: string): PathPoint[] {
+    let raw: { x: number; z: number }[];
+    if (key === 'cones') {
+      raw = stadiumPoints();
+    } else {
+      const layout = LAYOUTS[key];
+      const curve = new THREE.CatmullRomCurve3(
+        layout.points.map(([e, n]) => new THREE.Vector3(e * layout.scale, 0, -n * layout.scale)),
+        true,
+        'centripetal',
+      );
+      raw = curve.getSpacedPoints(Math.round(curve.getLength())).slice(0, -1).map((v) => ({ x: v.x, z: v.z }));
+    }
     const n = raw.length;
     return raw.map((p, i) => {
       const next = raw[(i + 1) % n];
@@ -471,7 +654,10 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     });
   }
 
-  const trackPath = buildTrackPath();
+  let trackPath: PathPoint[] = [];
+  let trackAlong: number[] = []; // distance along the path at each point
+  let trackLength = 1;
+  let startPoint: PathPoint;
 
   // Signed perpendicular distance of (x, z) from the track's centerline: 0 = dead
   // center, positive = toward the outer edge. Used both to draw the road and to
@@ -489,6 +675,23 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       }
     }
     return bestOffset;
+  }
+
+  // A point at distance s along the path, interpolated, with its tangent.
+  function pathAt(s: number) {
+    const d = ((s % trackLength) + trackLength) % trackLength;
+    let lo = 0;
+    let hi = trackAlong.length - 1;
+    while (hi - lo > 1) {
+      const mid = (lo + hi) >> 1;
+      if (trackAlong[mid] <= d) lo = mid;
+      else hi = mid;
+    }
+    const a = trackPath[lo];
+    const b = trackPath[(lo + 1) % trackPath.length];
+    const span = (lo + 1 < trackAlong.length ? trackAlong[lo + 1] : trackLength) - trackAlong[lo];
+    const f = span > 0 ? (d - trackAlong[lo]) / span : 0;
+    return { x: a.x + (b.x - a.x) * f, z: a.z + (b.z - a.z) * f, tx: a.tx, tz: a.tz };
   }
 
   function buildRoadGeometry(path: PathPoint[], width: number, y: number) {
@@ -519,27 +722,12 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     return geo;
   }
 
-  const road = new THREE.Mesh(
-    buildRoadGeometry(trackPath, roadWidth, 0.05),
-    new THREE.MeshStandardMaterial({ color: '#45454b', roughness: 1, side: THREE.DoubleSide }),
-  );
-  road.receiveShadow = true;
-  scene.add(road);
-
-  // Dashed centerline: each dash is aligned to the road's actual tangent at that point,
-  // computed directly (via setFromUnitVectors) rather than a hand-derived angle formula.
+  const roadMat = new THREE.MeshStandardMaterial({ color: '#45454b', roughness: 1, side: THREE.DoubleSide });
+  const kerbMat = new THREE.MeshStandardMaterial({ color: '#d9d6cc', roughness: 1, side: THREE.DoubleSide });
   const dashGeo = new THREE.PlaneGeometry(1.6, 0.25);
   dashGeo.rotateX(-Math.PI / 2);
   const dashMat = new THREE.MeshStandardMaterial({ color: '#f5f2e8', roughness: 0.9 });
   const localXAxis = new THREE.Vector3(1, 0, 0);
-  for (let i = 0; i < trackPath.length; i += 5) {
-    const p = trackPath[i];
-    const dash = new THREE.Mesh(dashGeo, dashMat);
-    dash.position.set(p.x, 0.07, p.z);
-    dash.quaternion.setFromUnitVectors(localXAxis, new THREE.Vector3(p.tx, 0, p.tz));
-    dash.receiveShadow = true;
-    scene.add(dash);
-  }
 
   // Checkered start/finish line, at the start of the path, spanning the full road width.
   function makeCheckerTexture() {
@@ -558,21 +746,11 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     tex.magFilter = THREE.NearestFilter;
     return tex;
   }
-
-  const startPoint = trackPath[0];
   const finishLineGeo = new THREE.PlaneGeometry(1.6, roadWidth);
-  finishLineGeo.rotateX(-Math.PI / 2); // lie flat on the ground, like the dashes
-  const finishLine = new THREE.Mesh(
-    finishLineGeo,
-    new THREE.MeshStandardMaterial({ map: makeCheckerTexture(), roughness: 0.9, side: THREE.DoubleSide }),
-  );
-  finishLine.position.set(startPoint.x, 0.08, startPoint.z);
-  finishLine.quaternion.setFromUnitVectors(localXAxis, new THREE.Vector3(startPoint.tx, 0, startPoint.tz));
-  finishLine.receiveShadow = true;
-  scene.add(finishLine);
+  finishLineGeo.rotateX(-Math.PI / 2);
+  const finishLineMat = new THREE.MeshStandardMaterial({ map: makeCheckerTexture(), roughness: 0.9, side: THREE.DoubleSide });
 
-  // --- Cones lining the outer edge of the track ---
-  // Knock them over by driving into them.
+  // --- Cones. Knock them over by driving into them.
   const coneHeight = 0.8;
   const coneGeo = new THREE.ConeGeometry(0.35, coneHeight, 12);
   coneGeo.translate(0, coneHeight / 2, 0); // pivot at the base, so it topples instead of sinking
@@ -590,16 +768,21 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     progress: number;
     fallAxis: THREE.Vector3;
   };
-  const cones: Cone[] = [];
+  let cones: Cone[] = [];
+  let coneModel: THREE.Object3D | null = null;
   // Each cone is a pivot at its base; it shows a simple cone until the scanned one loads.
   function spawnCone(x: number, z: number) {
     const cone = new THREE.Group();
-    const placeholder = new THREE.Mesh(coneGeo, coneMat);
-    placeholder.castShadow = true;
-    cone.add(placeholder);
+    if (coneModel) {
+      cone.add(coneModel.clone());
+    } else {
+      const placeholder = new THREE.Mesh(coneGeo, coneMat);
+      placeholder.castShadow = true;
+      cone.add(placeholder);
+    }
     const base = new THREE.Vector3(x, 0, z);
     cone.position.copy(base);
-    scene.add(cone);
+    circuitGroup.add(cone);
     cones.push({ mesh: cone, base, knocked: false, progress: 0, fallAxis: new THREE.Vector3(1, 0, 0) });
   }
 
@@ -618,45 +801,91 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       model.traverse((o) => {
         if ((o as THREE.Mesh).isMesh) o.castShadow = true;
       });
+      coneModel = model;
       for (const cone of cones) cone.mesh.clear().add(model.clone());
     });
   }
 
-  for (let i = 0; i < trackPath.length; i += 8) {
-    const p = trackPath[i];
-    const nx = p.tz;
-    const nz = -p.tx;
-    spawnCone(p.x + nx * coneMargin, p.z + nz * coneMargin);
+  // --- Building a circuit's world ---
+  const circuitGroup = new THREE.Group();
+  scene.add(circuitGroup);
+
+  function buildCircuitWorld(key: string) {
+    circuitGroup.traverse((o) => {
+      const mesh = o as THREE.Mesh;
+      if (mesh.isMesh && mesh.geometry !== dashGeo && mesh.geometry !== coneGeo && mesh.geometry !== finishLineGeo) mesh.geometry.dispose();
+    });
+    circuitGroup.clear();
+    cones = [];
+
+    trackPath = circuitPath(key);
+    trackAlong = [0];
+    for (let i = 1; i < trackPath.length; i++) {
+      trackAlong.push(trackAlong[i - 1] + Math.hypot(trackPath[i].x - trackPath[i - 1].x, trackPath[i].z - trackPath[i - 1].z));
+    }
+    const last = trackPath[trackPath.length - 1];
+    trackLength = trackAlong[trackAlong.length - 1] + Math.hypot(trackPath[0].x - last.x, trackPath[0].z - last.z);
+    startPoint = trackPath[0];
+
+    const kerbs = new THREE.Mesh(buildRoadGeometry(trackPath, roadWidth + 1.2, 0.04), kerbMat);
+    kerbs.receiveShadow = true;
+    const road = new THREE.Mesh(buildRoadGeometry(trackPath, roadWidth, 0.05), roadMat);
+    road.receiveShadow = true;
+    circuitGroup.add(kerbs, road);
+
+    // Dashed centerline, each dash aligned to the road's tangent, about every 5 m.
+    for (let s = 0; s < trackLength; s += 5) {
+      const p = pathAt(s);
+      const dash = new THREE.Mesh(dashGeo, dashMat);
+      dash.position.set(p.x, 0.07, p.z);
+      dash.quaternion.setFromUnitVectors(localXAxis, new THREE.Vector3(p.tx, 0, p.tz));
+      dash.receiveShadow = true;
+      circuitGroup.add(dash);
+    }
+
+    const finishLine = new THREE.Mesh(finishLineGeo, finishLineMat);
+    finishLine.position.set(startPoint.x, 0.08, startPoint.z);
+    finishLine.quaternion.setFromUnitVectors(localXAxis, new THREE.Vector3(startPoint.tx, 0, startPoint.tz));
+    finishLine.receiveShadow = true;
+    circuitGroup.add(finishLine);
+
+    if (key === 'cones') {
+      // Cones along the outer edge, a slalom and two gates.
+      for (let i = 0; i < trackPath.length; i += 8) {
+        const p = trackPath[i];
+        spawnCone(p.x + p.tz * coneMargin, p.z - p.tx * coneMargin);
+      }
+      // A car needs its center at least carHitRadius + coneHitRadius from a cone to
+      // clear it without knocking it over, and the road's usable half-width (before
+      // "off road") is roughly roadWidth / 2 + 0.5. Both the slalom offsets and the
+      // gate gap below are chosen to leave real clearance on that math, not just by eye.
+      const minClearance = carHitRadius + coneHitRadius + 0.5;
+      const pointAt = (frac: number) => {
+        const p = trackPath[Math.floor(frac * trackPath.length) % trackPath.length];
+        return { p, nx: p.tz, nz: -p.tx };
+      };
+      const slalomCount = 12;
+      const slalomLateral = roadWidth / 4;
+      for (let i = 0; i < slalomCount; i++) {
+        const { p, nx, nz } = pointAt(0.06 + (i / (slalomCount - 1)) * 0.88);
+        const lateral = (i % 2 === 0 ? 1 : -1) * slalomLateral;
+        spawnCone(p.x + nx * lateral, p.z + nz * lateral);
+      }
+      const gateHalfGap = minClearance + 0.5;
+      for (const frac of [0.35, 0.65]) {
+        const { p, nx, nz } = pointAt(frac);
+        spawnCone(p.x + nx * gateHalfGap, p.z + nz * gateHalfGap);
+        spawnCone(p.x - nx * gateHalfGap, p.z - nz * gateHalfGap);
+      }
+    } else {
+      // Race circuits: cones lining both edges, every 25 m.
+      for (let s = 12; s < trackLength; s += 25) {
+        const p = pathAt(s);
+        for (const side of [1, -1]) spawnCone(p.x + p.tz * coneMargin * side, p.z - p.tx * coneMargin * side);
+      }
+    }
   }
-
-  // --- Obstacle cones, planted inside the road itself ---
-  // A car needs its center at least carHitRadius + coneHitRadius from a cone to
-  // clear it without knocking it over, and the road's usable half-width (before
-  // "off road") is roughly roadWidth / 2 + 0.5. Both the slalom offsets and the
-  // gate gap below are chosen to leave real clearance on that math, not just by eye.
-  const minClearance = carHitRadius + coneHitRadius + 0.5; // +0.5 safety margin
-  function pointAt(frac: number) {
-    const idx = Math.floor(frac * trackPath.length) % trackPath.length;
-    const p = trackPath[idx];
-    return { p, nx: p.tz, nz: -p.tx };
-  }
-
-  const slalomCount = 12;
-  const slalomSpots = Array.from({ length: slalomCount }, (_, i) => 0.06 + (i / (slalomCount - 1)) * 0.88);
-  const slalomLateral = roadWidth / 4; // leaves minClearance+ of room to pass on the outside
-  slalomSpots.forEach((frac, i) => {
-    const { p, nx, nz } = pointAt(frac);
-    const lateral = (i % 2 === 0 ? 1 : -1) * slalomLateral;
-    spawnCone(p.x + nx * lateral, p.z + nz * lateral);
-  });
-
-  const gateSpots = [0.35, 0.65];
-  const gateHalfGap = minClearance + 0.5; // comfortable gap to thread through the middle
-  gateSpots.forEach((frac) => {
-    const { p, nx, nz } = pointAt(frac);
-    spawnCone(p.x + nx * gateHalfGap, p.z + nz * gateHalfGap);
-    spawnCone(p.x - nx * gateHalfGap, p.z - nz * gateHalfGap);
-  });
+  buildCircuitWorld('cones');
 
   function updateStats() {
     const knocked = cones.filter((c) => c.knocked).length;
@@ -731,6 +960,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     gs: { url: '/models/gs.glb', model: null, length: 2.2, halfLength: 1.08, halfWidth: 0.3, maxSpeed: 22, accel: 11, turnRate: 2.4, leans: true },
   };
   let vehicle = vehicles.fortuna;
+  let vehicleKey = 'fortuna';
+  let circuitKey = 'cones';
 
   // rig: position and heading; leanPivot: roll about the tyres' contact line on the ground.
   const rig = new THREE.Group();
@@ -775,10 +1006,13 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     loadVehicle(v)
       .then((model) => {
         vehicle = v;
+        vehicleKey = key;
         leanPivot.clear();
         leanPivot.add(model);
         car = rig;
         carLength = v.length;
+        buildGhost(model);
+        restartRace();
       })
       .catch((err) => {
         console.error('Failed to load the vehicle', err);
@@ -810,7 +1044,9 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     KeyD: 'right',
   };
 
+  const inForm = (e: KeyboardEvent) => e.target instanceof HTMLSelectElement || e.target instanceof HTMLInputElement;
   window.addEventListener('keydown', (e) => {
+    if (inForm(e)) return;
     const key = keyMap[e.code];
     if (key) {
       input[key] = true;
@@ -822,6 +1058,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     }
   });
   window.addEventListener('keyup', (e) => {
+    if (inForm(e)) return;
     const key = keyMap[e.code];
     if (key) {
       input[key] = false;
@@ -888,10 +1125,12 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   let lapNumber = 0;
   let lapElapsed = 0;
   // The best lap survives a reload, so a returning driver has something to beat.
-  const bestLapKey = 'garage-best-lap';
+  // One record per circuit and vehicle; the original cone course keeps its old key.
+  const bestLapKey = () =>
+    circuitKey === 'cones' && vehicleKey === 'fortuna' ? 'garage-best-lap' : `garage-best-lap:${circuitKey}:${vehicleKey}`;
   function readBestLap() {
     try {
-      const stored = Number.parseFloat(localStorage.getItem(bestLapKey) ?? '');
+      const stored = Number.parseFloat(localStorage.getItem(bestLapKey()) ?? '');
       return Number.isFinite(stored) ? stored : null;
     } catch {
       return null;
@@ -899,7 +1138,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   }
   function saveBestLap(t: number) {
     try {
-      localStorage.setItem(bestLapKey, String(t));
+      localStorage.setItem(bestLapKey(), String(t));
     } catch {
       // Storage unavailable (private mode, blocked site data): the record lasts this visit.
     }
@@ -907,6 +1146,164 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   let bestLapTime: number | null = readBestLap();
   let lapCrossingCooldown = 0;
   let offRoad = false;
+
+  // --- Ghost: the best lap, replayed as a see-through copy of the vehicle ---
+  type Sample = [number, number, number, number]; // lap clock, x, z, heading
+  let ghostLap: Sample[] | null = null;
+  let recording: Sample[] = [];
+  let lapClock = 0; // time on track this lap, without penalties
+  let lastSample = -1;
+  const ghostEnabled = document.getElementById('garage-ghost') as HTMLInputElement;
+  const ghost = new THREE.Group();
+  ghost.visible = false;
+  scene.add(ghost);
+  const ghostKey = () => `garage-ghost:${circuitKey}:${vehicleKey}`;
+  function readGhost() {
+    try {
+      const stored = JSON.parse(localStorage.getItem(ghostKey()) ?? 'null');
+      return Array.isArray(stored) ? (stored as Sample[]) : null;
+    } catch {
+      return null;
+    }
+  }
+  function saveGhost(samples: Sample[]) {
+    try {
+      localStorage.setItem(ghostKey(), JSON.stringify(samples.map((p) => p.map((v) => Math.round(v * 100) / 100))));
+    } catch {
+      // Storage full or unavailable: the ghost lasts this visit.
+    }
+  }
+  function buildGhost(model: THREE.Object3D) {
+    ghost.clear();
+    const copy = model.clone();
+    const material = new THREE.MeshBasicMaterial({ color: '#ffcf33', transparent: true, opacity: 0.32, depthWrite: false });
+    copy.traverse((o) => {
+      const mesh = o as THREE.Mesh;
+      if (mesh.isMesh) {
+        mesh.material = material;
+        mesh.castShadow = false;
+      }
+    });
+    ghost.add(copy);
+  }
+  function updateGhost() {
+    if (!ghostLap || !lapStarted || !ghostEnabled.checked || ghostLap.length < 2) {
+      ghost.visible = false;
+      return;
+    }
+    let i = 0;
+    while (i < ghostLap.length - 2 && ghostLap[i + 1][0] < lapClock) i++;
+    const a = ghostLap[i];
+    const b = ghostLap[i + 1];
+    if (lapClock > ghostLap[ghostLap.length - 1][0]) {
+      ghost.visible = false;
+      return;
+    }
+    const f = b[0] > a[0] ? THREE.MathUtils.clamp((lapClock - a[0]) / (b[0] - a[0]), 0, 1) : 0;
+    const dh = Math.atan2(Math.sin(b[3] - a[3]), Math.cos(b[3] - a[3]));
+    ghost.visible = true;
+    ghost.position.set(a[1] + (b[1] - a[1]) * f, 0, a[2] + (b[2] - a[2]) * f);
+    ghost.rotation.y = a[3] + dh * f + carHeadingOffset;
+  }
+
+  // --- Traffic: slower cars on both lanes, following the road ---
+  type TrafficCar = { s: number; lane: number; v: number; target: number; mesh: THREE.Group; cooldown: number };
+  let trafficCars: TrafficCar[] = [];
+  const trafficEnabled = document.getElementById('garage-traffic') as HTMLInputElement;
+  const trafficColours = ['#56606a', '#8d2f23', '#2c4a6b', '#d9d6cc', '#3f5a35'];
+  function makeTrafficCar(colour: string) {
+    const car = new THREE.Group();
+    const paint = new THREE.MeshStandardMaterial({ color: colour, roughness: 0.5, metalness: 0.2 });
+    const glass = new THREE.MeshStandardMaterial({ color: '#1b2229', roughness: 0.2 });
+    const body = new THREE.Mesh(new THREE.BoxGeometry(1.85, 0.7, 4.4), paint);
+    body.position.y = 0.6;
+    const cabin = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.55, 2.3), glass);
+    cabin.position.set(0, 1.2, 0.2);
+    for (const m of [body, cabin]) {
+      m.castShadow = true;
+      car.add(m);
+    }
+    return car;
+  }
+  function spawnTraffic() {
+    for (const t of trafficCars) scene.remove(t.mesh);
+    trafficCars = [];
+    if (!trafficEnabled.checked) return;
+    const count = Math.max(3, Math.min(8, Math.round(trackLength / 90)));
+    for (let i = 0; i < count; i++) {
+      const target = 7 + ((i * 37) % 5);
+      const mesh = makeTrafficCar(trafficColours[i % trafficColours.length]);
+      scene.add(mesh);
+      trafficCars.push({ s: 40 + (i * trackLength) / count, lane: i % 2 ? 2.1 : -2.1, v: target, target, mesh, cooldown: 0 });
+    }
+    updateTraffic(0);
+  }
+  const contactPenaltySeconds = 5;
+  function updateTraffic(dt: number) {
+    for (const t of trafficCars) {
+      // Keep a gap to the car ahead in the same lane.
+      let target = t.target;
+      for (const o of trafficCars) {
+        if (o === t || o.lane !== t.lane) continue;
+        const gap = (((o.s - t.s) % trackLength) + trackLength) % trackLength;
+        if (gap < 14) target = Math.min(target, o.v * 0.9);
+      }
+      t.v += THREE.MathUtils.clamp(target - t.v, -6 * dt, 2 * dt);
+      t.s += t.v * dt;
+      const p = pathAt(t.s);
+      t.mesh.position.set(p.x + p.tz * t.lane, 0, p.z - p.tx * t.lane);
+      t.mesh.rotation.y = Math.atan2(p.tx, p.tz);
+      t.cooldown -= dt;
+
+      // Contact with the player: the player's footprint against the traffic car's.
+      const dx = t.mesh.position.x - car_state.x;
+      const dz = t.mesh.position.z - car_state.z;
+      const along = dx * Math.sin(car_state.heading) + dz * Math.cos(car_state.heading);
+      const across = dx * Math.cos(car_state.heading) - dz * Math.sin(car_state.heading);
+      if (Math.abs(along) < vehicle.halfLength + 2.2 && Math.abs(across) < vehicle.halfWidth + 0.95 && t.cooldown <= 0) {
+        t.cooldown = 1.5;
+        car_state.speed *= 0.35;
+        const push = Math.sign(along) || 1;
+        car_state.x -= Math.sin(car_state.heading) * push * 0.6;
+        car_state.z -= Math.cos(car_state.heading) * push * 0.6;
+        if (lapStarted && !offRoad) {
+          lapElapsed += contactPenaltySeconds;
+          flashStat(lapStatEl);
+          showPenaltyToast(`Contact — +${contactPenaltySeconds}s`);
+        }
+      }
+    }
+  }
+  trafficEnabled.addEventListener('change', () => {
+    spawnTraffic();
+    trafficEnabled.blur();
+  });
+
+  // Back to the grid: on a new circuit, a new vehicle, or traffic switched on.
+  function restartRace() {
+    car_state.x = startPoint.x - spawnBehind * startPoint.tx;
+    car_state.z = startPoint.z - spawnBehind * startPoint.tz;
+    car_state.heading = Math.atan2(startPoint.tx, startPoint.tz);
+    car_state.speed = 0;
+    camPos.set(
+      car_state.x - Math.sin(car_state.heading) * (carLength * 1.9 + 4),
+      carLength * 0.55 + 2.5,
+      car_state.z - Math.cos(car_state.heading) * (carLength * 1.9 + 4),
+    );
+    camTarget.set(car_state.x + Math.sin(car_state.heading) * 3, 1.2, car_state.z + Math.cos(car_state.heading) * 3);
+    lapPrevForward = forwardOffset(car_state.x, car_state.z);
+    lapStarted = false;
+    lapNumber = 0;
+    lapElapsed = 0;
+    lapClock = 0;
+    recording = [];
+    offRoad = false;
+    bestLapTime = readBestLap();
+    ghostLap = readGhost();
+    resetCones();
+    spawnTraffic();
+    updateLapDisplay();
+  }
 
   function formatLapTime(t: number) {
     return `${t.toFixed(1)}s`;
@@ -958,17 +1355,29 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           );
           bestLapTime = lapElapsed;
           saveBestLap(bestLapTime);
+          ghostLap = recording;
+          saveGhost(recording);
         }
         lapNumber += 1;
         lapStarted = true;
         lapElapsed = 0;
+        lapClock = 0;
+        lastSample = -1;
+        recording = [];
         lapCrossingCooldown = 2;
         resetCones();
       }
     }
     lapPrevForward = forward;
 
-    if (lapStarted) lapElapsed += dt;
+    if (lapStarted) {
+      lapElapsed += dt;
+      lapClock += dt;
+      if (lapClock - lastSample >= 0.05) {
+        recording.push([lapClock, car_state.x, car_state.z, car_state.heading]);
+        lastSample = lapClock;
+      }
+    }
     updateLapDisplay();
   }
 
@@ -977,7 +1386,10 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     timer.update();
     const dt = Math.min(timer.getDelta(), 0.05);
 
-    const { maxSpeed, accel, turnRate: maxTurnRate } = vehicle;
+    const grip = WEATHER[weather]?.grip ?? 1;
+    const maxSpeed = vehicle.maxSpeed;
+    const accel = vehicle.accel * grip;
+    const maxTurnRate = vehicle.turnRate * (0.6 + 0.4 * grip);
     if (showcase && (input.forward || input.back || input.left || input.right)) showcase = false;
     if (input.forward) car_state.speed += accel * dt;
     else if (input.back) car_state.speed -= accel * dt;
@@ -1010,6 +1422,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
     updateCones(dt);
     updateLap(dt);
+    updateTraffic(dt);
+    updateGhost();
 
     const camDistance = carLength * 1.9 + 4;
     const camHeight = carLength * 0.55 + 2.5;
@@ -1029,9 +1443,33 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     camTarget.lerp(desiredTarget, 1 - Math.pow(0.0005, dt));
     camera.lookAt(camTarget);
 
-    renderer.render(scene, camera);
+    weatherClock += dt;
+    const conditions = WEATHER[weather];
+    if (conditions) pass.render(scene, conditions.id, conditions.scale, weatherClock);
+    else renderer.render(scene, camera);
+  }
+
+  // --- Settings panel ---
+  const circuitSelect = document.getElementById('garage-circuit') as HTMLSelectElement;
+  circuitSelect.addEventListener('change', () => {
+    circuitKey = circuitSelect.value;
+    buildCircuitWorld(circuitKey);
+    restartRace();
+    updateStats();
+    circuitSelect.blur();
+  });
+  const weatherSelect = document.getElementById('garage-weather') as HTMLSelectElement;
+  weatherSelect.addEventListener('change', () => {
+    weather = weatherSelect.value;
+    weatherSelect.blur();
+  });
+  ghostEnabled.addEventListener('change', () => ghostEnabled.blur());
+  // On phones the settings start folded away so the track stays visible.
+  if (window.matchMedia('(max-width: 54rem)').matches) {
+    (document.getElementById('garage-settings') as HTMLDetailsElement).open = false;
   }
 
   resize();
+  restartRace();
   tick();
 </script>
