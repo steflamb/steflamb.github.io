@@ -1,6 +1,6 @@
 ---
 import SiteFooter from '../components/SiteFooter.astro';
-import SiteHeader from '../components/SiteHeader.astro';
+import HomeMenu from '../components/HomeMenu.astro';
 // Self-hosted type: Barlow for text, Barlow Condensed for headings, IBM Plex Mono for data.
 import '@fontsource/barlow/latin-400.css';
 import '@fontsource/barlow/latin-500.css';
@@ -110,7 +110,7 @@ const schema = {
 </style>
   <body>
     <a class="skip-link" href="#main-content">Skip to content</a>
-    <SiteHeader />
+    <HomeMenu />
     <main id="main-content">
       <slot />
     </main>

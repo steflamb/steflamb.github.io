@@ -1758,7 +1758,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   };
   const vehicles: Record<string, Vehicle> = {
     // Fortuna's body is about 1.83 m wide without mirrors; the GS is narrow at cone height.
-    fortuna: { url: '/models/fortuna.glb', model: null, length: 4.6, halfLength: 2.35, halfWidth: 0.92, maxSpeed: 16, accel: 9, turnRate: 2.0, leans: false },
+    fortuna: { url: '/models/fortuna-hd.glb', model: null, length: 4.6, halfLength: 2.35, halfWidth: 0.92, maxSpeed: 16, accel: 9, turnRate: 2.0, leans: false },
     gs: { url: '/models/gs.glb', model: null, length: 2.2, halfLength: 1.08, halfWidth: 0.3, maxSpeed: 22, accel: 11, turnRate: 2.4, leans: true },
   };
   let vehicle = vehicles.fortuna;
@@ -1787,10 +1787,20 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     return loader.loadAsync(v.url).then((gltf) => {
       const model = gltf.scene;
       model.traverse((o) => {
-        if ((o as THREE.Mesh).isMesh) {
-          o.castShadow = true;
-          o.receiveShadow = true;
+        const mesh = o as THREE.Mesh;
+        if (!mesh.isMesh) return;
+        const m = mesh.material as THREE.MeshStandardMaterial;
+        if (m.map && m.transparent) {
+          // Fortuna's fortiss decals sit 1.5 mm off the paint: keep them in front of it, and
+          // don't let a sticker cast a shadow.
+          m.polygonOffset = true;
+          m.polygonOffsetFactor = -2;
+          m.polygonOffsetUnits = -2;
+          mesh.renderOrder = 2;
+          return;
         }
+        mesh.castShadow = !m.transparent;
+        mesh.receiveShadow = true;
       });
       // Sit it on the ground, centred over its contact line.
       const box = new THREE.Box3().setFromObject(model);

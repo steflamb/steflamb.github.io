@@ -416,6 +416,7 @@ const realityGapPaper = publications.find((p) => p.title.startsWith('A Multi-Mod
   import * as THREE from 'three';
   import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
   import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
+  import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 
   const canvas = document.getElementById('fortuna-3d-preview') as HTMLCanvasElement | null;
   const frame = document.getElementById('fortuna-3d-frame') as HTMLElement | null;
@@ -429,7 +430,10 @@ const realityGapPaper = publications.find((p) => p.title.startsWith('A Multi-Mod
     const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
 
-    scene.add(new THREE.HemisphereLight('#ffffff', '#1b1f1c', 1.1));
+    // A studio environment for the paint, chrome and glass to reflect.
+    scene.environment = new THREE.PMREMGenerator(renderer).fromScene(new RoomEnvironment(), 0.04).texture;
+    scene.environmentIntensity = 0.9;
+    scene.add(new THREE.HemisphereLight('#ffffff', '#1b1f1c', 0.6));
     const key = new THREE.DirectionalLight('#fff6e8', 2.2);
     key.position.set(4, 6, 3);
     scene.add(key);
@@ -442,8 +446,25 @@ const realityGapPaper = publications.find((p) => p.title.startsWith('A Multi-Mod
     dracoLoader.setDecoderPath('/draco/');
     const loader = new GLTFLoader();
     loader.setDRACOLoader(dracoLoader);
-    loader.load('/models/fortuna.glb', (gltf) => {
+    loader.load('/models/fortuna-hd.glb', (gltf) => {
       model = gltf.scene;
+      // The fortiss decals sit 1.5 mm off the paint: blend them, and keep them in front of it.
+      model.traverse((o) => {
+        const mesh = o as THREE.Mesh;
+        const m = mesh.material as THREE.MeshStandardMaterial | undefined;
+        if (!m) return;
+        if (m.map) {
+          m.map.anisotropy = renderer.capabilities.getMaxAnisotropy();
+          m.depthWrite = false;
+          m.polygonOffset = true;
+          m.polygonOffsetFactor = -2;
+          m.polygonOffsetUnits = -2;
+          mesh.renderOrder = 2;
+        } else if (m.transparent) {
+          m.depthWrite = false;
+          mesh.renderOrder = 1;
+        }
+      });
       const box = new THREE.Box3().setFromObject(model);
       const center = new THREE.Vector3();
       box.getCenter(center);

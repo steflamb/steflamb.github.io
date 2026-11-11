@@ -17,6 +17,7 @@ pictures/
 # Raw 3D source model (huge; decimated/compressed copy lives in public/models)
 /fortuna.obj
 /fortuna.mtl
+/fortuna.dae
 public/models/*.obj
 public/models/*.mtl
 
