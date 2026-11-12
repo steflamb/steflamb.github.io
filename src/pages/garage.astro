@@ -135,7 +135,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       <small id="garage-offtrack-note">Back to the start</small>
     </div>
 
-    <p class="garage-loading" id="garage-loading">Loading Fortuna…</p>
+    <p class="garage-loading" id="garage-loading">Loading 3D model…</p>
     <div class="garage-stats" id="garage-stats">
       <p id="garage-cone-stat">18 standing · 0 knocked over</p>
       <p id="garage-lap-stat">Drive through the start line to begin a lap</p>
@@ -1784,7 +1784,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   function loadVehicle(v: Vehicle) {
     if (v.model) return Promise.resolve(v.model);
     loadingEl.hidden = false;
-    loadingEl.textContent = 'Loading…';
+    loadingEl.textContent = 'Loading 3D model…';
     return loader.loadAsync(v.url).then((gltf) => {
       const model = gltf.scene;
       model.traverse((o) => {

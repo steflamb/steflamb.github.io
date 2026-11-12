@@ -397,6 +397,7 @@ const realityGapPaper = publications.find((p) => p.title.startsWith('A Multi-Mod
     <div class="container-wide demo-showcase">
       <div class="video-frame" id="fortuna-3d-frame">
         <canvas id="fortuna-3d-preview" aria-label="Rotating 3D model of Fortuna"></canvas>
+        <p class="model-loading" id="fortuna-3d-loading" role="status">Loading 3D model…</p>
       </div>
       <div class="demo-showcase-copy">
         <h2 id="garage-teaser-heading">Race Fortuna, just for fun.</h2>
@@ -446,7 +447,9 @@ const realityGapPaper = publications.find((p) => p.title.startsWith('A Multi-Mod
     dracoLoader.setDecoderPath('/draco/');
     const loader = new GLTFLoader();
     loader.setDRACOLoader(dracoLoader);
+    const loadingEl = document.getElementById('fortuna-3d-loading');
     loader.load('/models/fortuna-hd.glb', (gltf) => {
+      if (loadingEl) loadingEl.hidden = true;
       model = gltf.scene;
       // The fortiss decals sit 1.5 mm off the paint: blend them, and keep them in front of it.
       model.traverse((o) => {
@@ -471,6 +474,8 @@ const realityGapPaper = publications.find((p) => p.title.startsWith('A Multi-Mod
       model.position.sub(center);
       scene.add(model);
       requestRender();
+    }, undefined, () => {
+      if (loadingEl) loadingEl.textContent = 'Could not load the 3D model.';
     });
 
     function resize() {

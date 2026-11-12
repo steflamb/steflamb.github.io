@@ -161,6 +161,7 @@ const stops = [
             {stop.is3D ? (
               <div class="route-3d" id="home-3d-frame">
                 <canvas id="home-3d-preview" aria-label="Rotating 3D models of Fortuna and a motorcycle"></canvas>
+                <p class="model-loading" id="home-3d-loading" role="status">Loading 3D model…</p>
               </div>
             ) : (
               <img src={stop.image} alt={stop.imageAlt} width={stop.imageWidth} height={stop.imageHeight} loading="lazy" />
@@ -405,7 +406,9 @@ const stops = [
       const loader = new GLTFLoader();
       loader.setDRACOLoader(dracoLoader);
       // Fortuna and the GS side by side on one turntable, at their real sizes.
+      const loadingEl = document.getElementById('home-3d-loading');
       Promise.all([loader.loadAsync('/models/fortuna-hd.glb'), loader.loadAsync('/models/gs.glb')]).then(([car, bike]) => {
+        if (loadingEl) loadingEl.hidden = true;
         const turntable = new THREE.Group();
         const onGround = (o: THREE.Object3D, x: number) => {
           const box = new THREE.Box3().setFromObject(o);
@@ -436,6 +439,8 @@ const stops = [
         scene.add(model);
         fitCamera();
         requestRender();
+      }).catch(() => {
+        if (loadingEl) loadingEl.textContent = 'Could not load the 3D model.';
       });
     }
 

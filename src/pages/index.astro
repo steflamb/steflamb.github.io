@@ -145,18 +145,6 @@ const gapLayers = [
     </section>
 
     <div class="hud">
-      <header class="top">
-        <a class="brand" href="/">S. C. Lambertenghi</a>
-        <div class="top-right">
-          <a
-            class="js-email-link"
-            href="#"
-            data-email-user={profileLinks.emailUser}
-            data-email-domain={profileLinks.emailDomain}>Let's talk</a
-          >
-          <button type="button" id="menu-toggle" aria-expanded="false" aria-controls="menu">Menu ☰</button>
-        </div>
-      </header>
 
       <aside class="index" id="index" aria-label="Sections">
         <p class="index-label">Selected</p>
@@ -187,6 +175,21 @@ const gapLayers = [
       </main>
 
     </div>
+
+    <header class="top">
+      <a class="brand" href="/">S. C. Lambertenghi</a>
+      <div class="top-right">
+        <a
+          class="js-email-link"
+          href="#"
+          data-email-user={profileLinks.emailUser}
+          data-email-domain={profileLinks.emailDomain}>Let's talk</a
+        >
+        <button type="button" id="menu-toggle" aria-expanded="false" aria-controls="menu">Menu ☰</button>
+      </div>
+    </header>
+
+    <p class="model-loading" id="model-loading" role="status" hidden>Loading 3D model…</p>
 
     <article class="card" id="card" aria-live="polite">
       <h2 class="card-title" id="cap-title"></h2>
@@ -293,20 +296,37 @@ const gapLayers = [
     pointer-events: auto;
   }
 
+  /* Outside the blended HUD: over the photo, difference blending broke the letters up.
+     Solid dark chips read the same over the photo, the light scenes and the dark ones. */
   .top {
-    position: absolute;
-    inset: 1.4rem clamp(1rem, 2.5vw, 2rem) auto;
+    position: fixed;
+    z-index: 13;
+    inset: 1rem clamp(1rem, 2.5vw, 2rem) auto;
     display: flex;
     justify-content: space-between;
+    align-items: center;
     gap: 1rem;
+    pointer-events: none;
   }
   .top-right {
     display: flex;
-    gap: 1.6rem;
+    gap: 0.5rem;
+  }
+  .top a,
+  .top button {
+    pointer-events: auto;
+    padding: 0.5rem 0.8rem;
+    background: rgba(6, 9, 12, 0.82);
+    backdrop-filter: blur(8px);
+    color: #f3f4f1;
+    transition: background 150ms ease, color 150ms ease;
   }
   .top a:hover,
-  .top button:hover {
-    opacity: 0.6;
+  .top button:hover,
+  .top a:focus-visible,
+  .top button:focus-visible {
+    background: #ffcf33;
+    color: #06090c;
   }
 
   .index {
@@ -482,6 +502,25 @@ const gapLayers = [
 
   /* The info card for each section: on the left, solid, outside the blended HUD so it stays
      legible over both the light and the dark scenes. */
+  .model-loading {
+    position: fixed;
+    z-index: 11;
+    transform: translate(-50%, -50%);
+    margin: 0;
+    padding: 0.6rem 0.9rem;
+    background: rgba(6, 9, 12, 0.78);
+    color: #f3f4f1;
+    font-family: ui-monospace, 'SFMono-Regular', Menlo, monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    pointer-events: none;
+  }
+
+  .model-loading[hidden] {
+    display: none;
+  }
+
   .card {
     position: fixed;
     z-index: 12;
@@ -847,6 +886,8 @@ const gapLayers = [
     /** at scale 1: the model's reach from its turning axis, and its half height */
     reach: number;
     halfHeight: number;
+    /** its model is still downloading */
+    loading: boolean;
   };
   const panels: Panel[] = [];
   const texLoader = new THREE.TextureLoader();
@@ -863,7 +904,7 @@ const gapLayers = [
     const back = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), backMat);
     back.position.z = -0.02;
     mesh.add(back);
-    const panel: Panel = { mesh, mat, backMat, z, aspect: 1.5, reach: 1, halfHeight: 1 };
+    const panel: Panel = { mesh, mat, backMat, z, aspect: 1.5, reach: 1, halfHeight: 1, loading: false };
     panels.push(panel);
 
     const loadPicture = () =>
@@ -877,6 +918,7 @@ const gapLayers = [
       });
 
     if (stop.models?.length) {
+      panel.loading = true;
       Promise.all(stop.models.map((url) => gltfLoader.loadAsync(url)))
         .then((gltfs) => {
           // Decals (the fortiss lettering) sit 1.5 mm off the paint: blend them for smooth edges,
@@ -934,7 +976,11 @@ const gapLayers = [
           scene.add(pivot);
           panel.model = pivot;
         })
-        .catch(loadPicture); // no model: show the picture
+        .catch(loadPicture) // no model: show the picture
+        .finally(() => {
+          panel.loading = false;
+          updateLoading();
+        });
     } else {
       loadPicture();
     }
@@ -993,6 +1039,11 @@ const gapLayers = [
 
   const dpr = Math.min(window.devicePixelRatio || 1, 1.75);
   const layout = { x: 2, y: 0, w: 5, h: 4 };
+  const modelLoading = document.getElementById('model-loading') as HTMLElement;
+  // Shown while the section on screen is waiting for its 3D model.
+  function updateLoading() {
+    modelLoading.hidden = !(active >= 0 && active < N && panels[active].loading);
+  }
 
   function resize() {
     const w = window.innerWidth;
@@ -1018,6 +1069,9 @@ const gapLayers = [
     layout.w = Math.max(1, right - left);
     layout.h = halfH * 2 * 0.7;
     layout.y = halfH * 0.06;
+    // The loading message sits where the model will appear.
+    modelLoading.style.left = `${((layout.x / halfW + 1) / 2) * w}px`;
+    modelLoading.style.top = `${((1 - layout.y / halfH) / 2) * h}px`;
   }
   resize();
   window.addEventListener('resize', resize);
@@ -1097,6 +1151,7 @@ const gapLayers = [
       capLink.href = stop.href;
       (capLink.querySelector('span') as HTMLElement).textContent = stop.linkLabel;
     }
+    updateLoading();
   }
 
   function frame(now: number) {
@@ -1148,6 +1203,11 @@ const gapLayers = [
         // With reduced motion it stands still, at an angle where nothing hides behind the car.
         p.model.rotation.y = reduceMotion ? (p.model.children[0].children.length > 1 ? 0.3 : 0.6) : now * 0.0004;
         p.model.position.set(layout.x, layout.y, p.z);
+        p.mesh.visible = false;
+        return;
+      }
+      // Still downloading its model: nothing to show but the loading message.
+      if (p.loading) {
         p.mesh.visible = false;
         return;
       }
