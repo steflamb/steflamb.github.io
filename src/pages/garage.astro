@@ -4,7 +4,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
 <BaseLayout
   title="Just for fun — Stefano Carlo Lambertenghi"
-  description="Race Gaussian-splat models of Fortuna and my motorcycle on three circuits, Guerickestraße or any street on the map."
+  description="Race a Blender model of Fortuna and a Gaussian-splat model of my motorcycle, on three circuits or Guerickestraße in Munich."
   noindex={true}
 >
   <section class="garage" data-phase="intro">
@@ -20,7 +20,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           <span class="garage-intro-line">Stefano's</span>
           <span class="garage-intro-line">garage.</span>
         </h1>
-        <p class="garage-intro-lede">Race Gaussian-splat models of Fortuna and my motorcycle, on three circuits or any street on the map.</p>
+        <p class="garage-intro-lede">Race a Blender model of Fortuna and a Gaussian-splat model of my motorcycle, on three circuits.</p>
         <button type="button" class="garage-go garage-intro-start" id="garage-intro-start">Start Stefano's garage</button>
       </div>
     </div>
@@ -28,8 +28,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     <div class="garage-showroom" id="garage-showroom" data-step="vehicle">
       <h2>Just for fun.</h2>
       <p class="garage-instructions">
-        Race Gaussian-splat models of Fortuna and my motorcycle. Pick one, pick a track, and
-        take it for a lap. No research question required.
+        Race Fortuna, modelled in Blender, or my motorcycle, a Gaussian-splat model. Pick one,
+        pick a track, and take it for a lap. No research question required.
       </p>
 
       <div class="garage-step" id="garage-step-vehicle">
@@ -49,7 +49,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           <label><input type="radio" name="circuit" value="monza" /><span><svg data-preview="monza" aria-hidden="true"></svg><b>Monza</b><small>Simplified</small></span></label>
           <label><input type="radio" name="circuit" value="spa" /><span><svg data-preview="spa" aria-hidden="true"></svg><b>Spa</b><small>Simplified</small></span></label>
           <label><input type="radio" name="circuit" value="guericke" disabled /><span><svg data-preview="guericke" aria-hidden="true"></svg><b>Guerickestraße</b><small>Munich, from the Cam2Sim drive</small></span></label>
-          <label><input type="radio" name="circuit" value="custom" id="garage-custom" /><span><svg data-preview="custom" aria-hidden="true"></svg><b id="garage-custom-name">Any street</b><small id="garage-custom-note">Pick it on the map, rebuilt with our Cam2Sim street code</small></span></label>
+          <!-- "Any street" is switched off (the map picker was hard to follow); its code still works. -->
+          <label hidden><input type="radio" name="circuit" value="custom" id="garage-custom" disabled /><span><svg data-preview="custom" aria-hidden="true"></svg><b id="garage-custom-name">Any street</b><small id="garage-custom-note">Pick it on the map, rebuilt with our Cam2Sim street code</small></span></label>
         </fieldset>
         <div class="garage-options">
           <label>
@@ -73,7 +74,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           <button type="button" class="garage-go" id="garage-start">Start driving</button>
         </div>
         <p class="garage-storage">
-          Best times, ghost laps and loaded streets are saved only in this browser's local storage
+          Best times and ghost laps are saved only in this browser's local storage
           (no cookies) and never leave your device.{' '}
           <button type="button" id="garage-clear">Clear saved data</button> ·{' '}
           <a href="/privacy/">Privacy</a>

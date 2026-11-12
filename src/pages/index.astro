@@ -76,12 +76,12 @@ const stops = [
   },
   {
     title: 'Take a spin',
-    description: 'Race Gaussian-splat models of Fortuna and my motorcycle, on three circuits or any street on the map.',
+    description: 'Race a Blender model of Fortuna and a Gaussian-splat model of my motorcycle, on three circuits.',
     href: '/garage/',
     linkLabel: 'Open it up',
     facts: [
-      'Gaussian-splat models of Fortuna and my BMW GS.',
-      'A cone course, Monza and Spa (simplified), or any street you pick on the map.',
+      'Fortuna is modelled in Blender; my BMW GS is a Gaussian-splat model.',
+      'A cone course, and simplified versions of Monza and Spa.',
       'Weather, traffic, and a ghost of your best lap.',
     ],
     image: '/images/fortuna-drive-poster.jpg',
@@ -422,18 +422,18 @@ const gapLayers = [
   .gh-visual.is-simulated .gh-tag-real {
     opacity: 0;
   }
+  /* Top-left, wide and short, so the whole block stays above the face in the photo. */
   .gh-copy {
     position: absolute;
     left: clamp(1rem, 2.5vw, 2rem);
-    top: 50%;
+    top: clamp(4.2rem, 9vh, 5.5rem);
     z-index: 2;
-    max-width: 26rem;
-    transform: translateY(-50%);
+    max-width: min(44rem, 52vw);
     text-shadow: 0 1px 14px rgba(0, 0, 0, 0.7);
   }
   .gh-copy::before {
     position: absolute;
-    inset: -4rem -6rem -4rem -3rem;
+    inset: -4rem -6rem -1.5rem -3rem;
     z-index: -1;
     background: radial-gradient(closest-side, rgba(6, 9, 12, 0.6), transparent);
     content: '';
@@ -446,7 +446,6 @@ const gapLayers = [
     line-height: 1.1;
   }
   .gh-copy em {
-    display: block;
     font-style: normal;
   }
   .gh-copy p {
@@ -760,7 +759,7 @@ const gapLayers = [
 
   const DARK = new THREE.Color('#06090c');
   const LIGHT = new THREE.Color('#e9ebe6');
-  const bg = DARK.clone();
+  const bg = LIGHT.clone();
 
   const SPACING = 14;
   const CAM_START = 8;
@@ -886,9 +885,10 @@ const gapLayers = [
             g.scene.traverse((o) => {
               const m = (o as THREE.Mesh).material as THREE.MeshStandardMaterial | undefined;
               if (!m) return;
-              if (m.map) {
+              // Only materials the model marks as see-through (the decals): the motorcycle is
+              // textured all over and must stay solid.
+              if (m.map && m.transparent) {
                 m.map.anisotropy = renderer.capabilities.getMaxAnisotropy();
-                m.transparent = true;
                 m.depthWrite = false;
                 m.polygonOffset = true;
                 m.polygonOffsetFactor = -2;
@@ -1118,15 +1118,19 @@ const gapLayers = [
     camera.position.set(mouse.x * 0.12, -mouse.y * 0.08, camZ);
     camera.lookAt(mouse.x * 0.06, -mouse.y * 0.04, camZ - 10);
 
-    // Dark hero and closing section, light in between.
-    const dark = Math.min(1, 1 - smooth(0.45, 1.0, t) + smooth(N + 0.25, N + 0.75, t));
+    // Light from the moment the hero lifts away (a dark gap there read as a blank screen);
+    // dark again only for the closing section.
+    const dark = smooth(N + 0.25, N + 0.75, t);
     bg.copy(LIGHT).lerp(DARK, dark);
     (scene.fog as THREE.Fog).color.copy(bg);
 
     panels.forEach((p) => {
       const dist = camZ - p.z;
       // Visible only as the camera approaches it, so the next one doesn't show through behind.
-      const show = smooth(0.8, 3.5, dist) * (1 - smooth(11, 16, dist));
+      // The first has nothing in front of it: it shows from the start, so the hero lifts away
+      // onto it rather than onto an empty screen.
+      const far = p === panels[0] ? 1 : 1 - smooth(11, 16, dist);
+      const show = smooth(0.8, 3.5, dist) * far;
       p.mat.opacity = show;
       p.backMat.opacity = show;
       if (p.model) {

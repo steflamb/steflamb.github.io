@@ -401,8 +401,8 @@ const realityGapPaper = publications.find((p) => p.title.startsWith('A Multi-Mod
       <div class="demo-showcase-copy">
         <h2 id="garage-teaser-heading">Race Fortuna, just for fun.</h2>
         <p>
-          Race Gaussian-splat models of Fortuna and my motorcycle around a track, no research
-          question required.
+          Race a Blender model of Fortuna, or a Gaussian-splat model of my motorcycle, around a
+          track. No research question required.
         </p>
         <a class="text-link" href="/garage/">
           Open it up <span aria-hidden="true">↗︎</span>
@@ -453,7 +453,7 @@ const realityGapPaper = publications.find((p) => p.title.startsWith('A Multi-Mod
         const mesh = o as THREE.Mesh;
         const m = mesh.material as THREE.MeshStandardMaterial | undefined;
         if (!m) return;
-        if (m.map) {
+        if (m.map && m.transparent) {
           m.map.anisotropy = renderer.capabilities.getMaxAnisotropy();
           m.depthWrite = false;
           m.polygonOffset = true;

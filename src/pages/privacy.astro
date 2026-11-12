@@ -40,18 +40,17 @@ import { profileLinks } from '../data/site';
 
       <h2>What is stored in your browser</h2>
       <p>
-        The site sets no cookies. Only the garage game (Just for fun) keeps a few things in your
-        browser's local storage, so a returning driver has something to beat:
+        The site sets no cookies. Only the garage game (Just for fun) and the map on the About
+        page keep a few things in your browser's local storage:
       </p>
       <ul>
         <li>your best lap or run time, per track and vehicle;</li>
         <li>the replay of that lap, used for the ghost car;</li>
-        <li>up to three streets you loaded from the map, so they open again without a new request;</li>
-        <li>whether you agreed to load maps from OpenStreetMap (see below).</li>
+        <li>whether you agreed to load the About page's map from OpenStreetMap (see below).</li>
       </ul>
       <p>
         None of it contains anything about you, and none of it is ever sent anywhere: it stays on
-        your device. It is only written when you use the garage. You can delete it with the{' '}
+        your device. It is only written when you use the garage or show the map. You can delete it with the{' '}
         <strong>Clear saved data</strong> button in the garage, or by clearing this site's data in
         your browser settings.
       </p>
@@ -66,22 +65,11 @@ import { profileLinks } from '../data/site';
 
       <h3>OpenStreetMap map tiles</h3>
       <p>
-        Used by the journey map on the About page and the street picker in the garage. They load
-        only after you choose to show a map; that choice is remembered in your browser and
-        covers both maps. The tiles come from the OpenStreetMap Foundation's servers, which
+        Used by the journey map on the About page. They load only after you choose to show the
+        map; that choice is remembered in your browser. The tiles come from the OpenStreetMap
+        Foundation's servers, which
         receive the map area you look at. See the{' '}
         <a href="https://osmfoundation.org/wiki/Privacy_Policy" target="_blank" rel="noreferrer">OpenStreetMap Foundation Privacy Policy</a>.
-      </p>
-
-      <h3>Overpass API</h3>
-      <p>
-        The garage's "Any street" track is built from OpenStreetMap data, which the site cannot
-        hold for the whole world. When you press <strong>Load this route</strong>, your browser
-        asks the public Overpass API at{' '}
-        <a href="https://overpass-api.de/" target="_blank" rel="noreferrer">overpass-api.de</a>{' '}
-        for the streets and buildings around the two points you picked. It receives that area's
-        coordinates and your IP address. Without it, that one track cannot work; every other part
-        of the site works without it.
       </p>
 
       <h3>YouTube</h3>
@@ -94,11 +82,11 @@ import { profileLinks } from '../data/site';
 
       <h2>Your choices and rights</h2>
       <p>
-        You can refuse the maps: the rest of the site, including every other garage track, works
-        without them. To withdraw a map choice you made, use <strong>Clear saved data</strong> in
+        You can refuse the map: the rest of the site works without it. To withdraw that choice,
+        use <strong>Clear saved data</strong> in
         the garage or clear this site's data in your browser. Because I do not collect or keep
-        personal data myself, requests about data held by GitHub, the OpenStreetMap Foundation,
-        the Overpass API or Google go to those providers. Under the GDPR you also have the right
+        personal data myself, requests about data held by GitHub, the OpenStreetMap Foundation
+        or Google go to those providers. Under the GDPR you also have the right
         to lodge a complaint with a data protection supervisory authority.
       </p>
     </div>
