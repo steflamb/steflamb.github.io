@@ -7,5 +7,7 @@ export default defineConfig({
   // The research overview moved to /publications/; its demos now live at /demos/.
   redirects: {
     '/research': '/demos/',
+    // The scrolling-route home briefly lived at /classic/ while a fly-through was the home page.
+    '/classic': '/',
   },
 });
