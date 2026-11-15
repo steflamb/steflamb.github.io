@@ -1,0 +1,48 @@
+---
+// The fortiss garage, for embedding in fortiss's website as an iframe. Not linked from this
+// site, and kept out of search engines.
+import '@fontsource/barlow/latin-400.css';
+import '@fontsource/barlow/latin-500.css';
+import '@fontsource/barlow/latin-600.css';
+import '@fontsource/barlow-condensed/latin-500.css';
+import '@fontsource/barlow-condensed/latin-600.css';
+import '@fontsource/ibm-plex-mono/latin-400.css';
+import '@fontsource/ibm-plex-mono/latin-500.css';
+import '@fontsource/ibm-plex-mono/latin-600.css';
+import '../../styles/global.css';
+import Garage from '../../components/Garage.astro';
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="description" content="Drive Fortuna, fortiss's autonomous-driving research vehicle, around a cone course or down Guerickestraße in Munich." />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>fortiss garage</title>
+    <script is:inline>document.documentElement.classList.add('has-js');</script>
+  </head>
+  <body class="fortiss-garage-body">
+    <main>
+      <Garage variant="fortiss" />
+    </main>
+  </body>
+</html>
+
+<style is:global>
+  /* Fills whatever frame it is embedded in. */
+  html,
+  body.fortiss-garage-body {
+    height: 100%;
+    margin: 0;
+    overflow: hidden;
+    background: #0f1720;
+  }
+  .fortiss-garage-body main,
+  .fortiss-garage-body .garage {
+    height: 100%;
+    min-height: 0;
+  }
+</style>
